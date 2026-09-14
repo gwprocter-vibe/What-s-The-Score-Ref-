@@ -1,5 +1,5 @@
 // What's The Score Ref - 100% Offline Service Worker
-const CACHE_NAME = 'whatsthescoreref-v55';
+const CACHE_NAME = 'whatsthescoreref-v56';
 const STATIC_ASSETS = [
   './',
   './index.html',
