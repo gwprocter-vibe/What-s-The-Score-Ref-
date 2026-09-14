@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What's The Score Ref? - UI De-Cluttering & Zen Mode Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700;900&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #030712;
+      color: #f3f4f6;
+    }
+    .font-mono-sport {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .surface-onyx {
+      background: linear-gradient(180deg, #111827 0%, #0b0f19 100%);
+      border: 1px solid #1f293d;
+    }
+    .titanium-pill {
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+    }
+    /* Zen Mode simulation */
+    .zen-active .zen-dim {
+      opacity: 0.18;
+      filter: grayscale(0.5);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .zen-active .zen-hero {
+      transform: scale(1.02);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.25);
+      border-color: rgba(16, 185, 129, 0.5);
+    }
+  </style>
+</head>
+<body class="min-h-screen p-3 sm:p-6 md:p-8 flex flex-col items-center">
+
+  <!-- Mockup Showcase Header -->
+  <div class="max-w-4xl w-full text-center mb-6">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 text-xs font-black uppercase tracking-wider mb-2">
+      Interactive Side-by-Side Comparison
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Streamlined UI & Pitch-Side Zen Mode</h1>
+    <p class="text-slate-400 text-xs sm:text-sm mt-1 max-w-xl mx-auto">
+      Consolidating top capsules into a <strong>1-Tap Quick Tools Drawer</strong> and dimming secondary buttons during <strong>Live Play</strong> keeps you 100% focused on refereeing.
+    </p>
+
+    <!-- Interactive Toggle Buttons -->
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-2.5">
+      <button onclick="toggleMockupMode('idle')" id="btnIdle" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-800 text-white border border-slate-700 shadow hover:bg-slate-700 active:scale-95 transition cursor-pointer">
+        ⏱️ Pre-Match / Paused View
+      </button>
+      <button onclick="toggleMockupMode('zen')" id="btnZen" class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 text-white border border-emerald-400 shadow hover:bg-emerald-500 active:scale-95 transition cursor-pointer">
+        ▶️ Live Play (Zen Mode Active)
+      </button>
+      <button onclick="toggleMockupToolsModal(true)" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-500 text-slate-950 border border-amber-300 shadow hover:bg-amber-400 active:scale-95 transition cursor-pointer">
+        ⚙️ Preview Quick Tools Drawer
+      </button>
+    </div>
+  </div>
+
+  <!-- Comparison Grid -->
+  <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- ================= CURRENT CROWDED UI ================= -->
+    <div class="flex flex-col items-center">
+      <div class="text-xs font-black uppercase tracking-wider text-rose-400 mb-2 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+        <span>Current Screen (21 Buttons Visible)</span>
+      </div>
+
+      <!-- Phone Frame -->
+      <div class="w-full max-w-sm rounded-[32px] border-4 border-slate-800 bg-[#07090e] p-3 shadow-2xl relative overflow-hidden flex flex-col justify-between text-slate-100 opacity-80 scale-[0.98]">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-1 border-b border-[#141b27]">
+          <span class="font-black text-xs text-white">What's The Score Ref?</span>
+          <span class="text-[9px] px-2 py-0.5 rounded border border-amber-500/40 text-amber-300">FIXTURES ↗</span>
+        </div>
+
+        <!-- 5-Grid Crowded Toolbar -->
+        <div class="grid grid-cols-5 gap-0.5 py-1.5 border-b border-[#1b2230] text-[9px] font-black text-center">
+          <div class="bg-slate-900 border border-emerald-500/30 text-emerald-400 py-1 rounded">AWAKE</div>
+          <div class="bg-slate-900 border border-emerald-500/30 text-emerald-400 py-1 rounded">SOUND</div>
+          <div class="bg-slate-900 border border-slate-700 text-amber-300 py-1 rounded">SUN</div>
+          <div class="bg-slate-900 border border-slate-700 text-slate-300 py-1 rounded">LOCK</div>
+          <div class="bg-slate-900 border border-emerald-500/40 text-emerald-300 py-1 rounded">REPORT</div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="grid grid-cols-2 gap-1.5 my-1 text-[10px] font-black">
+          <div class="bg-emerald-500 text-slate-950 py-1 text-center rounded-lg">Match 1 [ TBC ]</div>
+          <div class="bg-slate-900 border border-slate-800 text-slate-400 py-1 text-center rounded-lg">Match 2 [ TBC ]</div>
+        </div>
+
+        <!-- Score Cards with redundant Edit buttons -->
+        <div class="grid grid-cols-2 gap-1.5 my-1">
+          <div class="surface-onyx rounded-xl p-2 border-2 border-rose-500/70">
+            <div class="flex justify-between text-[10px] pb-1 border-b border-slate-800">
+              <span class="text-rose-400 font-bold">HOME</span>
+              <span class="text-[9px] text-slate-400 border border-slate-700 px-1 rounded">Edit</span>
+            </div>
+            <div class="text-[11px] font-bold text-center my-0.5 team-pencil">Home Team ✏️</div>
+            <div class="text-3xl font-black text-center font-mono-sport my-0.5">0</div>
+            <div class="grid grid-cols-2 gap-1 mt-1">
+              <div class="bg-slate-800 text-center py-0.5 rounded text-sm">−</div>
+              <div class="bg-rose-600 text-center py-0.5 rounded text-sm text-white font-bold">+</div>
+            </div>
+          </div>
+          <div class="surface-onyx rounded-xl p-2 border-2 border-blue-500/70">
+            <div class="flex justify-between text-[10px] pb-1 border-b border-slate-800">
+              <span class="text-blue-400 font-bold">AWAY</span>
+              <span class="text-[9px] text-slate-400 border border-slate-700 px-1 rounded">Edit</span>
+            </div>
+            <div class="text-[11px] font-bold text-center my-0.5 team-pencil">Away Team ✏️</div>
+            <div class="text-3xl font-black text-center font-mono-sport my-0.5">0</div>
+            <div class="grid grid-cols-2 gap-1 mt-1">
+              <div class="bg-slate-800 text-center py-0.5 rounded text-sm">−</div>
+              <div class="bg-blue-600 text-center py-0.5 rounded text-sm text-white font-bold">+</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ticker -->
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-1 text-[10px] flex justify-between my-0.5">
+          <span class="text-emerald-400">⚽ Match not started</span>
+          <div class="flex gap-1"><span class="text-amber-400">Undo</span> | <span>Log (0)</span></div>
+        </div>
+
+        <!-- Timer Box with Reset/End/1st/2nd half buttons -->
+        <div class="surface-onyx rounded-xl p-2 text-center border border-slate-800 my-1">
+          <div class="grid grid-cols-2 gap-1 mb-1 text-[10px]">
+            <div class="bg-slate-800 py-1 rounded text-slate-300">Reset Half</div>
+            <div class="bg-slate-800 py-1 rounded text-slate-300">End Half</div>
+          </div>
+          <div class="text-3xl font-black font-mono-sport text-white">00:00</div>
+          <div class="text-[9px] text-slate-400">Target: 15:00 | Stoppage: +00:00</div>
+          <div class="bg-emerald-600 text-white font-black py-2 rounded-lg text-xs mt-1">START PLAY</div>
+          <div class="grid grid-cols-2 gap-1 mt-1 text-[10px]">
+            <div class="bg-emerald-500 text-slate-950 font-bold py-1 rounded">1st Half</div>
+            <div class="bg-slate-800 text-slate-400 py-1 rounded">2nd Half</div>
+          </div>
+        </div>
+
+        <!-- Full Bottom Dock Always Present -->
+        <div class="grid grid-cols-4 gap-1 pt-1.5 border-t border-slate-800 text-[9px] text-center font-bold">
+          <div class="bg-slate-900 py-1.5 rounded border border-slate-800 text-slate-300">Coin Toss</div>
+          <div class="bg-slate-900 py-1.5 rounded border border-slate-800 text-slate-300">Pre-Match</div>
+          <div class="bg-slate-900 py-1.5 rounded border border-slate-800 text-slate-300">Rule Check</div>
+          <div class="bg-red-600 py-1.5 rounded text-white font-black">Reset</div>
+        </div>
+      </div>
+      <div class="text-[11px] text-rose-300/80 mt-2 text-center">
+        ❌ 21 clickable buttons visible at all times, creating visual clutter and accidental touches.
+      </div>
+    </div>
+
+
+    <!-- ================= PROPOSED ZEN UI ================= -->
+    <div class="flex flex-col items-center">
+      <div class="text-xs font-black uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Proposed Clean Pitch-Side Experience</span>
+      </div>
+
+      <!-- Phone Frame -->
+      <div id="mockPhone" class="w-full max-w-sm rounded-[32px] border-4 border-emerald-500/50 bg-[#07090e] p-3.5 shadow-2xl relative overflow-hidden flex flex-col justify-between text-slate-100 transition-all duration-300">
+        
+        <!-- Header: Minimal Mascot & Title -->
+        <div class="flex items-center justify-between pb-1.5 border-b border-[#141b27]">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-amber-400/20 border border-amber-400/60 flex items-center justify-center text-xs">⚽</span>
+            <span class="font-black text-xs text-white">What's The Score Ref?</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span id="mockZenBadge" class="hidden text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black animate-pulse">ZEN ACTIVE</span>
+          </div>
+        </div>
+
+        <!-- NEW 2-BUTTON ULTRA-CLEAN TOP BAR -->
+        <div class="grid grid-cols-2 gap-2 py-1.5 border-b border-[#1b2230]">
+          <!-- 1. Quick Tools Drawer Trigger (Includes Report, Awake, Sound, Sun, Fixtures) -->
+          <button onclick="toggleMockupToolsModal(true)" class="titanium-pill flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-black text-amber-300 border border-amber-500/40 hover:bg-slate-800 transition active:scale-95 shadow-sm cursor-pointer">
+            <span class="text-sm">⚙️</span>
+            <span class="tracking-wider font-mono-sport">MATCH TOOLS</span>
+          </button>
+
+          <!-- 2. Rain / Field Lock (Always 1-Tap Ready) -->
+          <button class="titanium-pill flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-black text-slate-300 border border-slate-700 hover:bg-slate-800 transition active:scale-95 shadow-sm cursor-pointer">
+            <span class="text-sm">🔒</span>
+            <span class="tracking-wider font-mono-sport">FIELD LOCK</span>
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="grid grid-cols-2 gap-2 my-1.5 text-xs font-black">
+          <div class="bg-emerald-500 text-slate-950 py-1.5 text-center rounded-xl shadow border border-emerald-300">Match 1 [ TBC ]</div>
+          <div class="bg-slate-900 border border-slate-700 text-slate-400 py-1.5 text-center rounded-xl">Match 2 [ TBC ]</div>
+        </div>
+
+        <!-- Clean Score Cards (Redundant Edit Buttons Removed) -->
+        <div class="grid grid-cols-2 gap-2 my-1">
+          <!-- Home Card -->
+          <div class="surface-onyx rounded-2xl p-2.5 border-2 border-rose-500/70 shadow-lg">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-800/80 mb-1">
+              <span class="text-xs font-black uppercase text-rose-400 tracking-wider">HOME</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+            </div>
+            <div class="text-xs font-extrabold text-white text-center truncate py-0.5 cursor-pointer" title="Tap to rename team">Pannal Ash Tigers</div>
+            <div class="text-4xl font-black text-center font-mono-sport text-white my-1">0</div>
+            <div class="grid grid-cols-2 gap-1.5 mt-1">
+              <button class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-center py-2 rounded-xl text-xl font-black border border-slate-700/60 active:scale-95 transition cursor-pointer">−</button>
+              <button class="bg-rose-600 hover:bg-rose-500 text-white text-center py-2 rounded-xl text-xl font-black border border-rose-400 shadow-md active:scale-95 transition cursor-pointer">+</button>
+            </div>
+          </div>
+
+          <!-- Away Card -->
+          <div class="surface-onyx rounded-2xl p-2.5 border-2 border-blue-500/70 shadow-lg">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-800/80 mb-1">
+              <span class="text-xs font-black uppercase text-blue-400 tracking-wider">AWAY</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+            </div>
+            <div class="text-xs font-extrabold text-white text-center truncate py-0.5 cursor-pointer" title="Tap to rename team">Knaresborough</div>
+            <div class="text-4xl font-black text-center font-mono-sport text-white my-1">0</div>
+            <div class="grid grid-cols-2 gap-1.5 mt-1">
+              <button class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-center py-2 rounded-xl text-xl font-black border border-slate-700/60 active:scale-95 transition cursor-pointer">−</button>
+              <button class="bg-blue-600 hover:bg-blue-500 text-white text-center py-2 rounded-xl text-xl font-black border border-blue-400 shadow-md active:scale-95 transition cursor-pointer">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TALLER SCORE LOG & LAST GOAL TICKER (More comfortable touch target & readability) -->
+        <div class="surface-onyx rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-2 shadow-md my-1.5 border border-slate-700/60">
+          <div class="flex items-center gap-2.5 truncate cursor-pointer">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+            <div class="truncate">
+              <div class="text-[11px] text-slate-400 font-semibold leading-tight">Latest Goal Event</div>
+              <div class="text-xs text-slate-100 font-black truncate font-mono-sport">⚽ Match not started</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button class="px-2.5 py-1.5 rounded-lg titanium-pill text-amber-400 hover:text-amber-300 text-xs font-black flex items-center gap-1 active:scale-95 transition cursor-pointer">
+              <span>Undo</span>
+            </button>
+            <button class="px-3 py-1.5 rounded-lg titanium-pill text-slate-200 hover:text-white text-xs font-black flex items-center gap-1 active:scale-95 transition cursor-pointer">
+              <span>Log</span>
+              <span class="bg-slate-800 text-amber-400 text-[10px] px-1.5 py-0.2 rounded font-mono-sport">0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- HERO TIMER UNIT -->
+        <div class="zen-hero surface-onyx rounded-2xl p-3 text-center border border-slate-700/60 shadow-xl my-1 transition-all">
+          <div class="zen-dim flex items-center justify-between text-xs mb-1 px-1">
+            <span class="text-slate-400 font-bold">1st Half</span>
+            <span class="text-amber-400 font-bold text-[11px]">End Half ⏭️</span>
+          </div>
+          <div id="mockTimerDigit" class="text-5xl font-black font-mono-sport text-white tracking-tight my-1">00:00</div>
+          <div class="text-xs text-slate-400 font-medium">Target: <strong class="text-slate-200">15:00</strong></div>
+
+          <!-- Giant Touch Friendly Action Button -->
+          <button id="mockPlayBtn" onclick="togglePlayState()" class="w-full mt-2 py-3 rounded-xl font-black text-sm uppercase tracking-wider bg-emerald-600 text-white border-2 border-emerald-300 shadow-lg flex items-center justify-center gap-2 active:scale-95 transition cursor-pointer">
+            <span>▶</span>
+            <span id="mockPlayText">START PLAY</span>
+          </button>
+        </div>
+
+        <!-- BOTTOM DOCK (Automatically Dims in Zen Mode) -->
+        <div id="mockFooter" class="zen-dim grid grid-cols-4 gap-1 pt-2 border-t border-slate-800 text-center font-bold transition-all">
+          <div class="titanium-pill py-2 rounded-xl text-[10px] text-slate-300">🪙 Coin Toss</div>
+          <div class="titanium-pill py-2 rounded-xl text-[10px] text-slate-300">📋 Pre-Match</div>
+          <div class="titanium-pill py-2 rounded-xl text-[10px] text-slate-300">🛡️ Rule Check</div>
+          <div class="bg-red-600/90 hover:bg-red-600 py-2 rounded-xl text-[10px] text-white font-black">Reset</div>
+        </div>
+
+        <!-- Simulated Quick Tools Drawer Overlay -->
+        <div id="mockToolsDrawer" class="hidden absolute inset-x-0 bottom-0 bg-slate-900 border-t-2 border-amber-500/80 rounded-t-3xl p-4 shadow-2xl z-30 animate-in slide-in-from-bottom duration-200">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-base">⚙️</span>
+              <span class="font-extrabold text-sm text-white">Matchday Quick Tools</span>
+            </div>
+            <button onclick="toggleMockupToolsModal(false)" class="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg cursor-pointer">Done</button>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <!-- Official Match Report (Moved into Tools) -->
+            <button class="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-emerald-500/50 text-emerald-300 hover:border-emerald-400 active:scale-95 transition text-left cursor-pointer">
+              <div class="flex items-center gap-2.5">
+                <span class="text-base">📋</span>
+                <div>
+                  <div class="font-black text-white text-xs">Official Match Report</div>
+                  <div class="text-[10px] text-slate-400">FA Full-Time copy & league share</div>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg font-black text-[10px]">OPEN</span>
+            </button>
+
+            <!-- Screen Keep-Awake Toggle -->
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div>
+                  <div class="font-black text-white">Keep Screen Awake</div>
+                  <div class="text-[10px] text-slate-400">Never sleep during play</div>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg font-black text-[10px]">ON</span>
+            </div>
+
+            <!-- Whistle & Sound Cues -->
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-400">🔔</span>
+                <div>
+                  <div class="font-black text-white">Whistle & Melodic Cues</div>
+                  <div class="text-[10px] text-slate-400">14m warning, 15m full whistle, 7:30 sub</div>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg font-black text-[10px]">ACTIVE</span>
+            </div>
+
+            <!-- Sunlight High Contrast -->
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="flex items-center gap-2">
+                <span class="text-amber-400">☀️</span>
+                <div>
+                  <div class="font-black text-white">Sunlight High Contrast</div>
+                  <div class="text-[10px] text-slate-400">Black/yellow extreme brightness</div>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 bg-slate-800 text-slate-300 rounded-lg font-bold text-[10px]">OFF</span>
+            </div>
+
+            <!-- FA Full Time Fixtures -->
+            <a href="https://fulltime.thefa.com" target="_blank" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-amber-500/40 text-amber-300 hover:border-amber-400 transition">
+              <div class="flex items-center gap-2">
+                <span>📅</span>
+                <div class="font-black">Open FA Full-Time Fixtures</div>
+              </div>
+              <span class="text-xs">↗</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="text-[11px] text-emerald-300/80 mt-2 text-center">
+        ✓ <strong>Ultra-clean & comfortable:</strong> Just 2 top buttons (Tools & Lock), taller touch-friendly goal log, and automatic Zen Mode dimming.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isZen = false;
+    let timerVal = 0;
+    let timerInt = null;
+
+    function toggleMockupMode(mode) {
+      const phone = document.getElementById('mockPhone');
+      const badge = document.getElementById('mockZenBadge');
+      const playBtn = document.getElementById('mockPlayBtn');
+      const playText = document.getElementById('mockPlayText');
+      const digit = document.getElementById('mockTimerDigit');
+
+      if (mode === 'zen') {
+        phone.classList.add('zen-active');
+        badge.classList.remove('hidden');
+        playBtn.className = 'w-full mt-2 py-3 rounded-xl font-black text-sm uppercase tracking-wider bg-amber-500 text-slate-950 border-2 border-amber-300 shadow-lg flex items-center justify-center gap-2 active:scale-95 transition cursor-pointer';
+        playText.innerText = 'PAUSE PLAY';
+        if (!timerInt) {
+          timerInt = setInterval(() => {
+            timerVal++;
+            const m = String(Math.floor(timerVal / 60)).padStart(2, '0');
+            const s = String(timerVal % 60).padStart(2, '0');
+            digit.innerText = `${m}:${s}`;
+          }, 1000);
+        }
+      } else {
+        phone.classList.remove('zen-active');
+        badge.classList.add('hidden');
+        playBtn.className = 'w-full mt-2 py-3 rounded-xl font-black text-sm uppercase tracking-wider bg-emerald-600 text-white border-2 border-emerald-300 shadow-lg flex items-center justify-center gap-2 active:scale-95 transition cursor-pointer';
+        playText.innerText = 'START PLAY';
+        clearInterval(timerInt);
+        timerInt = null;
+      }
+    }
+
+    function togglePlayState() {
+      const phone = document.getElementById('mockPhone');
+      if (phone.classList.contains('zen-active')) {
+        toggleMockupMode('idle');
+      } else {
+        toggleMockupMode('zen');
+      }
+    }
+
+    function toggleMockupToolsModal(show) {
+      const drawer = document.getElementById('mockToolsDrawer');
+      if (show) drawer.classList.remove('hidden');
+      else drawer.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

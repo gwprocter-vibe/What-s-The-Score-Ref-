@@ -1,0 +1,40 @@
+{
+  "name": "What's The Score Ref?",
+  "short_name": "RefScore",
+  "description": "Offline-first junior football referee assistant for Harrogate & Wharfedale JFL Under-9 matches",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#282d3a",
+  "theme_color": "#07090e",
+  "icons": [
+    {
+      "src": "icons/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "icons/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
+    }
+  ]
+}

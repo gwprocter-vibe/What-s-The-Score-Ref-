@@ -1,0 +1,2308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>What's The Score Ref? - Harrogate &amp; Wharfedale U9 Official</title>
+
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <meta name="description" content="Offline-first referee tool for Harrogate and Wharfedale Junior Friendly League Under-9 matches">
+  <meta name="theme-color" content="#07090e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RefScore">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/logo-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/logo-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/logo-512.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <!-- 100% Offline Local Assets (Zero External CDN Dependency) -->
+  <script src="js/tailwind.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/high-contrast.css">
+  <script>
+    window.openModal = function(id) {
+      var m = document.getElementById(id);
+      if (m) {
+        m.classList.remove('hidden');
+        if (id === 'rulesModal') {
+          if (typeof window.switchRulesTab === 'function') {
+            window.switchRulesTab('quick');
+          }
+          var openCards = m.querySelectorAll('details[open]');
+          openCards.forEach(function(c) { c.open = false; });
+        }
+      }
+    };
+    window.closeModal = function(id) {
+      var m = document.getElementById(id);
+      if (m) m.classList.add('hidden');
+    };
+    window.dismissPausedGoalToast = function() {
+      var t = document.getElementById('pausedGoalToast');
+      if (t) t.classList.add('hidden');
+    };
+    window.openFullMatchCardImage = function() {
+      var canvas = document.getElementById('matchCardGeneratedCanvas');
+      if (canvas) {
+        try {
+          var dataUrl = canvas.toDataURL('image/png');
+          var img = document.getElementById('matchCardFullscreenImg');
+          if (img) img.src = dataUrl;
+          var modal = document.getElementById('matchCardFullscreenModal');
+          if (modal) modal.classList.remove('hidden');
+        } catch(e) {}
+      }
+    };
+    window.dismissSplash = function() {
+      var s = document.getElementById('splashScreen');
+      if (s) {
+        s.dataset.dismissed = 'true';
+        s.style.pointerEvents = 'none';
+        s.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(function() { 
+          s.style.display = 'none'; 
+          if (s.parentNode) s.parentNode.removeChild(s);
+        }, 400);
+      }
+    };
+
+    // Bulletproof Score & Undo Pill Visibility Sync
+    window.syncUndoButtonsVisibility = function() {
+      var homeScoreEl = document.getElementById('homeScoreDisplay');
+      var awayScoreEl = document.getElementById('awayScoreDisplay');
+      var homeUndo = document.getElementById('homeUndoBtn');
+      var awayUndo = document.getElementById('awayUndoBtn');
+      
+      var hScore = parseInt(homeScoreEl ? homeScoreEl.innerText.trim() : '0', 10) || 0;
+      var aScore = parseInt(awayScoreEl ? awayScoreEl.innerText.trim() : '0', 10) || 0;
+
+      if (homeUndo) {
+        var showH = hScore > 0;
+        homeUndo.style.setProperty('display', showH ? 'inline-flex' : 'none', 'important');
+        homeUndo.style.setProperty('visibility', showH ? 'visible' : 'hidden', 'important');
+        homeUndo.style.setProperty('opacity', showH ? '1' : '0', 'important');
+        homeUndo.style.setProperty('pointer-events', showH ? 'auto' : 'none', 'important');
+        if (showH) {
+          homeUndo.classList.remove('undo-pill-hidden');
+          homeUndo.classList.add('undo-pill-visible');
+        } else {
+          homeUndo.classList.add('undo-pill-hidden');
+          homeUndo.classList.remove('undo-pill-visible');
+        }
+      }
+
+      if (awayUndo) {
+        var showA = aScore > 0;
+        awayUndo.style.setProperty('display', showA ? 'inline-flex' : 'none', 'important');
+        awayUndo.style.setProperty('visibility', showA ? 'visible' : 'hidden', 'important');
+        awayUndo.style.setProperty('opacity', showA ? '1' : '0', 'important');
+        awayUndo.style.setProperty('pointer-events', showA ? 'auto' : 'none', 'important');
+        if (showA) {
+          awayUndo.classList.remove('undo-pill-hidden');
+          awayUndo.classList.add('undo-pill-visible');
+        } else {
+          awayUndo.classList.add('undo-pill-hidden');
+          awayUndo.classList.remove('undo-pill-visible');
+        }
+      }
+    };
+
+    // Bulletproof Topic Filtering & Rules Tab Handlers
+    window.switchRulesTab = function(tab) {
+      var quickBtn = document.getElementById('tabQuickRules') || document.getElementById('tabQuickRulesBtn');
+      var allBtn = document.getElementById('tabAllRules') || document.getElementById('tabAllRulesBtn');
+      var quickContainer = document.getElementById('quickRulesContainer');
+      var allContainer = document.getElementById('allRulesContainer');
+
+      if (tab === 'quick') {
+        if (quickBtn) {
+          quickBtn.className = 'flex-1 py-2 rounded-lg bg-amber-500 text-black font-extrabold transition shadow';
+          quickBtn.style.setProperty('background-color', '#f59e0b', 'important');
+          quickBtn.style.setProperty('color', '#020617', 'important');
+          quickBtn.style.setProperty('font-weight', '800', 'important');
+        }
+        if (allBtn) {
+          allBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
+          allBtn.style.setProperty('background-color', 'transparent', 'important');
+          allBtn.style.setProperty('color', '#94a3b8', 'important');
+          allBtn.style.setProperty('font-weight', '700', 'important');
+        }
+        if (quickContainer) {
+          quickContainer.classList.remove('hidden');
+          quickContainer.style.setProperty('display', 'block', 'important');
+        }
+        if (allContainer) {
+          allContainer.classList.add('hidden');
+          allContainer.style.setProperty('display', 'none', 'important');
+        }
+      } else {
+        if (allBtn) {
+          allBtn.className = 'flex-1 py-2 rounded-lg bg-amber-500 text-black font-extrabold transition shadow';
+          allBtn.style.setProperty('background-color', '#f59e0b', 'important');
+          allBtn.style.setProperty('color', '#020617', 'important');
+          allBtn.style.setProperty('font-weight', '800', 'important');
+        }
+        if (quickBtn) {
+          quickBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
+          quickBtn.style.setProperty('background-color', 'transparent', 'important');
+          quickBtn.style.setProperty('color', '#94a3b8', 'important');
+          quickBtn.style.setProperty('font-weight', '700', 'important');
+        }
+        if (quickContainer) {
+          quickContainer.classList.add('hidden');
+          quickContainer.style.setProperty('display', 'none', 'important');
+        }
+        if (allContainer) {
+          allContainer.classList.remove('hidden');
+          allContainer.style.setProperty('display', 'block', 'important');
+        }
+      }
+    };
+    window.switchRuleTab = window.switchRulesTab;
+
+    window.filterRulesTopic = function(topic) {
+      try {
+        topic = (topic || 'all').toLowerCase().trim();
+
+        var chips = document.querySelectorAll('.rule-filter-chip, [data-topic-filter]');
+        chips.forEach(function(chip) {
+          var chipTopic = (chip.getAttribute('data-topic-filter') || '').toLowerCase().trim();
+          var isTarget = chipTopic === topic;
+          if (isTarget) {
+            chip.className = 'rule-filter-chip shrink-0 px-2.5 py-1 rounded-full text-xs font-black bg-amber-500 text-slate-950 shadow transition cursor-pointer';
+            chip.style.setProperty('background-color', '#f59e0b', 'important');
+            chip.style.setProperty('color', '#020617', 'important');
+            chip.style.setProperty('border-color', '#f59e0b', 'important');
+            chip.style.setProperty('font-weight', '900', 'important');
+            chip.style.setProperty('box-shadow', '0 1px 3px 0 rgba(0, 0, 0, 0.4)', 'important');
+          } else {
+            chip.className = 'rule-filter-chip shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer';
+            chip.style.setProperty('background-color', '#0f172a', 'important');
+            chip.style.setProperty('color', '#94a3b8', 'important');
+            chip.style.setProperty('border-color', '#1e293b', 'important');
+            chip.style.setProperty('font-weight', '700', 'important');
+            chip.style.setProperty('box-shadow', 'none', 'important');
+          }
+        });
+
+        var cards = document.querySelectorAll('#quickRulesContainer [data-topic]');
+        cards.forEach(function(card) {
+          var cardTopic = (card.getAttribute('data-topic') || '').toLowerCase().trim();
+          if (topic === 'all' || cardTopic === topic) {
+            card.classList.remove('hidden');
+            card.style.setProperty('display', 'block', 'important');
+          } else {
+            card.classList.add('hidden');
+            card.style.setProperty('display', 'none', 'important');
+            if (card.tagName && card.tagName.toLowerCase() === 'details') {
+              card.open = false;
+            }
+          }
+        });
+      } catch (err) {
+        console.error('filterRulesTopic error:', err);
+      }
+    };
+
+    window.scrollToRuleSection = function(sectionId) {
+      var target = document.getElementById(sectionId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.classList.add('ring-2', 'ring-amber-400');
+        setTimeout(function() {
+          target.classList.remove('ring-2', 'ring-amber-400');
+        }, 1200);
+      }
+    };
+
+    // Instant Mobile Event Delegation for Rule Topic Chips
+    document.addEventListener('click', function(e) {
+      var chip = e.target && e.target.closest && e.target.closest('.rule-filter-chip, [data-topic-filter]');
+      if (chip) {
+        var topic = chip.getAttribute('data-topic-filter');
+        if (topic && typeof window.filterRulesTopic === 'function') {
+          window.filterRulesTopic(topic);
+        }
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      window.syncUndoButtonsVisibility();
+      var config = { childList: true, characterData: true, subtree: true };
+      var hEl = document.getElementById('homeScoreDisplay');
+      var aEl = document.getElementById('awayScoreDisplay');
+      if (hEl && window.MutationObserver) {
+        new MutationObserver(window.syncUndoButtonsVisibility).observe(hEl, config);
+      }
+      if (aEl && window.MutationObserver) {
+        new MutationObserver(window.syncUndoButtonsVisibility).observe(aEl, config);
+      }
+    });
+  </script>
+</head>
+<body class="bg-[#07090e] text-slate-100 min-h-screen px-2.5 py-1.5 sm:p-4 flex flex-col justify-between max-w-md mx-auto transition-colors duration-200">
+
+  <!-- ================= PITCH-SIDE APP LAUNCH SPLASH SCREEN ================= -->
+  <div id="splashScreen" 
+       onclick="dismissSplash()" 
+       class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#07090e] px-4 select-none cursor-pointer transition-opacity duration-500 ease-out"
+       style="pointer-events: auto;">
+    
+    <!-- Ambient Radial Glow Background -->
+    <div class="absolute inset-0 bg-radial-gradient pointer-events-none opacity-60"></div>
+
+    <div class="relative flex flex-col items-center text-center z-10 animate-splash-pop">
+      <!-- Mascot Logo Container with Amber Aura & Double Rings (50% Bigger) -->
+      <div class="relative mb-7 sm:mb-8">
+        <!-- Golden-Amber Pulse Glow -->
+        <div class="absolute -inset-4 bg-gradient-to-r from-amber-500/35 to-emerald-500/35 rounded-full blur-2xl opacity-80 animate-pulse"></div>
+        <!-- Mascot Circular Crest (50% bigger: w-56 h-56 sm:w-60 sm:h-60) -->
+        <div class="relative w-56 h-56 sm:w-60 sm:h-60 rounded-full bg-slate-900 border-2 border-amber-400/70 p-1 flex items-center justify-center shadow-2xl shadow-amber-500/30 overflow-hidden ring-4 ring-amber-400/25">
+          <img id="splashLogoImg" 
+               src="icons/logo-512.png" 
+               onerror="this.src='icons/logo-192.png'" 
+               alt="What's The Score Ref Mascot" 
+               class="w-full h-full object-cover rounded-full">
+        </div>
+      </div>
+
+      <!-- Animated Progress Bar -->
+      <div class="w-52 sm:w-60 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700/70 shadow-inner">
+        <div id="splashProgressBar" class="h-full bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-400 rounded-full w-0" style="transition: width 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);"></div>
+      </div>
+    </div>
+    <script>
+      (function() {
+        var s = document.getElementById('splashScreen');
+        var bar = document.getElementById('splashProgressBar');
+        if (bar) setTimeout(function() { bar.style.width = '100%'; }, 50);
+        window.dismissSplash = function() {
+          if (!s || s.dataset.dismissed) return;
+          s.dataset.dismissed = 'true';
+          s.style.pointerEvents = 'none';
+          s.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(function() { 
+            s.style.display = 'none'; 
+            if (s.parentNode) s.parentNode.removeChild(s);
+          }, 400);
+        };
+        setTimeout(function() { window.dismissSplash(); }, 1600);
+      })();
+    </script>
+  </div>
+
+  <!-- ================= TOP APP BRANDING & MATCHDAY STATUS ================= -->
+  <header class="flex items-center justify-between gap-2 py-2 px-1 border-b border-[#141b27]">
+    <div id="headerTitleContainer" class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+      <!-- Official Confused Referee Mascot -->
+      <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center overflow-hidden">
+        <img id="headerLogoImg" src="icons/confused_ref.png" alt="Confused Ref" class="w-full h-full object-contain">
+      </div>
+      <h1 id="headerTitle" class="font-black text-white font-mono-sport select-none whitespace-nowrap leading-none tracking-tight">
+        What's The Score Ref?
+      </h1>
+    </div>
+
+    <!-- Match Tools Trigger (Placed to the right of logo & title) -->
+    <button id="quickToolsBtn" onclick="openModal('quickToolsDrawer')" class="titanium-pill flex items-center justify-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-xl text-xs font-black text-slate-300 bg-slate-800/50 border border-slate-700 hover:border-slate-500 active:scale-95 transition shadow-sm cursor-pointer shrink-0" title="Matchday Quick Tools" aria-label="Matchday Quick Tools">
+      <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      <span class="quick-tools-label tracking-wider font-mono-sport font-black uppercase text-[11px] text-slate-300">TOOLS</span>
+    </button>
+  </header>
+  <script>
+    function fitHeaderTitle() {
+      var title = document.getElementById('headerTitle');
+      var container = document.getElementById('headerTitleContainer');
+      if (!title || !container) return;
+      var logoWrapper = title.previousElementSibling;
+      var logoW = logoWrapper ? logoWrapper.offsetWidth : 36;
+      var availWidth = container.clientWidth - logoW - 12;
+      if (availWidth <= 50) return;
+      title.style.fontSize = '10px';
+      var w10 = title.scrollWidth;
+      if (!w10) return;
+      var maxFit = Math.floor(10 * (availWidth / w10));
+      var finalSize = Math.max(14, Math.min(26, maxFit));
+      title.style.fontSize = finalSize + 'px';
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fitHeaderTitle);
+    } else {
+      fitHeaderTitle();
+    }
+    window.addEventListener('resize', fitHeaderTitle);
+    window.addEventListener('orientationchange', fitHeaderTitle);
+  </script>
+
+
+  <!-- ================= GOAL SCORED WHILE PAUSED RECOVERY BANNER ================= -->
+  <section id="pausedGoalToast" class="hidden my-2 p-3 bg-emerald-950/90 border-2 border-emerald-500 rounded-xl flex items-center justify-between gap-2 shadow-lg animate-bounce">
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-6 h-6 rounded-full bg-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg>
+      </div>
+      <div class="min-w-0">
+        <div class="text-xs font-black uppercase text-emerald-300 truncate">Goal Logged While Paused</div>
+        <div class="text-[11px] text-slate-300 truncate">Did play restart? Resume timer now:</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button type="button" onclick="resumeFromToast()" class="px-2.5 sm:px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 text-xs font-black rounded-lg shadow transition cursor-pointer">
+        RESUME
+      </button>
+      <button type="button" onclick="dismissPausedGoalToast()" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white text-xs font-bold rounded-lg transition cursor-pointer" title="Dismiss alert">
+        Dismiss
+      </button>
+    </div>
+  </section>
+
+
+  <!-- ================= MAIN MATCH CLOCK HERO SECTION ================= -->
+  <main class="flex-1 my-2.5 sm:my-3 flex flex-col justify-between gap-2.5 sm:gap-3.5">
+    
+    <!-- 2-MATCH SESSION TABS (Match 1 vs Match 2) -->
+    <div id="matchSessionTabs" class="grid grid-cols-2 gap-2 sm:gap-2.5" role="tablist" aria-label="Session Matches">
+      <button id="tabMatch1Btn" onclick="switchMatchTab(1)" class="py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md bg-emerald-500 text-slate-950 border-2 border-emerald-300 active:scale-[0.98]">
+        <span class="w-2 h-2 rounded-full bg-slate-950 shrink-0"></span>
+        <span class="tracking-wider uppercase">Match 1</span>
+        <span id="tabMatch1Badge" class="ml-1 text-[10px] font-mono-sport px-1.5 py-0.5 rounded-md bg-black/30 text-white font-bold">TBC</span>
+      </button>
+      <button id="tabMatch2Btn" onclick="switchMatchTab(2)" class="py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition cursor-pointer bg-slate-900 text-slate-400 border border-slate-700 hover:text-white active:scale-[0.98]">
+        <span class="w-2 h-2 rounded-full bg-slate-600 shrink-0"></span>
+        <span class="tracking-wider uppercase">Match 2</span>
+        <span id="tabMatch2Badge" class="ml-1 text-[10px] font-mono-sport px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-bold">TBC</span>
+      </button>
+    </div>
+
+    <!-- SCORE TRACKER SECTION (Split 50/50 Cards) -->
+    <div class="grid grid-cols-2 gap-2 sm:gap-2.5">
+      <!-- HOME TEAM CARD -->
+      <div id="homeCardContainer" onclick="incrementScore('home')" role="button" tabindex="0" class="surface-card surface-onyx rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-2xl relative border-2 border-rose-500/70 hover:bg-slate-800/50 transition cursor-pointer active:scale-[0.98] w-full text-left overflow-hidden">
+        <div class="flex items-center justify-between border-b border-[#1b2230] pb-1.5 mb-1.5" onclick="event.stopPropagation()">
+          <button id="homeHeaderEditBtn" type="button" onclick="editTeamModal('home')" class="team-edit-btn flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer" title="Tap to change team or kit colour">
+            <span id="homeBadgeDot" class="w-3.5 h-3.5 rounded-full bg-rose-500 border border-white/50"></span>
+            <span id="homeLabel" class="text-xs font-black uppercase text-rose-400 tracking-wider">HOME</span>
+          </button>
+        </div>
+
+        <!-- Interactive Team Name with Edit Icon -->
+        <button id="homeTeamEditBtn" onclick="editTeamModal('home'); event.stopPropagation();" class="team-edit-btn w-full min-h-[32px] group flex items-center justify-center gap-1.5 py-1 px-1 rounded-lg hover:bg-slate-800/50 transition cursor-pointer mb-1.5 text-center" title="Tap to name team">
+          <span id="homeTeamNameDisplay" class="text-xs sm:text-sm font-extrabold text-white leading-tight text-center line-clamp-2">Home Team</span>
+          <svg id="homeEditPencil" class="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 shrink-0 team-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+          </svg>
+        </button>
+
+        <!-- Score Digit -->
+        <div class="flex-1 flex flex-col items-center justify-center py-3 sm:py-4 pointer-events-none">
+          <div id="homeScoreDisplay" class="font-mono-sport text-5xl sm:text-6xl font-black text-center text-white sunlight-yellow-text drop-shadow-md">
+            0
+          </div>
+          <div class="text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-1.5 opacity-70">TAP TO ADD GOAL</div>
+        </div>
+
+        <!-- Inline Undo Pill directly below each score -->
+        <div class="mt-1 flex justify-center" onclick="event.stopPropagation()">
+          <button id="homeUndoBtn" type="button" onclick="event.stopPropagation(); decrementScore('home');" class="py-1 px-4 titanium-pill hover:bg-slate-800 active:scale-95 text-slate-300 font-bold text-xs uppercase tracking-wider rounded-full border border-[#232c3f] flex items-center justify-center gap-1 shadow-sm undo-pill-hidden transition-all duration-200" style="display: none;">
+            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7v6h6"></path>
+              <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+            </svg>
+            <span>Undo</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- AWAY TEAM CARD -->
+      <div id="awayCardContainer" onclick="incrementScore('away')" role="button" tabindex="0" class="surface-card surface-onyx rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-2xl relative border-2 border-blue-500/70 hover:bg-slate-800/50 transition cursor-pointer active:scale-[0.98] w-full text-left overflow-hidden">
+        <div class="flex items-center justify-between border-b border-[#1b2230] pb-1.5 mb-1.5" onclick="event.stopPropagation()">
+          <button id="awayHeaderEditBtn" type="button" onclick="editTeamModal('away')" class="team-edit-btn flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer" title="Tap to change team or kit colour">
+            <span id="awayBadgeDot" class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-white/50"></span>
+            <span id="awayLabel" class="text-xs font-black uppercase text-blue-400 tracking-wider">AWAY</span>
+          </button>
+        </div>
+
+        <!-- Interactive Team Name with Edit Icon -->
+        <button id="awayTeamEditBtn" onclick="editTeamModal('away'); event.stopPropagation();" class="team-edit-btn w-full min-h-[32px] group flex items-center justify-center gap-1.5 py-1 px-1 rounded-lg hover:bg-slate-800/50 transition cursor-pointer mb-1.5 text-center" title="Tap to name team">
+          <span id="awayTeamNameDisplay" class="text-xs sm:text-sm font-extrabold text-white leading-tight text-center line-clamp-2">Away Team</span>
+          <svg id="awayEditPencil" class="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 shrink-0 team-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+          </svg>
+        </button>
+
+        <!-- Score Digit -->
+        <div class="flex-1 flex flex-col items-center justify-center py-3 sm:py-4 pointer-events-none">
+          <div id="awayScoreDisplay" class="font-mono-sport text-5xl sm:text-6xl font-black text-center text-white sunlight-yellow-text drop-shadow-md">
+            0
+          </div>
+          <div class="text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-1.5 opacity-70">TAP TO ADD GOAL</div>
+        </div>
+
+        <!-- Inline Undo Pill directly below each score -->
+        <div class="mt-1 flex justify-center" onclick="event.stopPropagation()">
+          <button id="awayUndoBtn" type="button" onclick="event.stopPropagation(); decrementScore('away');" class="py-1 px-4 titanium-pill hover:bg-slate-800 active:scale-95 text-slate-300 font-bold text-xs uppercase tracking-wider rounded-full border border-[#232c3f] flex items-center justify-center gap-1 shadow-sm undo-pill-hidden transition-all duration-200" style="display: none;">
+            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7v6h6"></path>
+              <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+            </svg>
+            <span>Undo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FA POWER PLAY BANNER (Auto-activates when score difference is >= 4) -->
+    <div id="powerPlayBanner" class="hidden p-3 rounded-2xl bg-amber-950/40 border-2 border-amber-400 text-amber-300 flex items-center justify-between gap-3 shadow-lg animate-fadeIn">
+      <div class="flex items-center gap-2.5 min-w-0 flex-1">
+        <span class="w-7 h-7 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-sm shrink-0 shadow-sm">⚡</span>
+        <div class="min-w-0 flex-1">
+          <div class="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5 mb-0.5">
+            <span>FA Power Play Active</span>
+            <span class="px-1.5 py-0.5 bg-amber-400/20 border border-amber-400/40 rounded text-[9px] font-mono-sport text-amber-300 font-bold">+1 Player</span>
+          </div>
+          <div id="powerPlayMessage" class="text-xs font-bold text-white leading-snug">
+            Trailing team may field 1 extra player
+          </div>
+        </div>
+      </div>
+      <button type="button" onclick="dismissPowerPlayBanner()" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/40 text-amber-200 border border-amber-400/50 font-black rounded-xl text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 shrink-0" title="Dismiss Power Play Banner">
+        Dismiss
+      </button>
+    </div>
+
+    <!-- TALLER, COMFORTABLE SCORE LOG & LAST GOAL TICKER -->
+    <div class="surface-card surface-onyx rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2.5 shadow-md text-xs border border-slate-700/60">
+      <div id="lastGoalTicker" class="flex items-center gap-2.5 truncate cursor-pointer" onclick="openModal('timelineModal')">
+        <!-- Target / Goal Icon SVG -->
+        <div class="w-7 h-7 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 border border-emerald-500/30">
+          <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="4"></circle>
+          </svg>
+        </div>
+        <div class="truncate">
+          <div class="flex items-center gap-1.5 leading-tight">
+            <span class="text-emerald-400 font-mono-sport font-black text-xs" id="tickerTime">--:--</span>
+            <span class="font-mono-sport text-amber-300 font-black text-xs" id="tickerScore">[ TBC ]</span>
+          </div>
+          <div class="text-slate-200 font-bold truncate text-[11px]" id="tickerDesc">Match not started</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Log Button with Chevron -->
+        <button onclick="openModal('timelineModal')" class="px-3.5 py-2 titanium-pill hover:bg-slate-800 text-slate-100 rounded-xl text-xs font-black flex items-center gap-1.5 active:scale-95 transition shadow-sm">
+          <span>Log</span>
+          <span id="tickerCountBadge" class="bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-[10px] text-amber-300 font-mono-sport font-black">0</span>
+          <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- DIGITAL CLOCK UNIT -->
+    <div class="surface-card surface-onyx rounded-2xl p-3.5 sm:p-4 text-center shadow-2xl relative overflow-hidden">
+      <!-- Quick Period Badge & Controls (Top of Timer Window) -->
+      <div class="flex items-center justify-between gap-2 mb-2 sm:mb-2.5">
+        <!-- Reset Current Half -->
+        <button id="resetHalfBtn" class="flex-1 py-1.5 sm:py-2 px-2 text-slate-300 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer titanium-pill rounded-xl active:scale-95 transition text-center font-bold text-xs shadow-sm border border-slate-700/60" title="Hold 1.5s to reset half clock back to 00:00">
+          <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          <span class="truncate">Reset</span>
+        </button>
+
+        <!-- Compact Current Half Badge -->
+        <div id="periodBadge" class="shrink-0 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase font-mono-sport bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-sm flex items-center justify-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="periodBadgeText">1ST HALF</span>
+        </div>
+
+        <!-- End Half Button -->
+        <button id="endHalfBtn" onclick="promptEndHalf()" class="flex-1 py-1.5 sm:py-2 px-2 text-slate-300 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer titanium-pill rounded-xl active:scale-95 transition text-center font-bold text-xs shadow-sm border border-slate-700/60" title="Finalise Half and Switch">
+          <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+          </svg>
+          <span id="endHalfBtnText" class="truncate">End Half</span>
+        </button>
+      </div>
+
+      <!-- Giant Digital Clock Display -->
+      <div id="mainTimer" class="font-mono-sport text-5xl sm:text-6xl font-black tracking-tight text-white my-1 sm:my-1.5 sunlight-yellow-text drop-shadow-md">
+        00:00
+      </div>
+
+      <!-- Visual Half Progress Bar with Mid-Half Sub Marker -->
+      <div class="relative w-full max-w-[280px] sm:max-w-xs mx-auto my-2 px-1">
+        <div class="relative h-1.5 sm:h-2 w-full bg-slate-800/90 rounded-full overflow-hidden border border-slate-700/60 shadow-inner">
+          <div id="halfProgressBar" class="h-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-amber-400 rounded-full transition-all duration-300" style="width: 0%;"></div>
+        </div>
+        <!-- Mid-Half Sub Marker (7:30 / 50% Halfway Marker) -->
+        <div id="subMarkerTick" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none" style="left: 50%;" title="Halfway Substitution Marker">
+          <div class="w-0.5 h-3.5 bg-amber-400 shadow-sm shadow-amber-400/50 rounded-full ring-1 ring-black/80"></div>
+        </div>
+      </div>
+
+      <!-- Target Time and Stoppage Time Under Target Time -->
+      <div class="flex flex-col items-center justify-center gap-0.5 mb-3">
+        <button type="button" onclick="openModal('quickToolsDrawer')" class="text-xs text-slate-400 hover:text-slate-200 font-medium cursor-pointer transition flex items-center gap-1" title="Tap to change half duration (10m - 25m)">
+          <span>Target:</span> <span id="targetTimeSpan" class="font-bold text-slate-200 underline decoration-dotted decoration-slate-600 underline-offset-2">15:00</span>
+        </button>
+        <div class="text-xs text-amber-400 font-mono-sport font-bold tracking-wide">
+          <span id="stoppageDisplay">Stoppage: +00:00</span>
+        </div>
+      </div>
+
+
+      <!-- ================= 1ST HALF MUST END TOAST PROMPT ================= -->
+      <div id="firstHalfMustEndToast" class="hidden mb-3 p-3 bg-amber-500/20 border-2 border-amber-400 rounded-xl flex items-center justify-between gap-2 text-left shadow-xl animate-fadeIn">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-wider text-amber-300 font-extrabold">Rule: 1st Half Must End First</div>
+            <div class="text-xs font-black text-white leading-tight">End 1st half before starting 2nd half.</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" onclick="dismissFirstHalfMustEndToast(); promptEndHalf();" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-lg active:scale-95 transition cursor-pointer shadow">
+            End Half
+          </button>
+          <button type="button" onclick="dismissFirstHalfMustEndToast()" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg active:scale-95 transition cursor-pointer">
+            Dismiss
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= INTEGRATED MID-HALF SUB REMINDER (7:30 Alert) ================= -->
+      <div id="subReminderBanner" class="hidden mb-3 p-2.5 bg-amber-500/15 border border-amber-500/70 rounded-xl flex items-center justify-between gap-2 shadow-lg shadow-amber-500/10 animate-pulse text-left">
+        <div class="flex items-center gap-2 min-w-0">
+          <!-- Clock Vector SVG -->
+          <div class="w-6 h-6 rounded-lg bg-amber-500/25 flex items-center justify-center text-amber-400 shrink-0">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="text-[11px] font-black uppercase tracking-wider text-amber-400">Halfway Sub Reminder (7:30)</div>
+            <div class="text-[10px] text-amber-100 font-medium leading-tight">Allow rolling substitutions at next stoppage.</div>
+          </div>
+        </div>
+        <button type="button" onclick="dismissSubBanner()" class="px-2.5 py-1 text-[11px] font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg shrink-0 transition active:scale-95 cursor-pointer">
+          DISMISS
+        </button>
+      </div>
+
+
+      <!-- ================= MATCH 1 -> MATCH 2 HANDOVER SUCCESS TOAST ================= -->
+      <div id="matchHandoverSuccessToast" class="hidden mb-3 p-3 bg-emerald-500/20 border-2 border-emerald-400 rounded-xl flex items-center justify-between gap-2 text-left shadow-xl animate-fadeIn">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/30 flex items-center justify-center text-emerald-300 shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-wider text-emerald-300 font-extrabold">Handover Complete</div>
+            <div id="matchHandoverSuccessText" class="text-xs font-black text-white leading-tight">Match 1 Saved! Match 2 Ready (Team names preserved).</div>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('matchHandoverSuccessToast').classList.add('hidden')" class="px-2 py-1 text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg shrink-0 transition active:scale-95 cursor-pointer">
+          Dismiss
+        </button>
+      </div>
+
+      <!-- Big Start / Pause / Resume Button with Vector SVG -->
+      <button id="timerToggleBtn" onclick="toggleTimer()" class="w-full py-3 sm:py-3.5 px-4 rounded-xl font-extrabold text-base sm:text-lg tracking-wide uppercase shadow-lg transition active:scale-[0.98] bg-emerald-600 hover:bg-emerald-500 text-white border-2 border-emerald-300 shadow-emerald-950/40 flex items-center justify-center gap-2 cursor-pointer">
+        <span id="timerIconContainer">
+          <!-- Play Triangle SVG -->
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        </span>
+        <span id="timerBtnText">START PLAY</span>
+      </button>
+
+      <!-- STOPPAGE RECOVERY SAFEGUARD PANEL (Appears when paused) -->
+      <div id="stoppageRecoveryPanel" class="hidden mt-3 p-2.5 bg-amber-950/30 border border-amber-500/40 rounded-xl text-left animate-fadeIn">
+        <div class="flex items-center justify-between text-xs text-amber-300 font-bold mb-1.5">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-amber-400 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>Forgot to resume? Quick Catch-Up:</span>
+          </span>
+          <span class="text-[10px] text-amber-300/80 font-mono-sport" id="ghostClockElapsed">+00:00 lost</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 text-[11px] font-bold">
+          <button onclick="catchUpTime(60)" class="py-1.5 px-1 titanium-pill hover:bg-slate-700 text-slate-200 rounded-lg text-center transition">
+            +1 Min
+          </button>
+          <button onclick="catchUpTime(120)" class="py-1.5 px-1 titanium-pill hover:bg-slate-700 text-slate-200 rounded-lg text-center transition">
+            +2 Min
+          </button>
+          <button onclick="catchUpAllStoppage()" class="py-1.5 px-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-center font-black transition whitespace-nowrap">
+            Add All Lost
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= BOTTOM TOOL DOCK WITH CRISP SVGs ================= -->
+  <footer class="grid grid-cols-4 gap-1 sm:gap-1.5 pt-1.5 border-t border-[#1b2230]">
+    <!-- 1. Coin Toss Button -->
+    <button onclick="openModal('coinModal')" class="py-2 px-1 sm:px-2 min-h-[46px] sm:min-h-[52px] titanium-pill hover:bg-[#182030] rounded-xl flex flex-col items-center justify-center gap-1 text-xs font-bold text-slate-200 active:scale-95 transition shadow-sm cursor-pointer" title="Flip Coin for Kickoff">
+      <!-- Rotating Coin SVG -->
+      <svg class="w-5 h-5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7v10"></path>
+        <path d="M9 10h6"></path>
+      </svg>
+      <span class="text-[10px] sm:text-[11px] font-bold leading-tight text-center">Coin Toss</span>
+    </button>
+
+    <!-- 2. Pre-Match Checklist & 5v5 Player Count -->
+    <button onclick="openModal('prematchModal')" class="py-2 px-1 sm:px-2 min-h-[46px] sm:min-h-[52px] titanium-pill hover:bg-[#182030] rounded-xl flex flex-col items-center justify-center gap-1 text-xs font-bold text-slate-200 active:scale-95 transition shadow-sm cursor-pointer" title="Pre-Match Touchline Checklist">
+      <!-- Clipboard / Checklist SVG -->
+      <svg class="w-5 h-5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        <path d="m9 14 2 2 4-4"></path>
+      </svg>
+      <span class="text-[10px] sm:text-[11px] font-bold leading-tight text-center">Pre-Match</span>
+    </button>
+
+    <!-- 3. 1-Tap Rule Dispute Solver -->
+    <button onclick="openModal('rulesModal')" class="py-2 px-1 sm:px-2 min-h-[46px] sm:min-h-[52px] titanium-pill hover:bg-[#182030] rounded-xl flex flex-col items-center justify-center gap-1 text-xs font-bold text-slate-200 active:scale-95 transition shadow-sm cursor-pointer" title="U9 League Rules & Dispute Solver">
+      <!-- Shield / Rulebook SVG -->
+      <svg class="w-5 h-5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        <path d="m9 12 2 2 4-4"></path>
+      </svg>
+      <span class="text-[10px] sm:text-[11px] font-bold leading-tight text-center">Rule Check</span>
+    </button>
+
+    <!-- 4. Reset Button (Full Red Box) -->
+    <button id="resetMatchBtn" class="py-2 px-1 sm:px-2 min-h-[46px] sm:min-h-[52px] bg-red-600 hover:bg-red-500 border border-red-400 rounded-xl flex flex-col items-center justify-center gap-1 text-xs font-black text-white active:scale-95 transition shadow-lg shadow-red-950/40 cursor-pointer" title="Hold 1.5s to Reset Match">
+      <!-- Reset / Trash SVG -->
+      <svg class="w-5 h-5 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+      </svg>
+      <span class="tracking-wider text-[10px] sm:text-xs font-mono-sport font-black uppercase text-center leading-tight">HOLD TO RESET</span>
+    </button>
+  </footer>
+
+  <!-- Subtle Bottom Brand Signature -->
+  <div class="text-center pt-2 pb-0.5 text-[10px] font-mono-sport text-slate-400 tracking-wider flex items-center justify-center gap-1.5 opacity-75">
+    <span>WHAT'S THE SCORE REF?</span>
+    <span class="text-slate-600">•</span>
+    <span>OFFICIAL MATCHDAY COMPANION</span>
+  </div>
+
+  <!-- ================= MODALS & DRAWERS ================= -->
+
+  <!-- 1. FULL GOAL TIMELINE DRAWER (Handles high scoring games 20+ goals smoothly) -->
+  <div id="timelineModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-slate-700 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div>
+          <h3 class="font-extrabold text-base text-white flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="4"></circle>
+            </svg>
+            <span>Goal Timeline</span>
+            <span id="modalGoalCountBadge" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-amber-400 font-bold">0 Goals</span>
+          </h3>
+          <p class="text-[11px] text-slate-400">Full chronological score log & times</p>
+        </div>
+        <button onclick="closeModal('timelineModal')" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Scrollable Goals Feed -->
+      <div id="modalGoalTimelineList" class="my-3 space-y-2 overflow-y-auto max-h-[50vh] pr-1 text-xs flex-1">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 flex gap-2 shrink-0">
+        <button onclick="undoLastGoal()" class="flex-1 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 7v6h6"></path>
+            <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+          </svg>
+          <span>Undo</span>
+        </button>
+        <button onclick="closeModal('timelineModal'); openReportModal();" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-md">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+            <polyline points="16 6 12 2 8 6"></polyline>
+            <line x1="12" y1="2" x2="12" y2="15"></line>
+          </svg>
+          <span>Report</span>
+        </button>
+        <button onclick="closeModal('timelineModal'); openMatchCardModal();" class="py-2.5 px-3 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm cursor-pointer" title="Generate Match Card Image">
+          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <span>Card</span>
+        </button>
+        <button onclick="closeModal('timelineModal')" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1B. OFFICIAL MATCH REPORT MODAL (1-Tap Share / WhatsApp / FA Full-Time Copy) -->
+  <div id="reportModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-emerald-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[90vh] flex flex-col shadow-2xl">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <h3 id="reportModalTitle" class="font-extrabold text-base text-white">Official Match 1 Report</h3>
+          </div>
+          <p class="text-[11px] text-slate-400">Harrogate & Wharfedale JFL (U9) • 15m Halves</p>
+        </div>
+        <button onclick="closeModal('reportModal')" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="my-3 space-y-3 max-h-[90vh] pr-1 flex-1 text-xs">
+        <!-- 3-Way Segmented Scope Pill: Match 1 | Match 2 | Combined -->
+        <div class="grid grid-cols-3 gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-black">
+          <button id="reportScopeM1Btn" type="button" onclick="setReportScope('m1')" class="py-1.5 px-1 rounded-lg bg-emerald-600 text-white font-black text-xs shadow text-center transition">
+            Match 1
+          </button>
+          <button id="reportScopeM2Btn" type="button" onclick="setReportScope('m2')" class="py-1.5 px-1 rounded-lg text-slate-400 hover:text-white font-bold text-xs transition text-center">
+            Match 2
+          </button>
+          <button id="reportScopeCombinedBtn" type="button" onclick="setReportScope('combined')" class="py-1.5 px-1 rounded-lg text-slate-400 hover:text-white font-bold text-xs transition text-center">
+            Combined
+          </button>
+        </div>
+
+        <!-- Visual Score Summary Banner (Single Match Mode) -->
+        <div id="reportSingleScoreCard" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
+          <div class="flex items-center justify-between font-bold text-xs text-slate-400 mb-1 px-1">
+            <span id="reportHomeTeamLabel" class="truncate max-w-[120px] text-rose-400 font-bold">Home Team</span>
+            <span id="reportMatchStatus" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 uppercase font-black">FULL TIME</span>
+            <span id="reportAwayTeamLabel" class="truncate max-w-[120px] text-sky-400 font-bold">Away Team</span>
+          </div>
+          <div class="text-3xl font-black font-mono-sport text-white tracking-wider py-1">
+            <span id="reportHomeScore">0</span>
+            <span class="text-slate-600 mx-2">-</span>
+            <span id="reportAwayScore">0</span>
+          </div>
+          <div class="text-[11px] text-slate-400 flex items-center justify-center gap-3 pt-1 border-t border-slate-800/80">
+            <span>1st Half: <strong id="reportHalf1" class="text-slate-200">0 - 0</strong></span>
+            <span>•</span>
+            <span>2nd Half: <strong id="reportHalf2" class="text-slate-200">0 - 0</strong></span>
+          </div>
+        </div>
+
+        <!-- Visual Score Summary Banner (Combined Double-Header Mode) -->
+        <div id="reportCombinedScoreCard" class="hidden p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
+          <div class="flex items-center justify-between font-bold text-xs text-slate-400 mb-1 px-1">
+            <span id="reportCombHomeLabel" class="truncate max-w-[120px] text-rose-400 font-bold">Home Team</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800 uppercase font-black">AGGREGATE</span>
+            <span id="reportCombAwayLabel" class="truncate max-w-[120px] text-sky-400 font-bold">Away Team</span>
+          </div>
+          <div class="text-3xl font-black font-mono-sport text-white tracking-wider py-1">
+            <span id="reportCombAggScore">0 - 0</span>
+          </div>
+          <div class="text-[11px] text-slate-300 flex items-center justify-around pt-1 border-t border-slate-800/80 font-mono-sport">
+            <span id="reportCombM1Score" class="text-slate-400">M1: 0 - 0</span>
+            <span class="text-slate-600">•</span>
+            <span id="reportCombM2Score" class="text-slate-400">M2: 0 - 0</span>
+          </div>
+        </div>
+
+        <!-- Pitch & Notes (Optional) -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Pitch / Venue</label>
+            <input id="reportPitchInput" type="text" placeholder="e.g. Pitch 2" oninput="updateReportText()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-white text-xs font-semibold focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Referee</label>
+            <input id="reportRefInput" type="text" placeholder="e.g. Ref's Name" oninput="updateReportText()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-white text-xs font-semibold focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <!-- Collapsible Raw Text Payload (For optional inspection without pushing action buttons off screen) -->
+        <details class="bg-slate-950/80 border border-slate-800 rounded-xl overflow-hidden group">
+          <summary class="px-3 py-2 text-[11px] font-bold text-slate-400 hover:text-slate-200 cursor-pointer flex items-center justify-between transition">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-slate-500 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+              <span>Raw Text For Copy</span>
+            </span>
+            <span class="text-[10px] text-emerald-400 font-semibold">Instant Copy Ready</span>
+          </summary>
+          <div class="p-2 border-t border-slate-800/80">
+            <textarea id="reportTextPreview" readonly rows="4" class="w-full bg-slate-900 border border-slate-700/80 rounded-lg p-2 text-slate-300 font-mono text-[10px] leading-relaxed select-all focus:outline-none resize-none shadow-inner"></textarea>
+          </div>
+        </details>
+
+        <!-- Inline Floating Copy Toast for Report Modal -->
+        <div id="reportCopyToast" class="hidden p-2 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs text-center shadow-lg animate-fadeIn flex items-center justify-center gap-1.5">
+          <svg class="w-4 h-4 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span id="reportCopyToastText">Copied to clipboard!</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons Footer -->
+      <div class="pt-2.5 border-t border-slate-800 flex flex-col gap-2 shrink-0">
+        <!-- Dedicated Match 1 -> Match 2 Handover Action Button -->
+        <button id="saveMatch1PrepareMatch2ReportBtn" type="button" onclick="saveMatch1AndPrepareMatch2()" class="w-full py-2.5 px-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-98 cursor-pointer border border-emerald-300">
+          <svg class="w-4 h-4 text-slate-950 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span class="tracking-wide uppercase">SAVE MATCH 1 &amp; PREPARE MATCH 2</span>
+        </button>
+
+        <!-- 1. Primary Action: Direct WhatsApp Button -->
+        <button onclick="shareToWhatsApp()" class="w-full py-2.5 bg-[#25D366] hover:bg-[#20bd5a] active:bg-[#1da850] text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-98 cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c4.55 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.213 8.213 0 0 1-5.82 2.41h-.01c-1.48 0-2.93-.39-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24zm4.52 11.64c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.07-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.2 3.7.59.25 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.29z"/>
+          </svg>
+          <span>SEND DIRECT TO WHATSAPP</span>
+        </button>
+
+        <!-- 2. High-Res Match Card Image (Social & WhatsApp Graphic) -->
+        <button type="button" onclick="closeModal('reportModal'); openMatchCardModal();" class="w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-750 text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow transition active:scale-98 cursor-pointer border border-slate-700/80">
+          <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <span class="tracking-wide">MATCH CARD IMAGE (DOWNLOAD / SHARE)</span>
+        </button>
+
+        <!-- 3. Tertiary Row: Balanced 50/50 Copy Text & Close Buttons -->
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Copy to Clipboard -->
+          <button id="copyReportBtn" onclick="copyReportToClipboard()" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-650 text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-98 cursor-pointer border border-slate-700/80 shadow-sm">
+            <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span id="copyReportBtnText">Copy Text</span>
+          </button>
+
+          <!-- Close Modal -->
+          <button onclick="closeModal('reportModal')" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-650 text-slate-300 font-bold rounded-xl text-xs flex items-center justify-center transition active:scale-98 cursor-pointer border border-slate-700/80 shadow-sm">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1C. SHARE MATCH RESULT (CHOOSE APP) MODAL -->
+  <div id="sharePickerModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border-2 border-slate-700 rounded-2xl max-w-sm w-full p-4 max-h-[88vh] overflow-y-auto shadow-2xl animate-fade-in flex flex-col gap-3">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">
+        <div>
+          <h3 id="sharePickerTitle" class="font-extrabold text-base text-white">Share Match Result</h3>
+          <p class="text-[11px] text-slate-400">Choose an app on your phone to send results with</p>
+        </div>
+        <button onclick="closeModal('sharePickerModal')" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Match Score Pill Summary -->
+      <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between text-xs shrink-0">
+        <span class="text-slate-400 font-semibold" id="sharePickerContext">Match 1 Result</span>
+        <span class="font-black text-emerald-400 font-mono-sport text-sm" id="sharePickerScore">Home Team 0 - 0 Away Team</span>
+      </div>
+
+      <!-- Apps List -->
+      <div class="flex flex-col gap-2">
+        <!-- 0. Match Card Graphic (PNG Image) -->
+        <button onclick="closeModal('sharePickerModal'); openMatchCardModal();" class="w-full p-3 rounded-xl bg-amber-950/60 hover:bg-amber-900/80 active:bg-amber-800/80 border-2 border-amber-500/70 text-left flex items-center gap-3 transition cursor-pointer active:scale-98 shadow-md">
+          <div class="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 shadow">
+            <svg class="w-5 h-5 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-extrabold text-sm text-white flex items-center justify-between">
+              <span>Match Card Graphic (PNG)</span>
+              <span class="text-[11px] font-bold text-amber-300 bg-amber-950 px-2 py-0.5 rounded-full border border-amber-500/30">IMAGE ›</span>
+            </div>
+            <p class="text-[11px] text-slate-300 truncate">High-res branded score card image for sharing</p>
+          </div>
+        </button>
+
+        <!-- 1. WhatsApp -->
+        <button onclick="shareToWhatsApp()" class="w-full p-3 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/80 active:bg-emerald-800/80 border-2 border-emerald-500/60 text-left flex items-center gap-3 transition cursor-pointer active:scale-98 shadow-md">
+          <div class="w-10 h-10 rounded-full bg-[#25D366] text-slate-950 flex items-center justify-center shrink-0 shadow">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c4.55 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.213 8.213 0 0 1-5.82 2.41h-.01c-1.48 0-2.93-.39-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24zm4.52 11.64c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.07-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.2 3.7.59.25 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.29z"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-extrabold text-sm text-white flex items-center justify-between">
+              <span>WhatsApp</span>
+              <span class="text-[11px] font-bold text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-500/30">Open App ›</span>
+            </div>
+            <p class="text-[11px] text-slate-300 truncate">Send to team chat, manager, or parents group</p>
+          </div>
+        </button>
+
+        <!-- 2. Messages (SMS / iMessage) -->
+        <button onclick="shareToMessages()" class="w-full p-3 rounded-xl bg-sky-950/60 hover:bg-sky-900/80 active:bg-sky-800/80 border-2 border-sky-500/60 text-left flex items-center gap-3 transition cursor-pointer active:scale-98 shadow-md">
+          <div class="w-10 h-10 rounded-full bg-[#34C759] text-white flex items-center justify-center shrink-0 shadow">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-extrabold text-sm text-white flex items-center justify-between">
+              <span>Messages (SMS / iMessage)</span>
+              <span class="text-[11px] font-bold text-sky-400 bg-sky-950 px-2 py-0.5 rounded-full border border-sky-500/30">Open App ›</span>
+            </div>
+            <p class="text-[11px] text-slate-300 truncate">Send text message to opposition or ref coordinator</p>
+          </div>
+        </button>
+
+        <!-- 3. Mail / Email -->
+        <button onclick="shareToEmail()" class="w-full p-3 rounded-xl bg-indigo-950/60 hover:bg-indigo-900/80 active:bg-indigo-800/80 border-2 border-indigo-500/60 text-left flex items-center gap-3 transition cursor-pointer active:scale-98 shadow-md">
+          <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center shrink-0 shadow">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-extrabold text-sm text-white flex items-center justify-between">
+              <span>Email (Mail App)</span>
+              <span class="text-[11px] font-bold text-indigo-400 bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-500/30">Open App ›</span>
+            </div>
+            <p class="text-[11px] text-slate-300 truncate">Email match card to league fixtures secretary</p>
+          </div>
+        </button>
+
+        <!-- 4. Phone Share Sheet (More Apps...) -->
+        <button onclick="shareViaSystem()" class="w-full p-3 rounded-xl bg-slate-800 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 text-left flex items-center gap-3 transition cursor-pointer active:scale-98">
+          <div class="w-10 h-10 rounded-full bg-slate-700 text-amber-400 flex items-center justify-center shrink-0 shadow">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-sm text-slate-200 flex items-center justify-between">
+              <span>More Apps... (Phone Share Sheet)</span>
+              <span class="text-[11px] text-slate-400">AirDrop / Notes ›</span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate">Use your phone's system share menu</p>
+          </div>
+        </button>
+
+        <!-- 5. Copy Report to Clipboard -->
+        <button onclick="copyReportToClipboard(); closeModal('sharePickerModal');" class="w-full p-3 rounded-xl bg-slate-800 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 text-left flex items-center gap-3 transition cursor-pointer active:scale-98">
+          <div class="w-10 h-10 rounded-full bg-slate-700 text-emerald-400 flex items-center justify-center shrink-0 shadow">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-sm text-slate-200 flex items-center justify-between">
+              <span>Copy Report to Clipboard</span>
+              <span class="text-[11px] text-emerald-400">Copy Text ›</span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate">Copy formatted text to paste into any app manually</p>
+          </div>
+        </button>
+      </div>
+
+      <!-- Close / Back Button -->
+      <button onclick="closeModal('sharePickerModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer mt-1">
+        Back to Match Report
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. COIN TOSS MODAL -->
+  <div id="coinModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-xs w-full p-5 text-center shadow-2xl">
+      <h3 class="font-extrabold text-lg text-white mb-1">Pre-Match Coin Toss</h3>
+      <p class="text-xs text-slate-400 mb-4">Decide kick-off or ends without a physical coin</p>
+
+      <div class="my-6 flex justify-center">
+        <div id="coinGraphic" class="coin w-24 h-24 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 border-4 border-amber-200 flex items-center justify-center text-xl font-black text-amber-950 shadow-xl tracking-wider">
+          HEADS
+        </div>
+      </div>
+
+      <div id="coinResult" class="font-bold text-emerald-400 text-sm mb-4 h-6">Tap FLIP COIN</div>
+
+      <div class="flex gap-2">
+        <button onclick="flipCoin()" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-sm flex items-center justify-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+          </svg>
+          <span>FLIP COIN</span>
+        </button>
+        <button onclick="closeModal('coinModal')" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. PRE-MATCH 5v5 & CHECKLIST MODAL -->
+  <div id="prematchModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-slate-700 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h3 class="font-extrabold text-base text-white">Pre-Match Verification</h3>
+          <p class="text-[11px] text-slate-400">Harrogate & Wharfedale U9 Rules</p>
+        </div>
+        <button onclick="closeModal('prematchModal')" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+
+
+      <!-- 5v5 PLAYER COUNTER -->
+      <div class="my-4 p-3 bg-slate-950 rounded-xl border border-slate-800">
+        <div class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
+          <span>Active Players on Pitch</span>
+          <span class="text-emerald-400 font-bold">5v5 Format</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="p-2 bg-slate-900 rounded-lg border border-slate-800">
+            <div class="text-xs text-rose-400 font-bold">Home Players</div>
+            <div class="flex items-center justify-center gap-3 my-1">
+              <button onclick="adjustPlayer('home', -1)" class="w-7 h-7 bg-slate-800 rounded font-black text-sm">−</button>
+              <span id="homePlayerCount" class="font-mono-sport text-2xl font-bold text-white">0</span>
+              <button onclick="adjustPlayer('home', 1)" class="w-7 h-7 bg-slate-800 rounded font-black text-sm">+</button>
+            </div>
+          </div>
+
+          <div class="p-2 bg-slate-900 rounded-lg border border-slate-800">
+            <div class="text-xs text-sky-400 font-bold">Away Players</div>
+            <div class="flex items-center justify-center gap-3 my-1">
+              <button onclick="adjustPlayer('away', -1)" class="w-7 h-7 bg-slate-800 rounded font-black text-sm">−</button>
+              <span id="awayPlayerCount" class="font-mono-sport text-2xl font-bold text-white">0</span>
+              <button onclick="adjustPlayer('away', 1)" class="w-7 h-7 bg-slate-800 rounded font-black text-sm">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDELINE & SAFETY CHECKLIST -->
+      <div class="space-y-2 text-xs">
+        <div class="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1">Touchline & Safety Checklist</div>
+        
+        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800 cursor-pointer">
+          <input type="checkbox" id="checkSidelineSplit" class="mt-0.5 w-4 h-4 rounded text-emerald-500 accent-emerald-500 cursor-pointer">
+          <span><strong>Sideline Split:</strong> Both coaches/subs on one touchline. Spectators on opposite line behind Respect barrier.</span>
+        </label>
+
+        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800 cursor-pointer">
+          <input type="checkbox" id="checkBehindGoals" class="mt-0.5 w-4 h-4 rounded text-emerald-500 accent-emerald-500 cursor-pointer">
+          <span><strong>Behind Goals:</strong> Strictly NO spectators, coaches, or substitutes behind goal nets.</span>
+        </label>
+
+        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800 cursor-pointer">
+          <input type="checkbox" id="checkEquipment" class="mt-0.5 w-4 h-4 rounded text-emerald-500 accent-emerald-500 cursor-pointer">
+          <span><strong>Equipment:</strong> Size 3 football checked, shinpads on all players, no jewelry.</span>
+        </label>
+
+        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800 cursor-pointer">
+          <input type="checkbox" id="checkRefereeNeutrality" class="mt-0.5 w-4 h-4 rounded text-emerald-500 accent-emerald-500 cursor-pointer">
+          <span><strong>Referee Neutrality:</strong> As a parent referee, do NOT coach own team during play.</span>
+        </label>
+      </div>
+
+      <button onclick="closeModal('prematchModal')" class="w-full mt-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm">
+        Ready for Kick-Off
+      </button>
+    </div>
+  </div>
+
+  <!-- 4. U9 RULES & 1-TAP DISPUTE SOLVER MODAL -->
+  <div id="rulesModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-amber-500 rounded-2xl max-w-sm w-full p-4 max-h-[88vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h3 class="font-extrabold text-base text-amber-400 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
+            <span>Rule Check & League Guide</span>
+          </h3>
+          <p class="text-[11px] text-slate-400">Harrogate & Wharfedale U9 Official Rules</p>
+        </div>
+        <button onclick="closeModal('rulesModal')" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Segmented Tab Switcher: Quick Ruling vs Show All Rules -->
+      <div class="flex items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 my-3 text-xs font-bold">
+        <button id="tabQuickRules" onclick="switchRulesTab('quick')" class="flex-1 py-2 rounded-lg bg-amber-500 text-black font-extrabold transition shadow">
+          ⚡ Quick Rulings
+        </button>
+        <button id="tabAllRules" onclick="switchRulesTab('all')" class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">
+          📖 Show All Rules
+        </button>
+      </div>
+
+      <!-- TAB 1: QUICK DISPUTE CARDS CONTAINER (100% In-Play Match Rulings) -->
+      <div id="quickRulesContainer" class="space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-black uppercase tracking-wider text-amber-300">Tap Question for Instant Ruling</div>
+        </div>
+
+
+
+        <!-- 1. Heading: Box Edge IFK -->
+        <details data-topic="heading" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Defender deliberately heads ball in own penalty box?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-amber-500/20 text-amber-300 border border-amber-500/40">IFK ON BOX EDGE</span>
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-rose-500/20 text-rose-300 border border-rose-500/40">No Penalty • No Cards</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-amber-200 space-y-2">
+            <p><strong>RULING:</strong> <strong>NO PENALTY!</strong> Do NOT award a penalty or IFK inside the penalty box.</p>
+            <p>➡️ Award an <strong>Indirect Free Kick (IFK)</strong> on the nearest parallel penalty box boundary line.</p>
+            <p>⚠️ Signal by raising one arm straight overhead until touched. Strictly <strong>NO yellow or red cards</strong> for deliberate heading.</p>
+            <div class="p-2.5 bg-amber-950/30 border border-amber-500/40 rounded-lg text-[11px] text-amber-100">
+              <span class="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider block mb-1">🗣️ Say to coaches/players:</span>
+              <em>"At U9, deliberate heading is an indirect free kick only from the box edge line. There are strictly no cards or penalties for heading."</em>
+            </div>
+          </div>
+        </details>
+
+        <!-- 2. Heading: Accidental Contact -->
+        <details data-topic="heading" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Ball accidentally strikes player's head?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">PLAY ON • NO FOUL</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-emerald-300 space-y-1.5">
+            <p><strong>RULING:</strong> <strong>PLAY ON!</strong></p>
+            <p>Accidental contact where the ball strikes the head without an intentional heading motion is NOT an offence.</p>
+            <p class="text-slate-400 text-[11px]">⚠️ If player requires a head injury/concussion check, stop play immediately and restart with a dropped ball to the team that had possession.</p>
+          </div>
+        </details>
+
+        <!-- 3. Goalkeeper: Back-pass Pickup -->
+        <details data-topic="goalkeeper" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Goalkeeper picks up deliberate back-pass?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">PLAY ON • LEGAL AT U9</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-emerald-300 space-y-1.5">
+            <p><strong>RULING:</strong> <strong>PLAY ON!</strong></p>
+            <p>Under-9 goalkeepers ARE permitted to receive deliberate passes from their teammates directly into their hands.</p>
+          </div>
+        </details>
+
+        <!-- 4. Goalkeeper: Punting / Volleying -->
+        <details data-topic="goalkeeper" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Goalkeeper punts or drop-kicks from hands?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-amber-500/20 text-amber-300 border border-amber-500/40">RETAKE • NO PUNTING</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-amber-200 space-y-1.5">
+            <p><strong>RULING:</strong> <strong>NOT PERMITTED.</strong></p>
+            <p>Drop-kicks and volleys directly out of the hands are not allowed at U9. Stop play and have them retake using an approved roll, throw, or kick from the ground.</p>
+          </div>
+        </details>
+
+        <!-- 5. Goalkeeper: Retreat Line Position -->
+        <details data-topic="goalkeeper" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Where do opponents retreat for Goal Kicks & saves?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-sky-500/20 text-sky-300 border border-sky-500/40">RETREAT TO HALFWAY</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-sky-200 space-y-1.5">
+            <p><strong>RULING:</strong> <strong>Halfway Line!</strong></p>
+            <p>When the goalkeeper gains possession with hands or takes a Goal Kick, all opponents MUST retreat behind the halfway line until the ball is released or kicked into play.</p>
+          </div>
+        </details>
+
+        <!-- 6. Goalkeeper: Throwing Across Halfway -->
+        <details data-topic="goalkeeper" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Goalkeeper throws or kicks ball over halfway line?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">PLAY ON • ANY DISTANCE</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-emerald-300 space-y-1.5">
+            <p><strong>RULING:</strong> <strong>LEGAL / PLAY ON!</strong></p>
+            <p>As long as the ball is distributed legally (from the ground or rolled/thrown by hand), it may travel any distance across the halfway line.</p>
+          </div>
+        </details>
+
+        <!-- 7. Restarts: Kick-In / Touchline Scoring -->
+        <details data-topic="restarts" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Goal scored directly from Kick-In / Touchline?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-sky-500/20 text-sky-300 border border-sky-500/40">NO GOAL • GOAL KICK</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-amber-200 space-y-1.5">
+            <p><strong>RULING:</strong></p>
+            <p>• <strong>Pass-In:</strong> CANNOT score directly. If kicked directly into opponent's goal untouched, award a <strong>Goal Kick</strong>.</p>
+            <p>• <strong>Dribble-In:</strong> Player takes 2nd touch to enter pitch; shot on goal must be at least the <strong>3rd touch</strong> to count!</p>
+          </div>
+        </details>
+
+        <!-- 8. Restarts: Goal Kick Direct Scoring -->
+        <details data-topic="restarts" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Can a Goal Kick score directly into opponent's goal?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">GOAL COUNTS</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-emerald-300 space-y-1.5">
+            <p><strong>RULING:</strong> <strong>YES, GOAL!</strong></p>
+            <p>Under FA rules, a goal CAN be scored directly from a Goal Kick into the opposing team's goal.</p>
+            <p class="text-slate-400 text-[11px]">*(If kicked directly into kicker's own goal, award a corner kick to opponents — no own goal directly).*</p>
+          </div>
+        </details>
+
+        <!-- 9. Restarts: Kick-Off or Dropped Ball Scoring -->
+        <details data-topic="restarts" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Goal scored directly from Kick-Off or Dropped Ball?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-sky-500/20 text-sky-300 border border-sky-500/40">NO GOAL • RETAKE</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-sky-200 space-y-1.5">
+            <p><strong>RULING:</strong> <strong>NO GOAL.</strong></p>
+            <p>A goal CANNOT be scored directly from a Kick-Off or Dropped Ball. The ball must touch at least one other player before crossing the goal line.</p>
+          </div>
+        </details>
+
+        <!-- 10. Restarts: Opponent Distance -->
+        <details data-topic="restarts" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">How far must opponents stand back on kicks?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-sky-500/20 text-sky-300 border border-sky-500/40">5 YARDS MINIMUM</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-sky-200 space-y-1.5">
+            <p><strong>RULING:</strong> <strong>5 Yards (approx. 5 big paces).</strong></p>
+            <p>Opponents must retreat at least 5 yards on all Kick-Ins, Free Kicks, Corners, and Kick-Offs until the ball is kicked.</p>
+          </div>
+        </details>
+
+        <!-- 11. Fouls & Subs: Offside -->
+        <details data-topic="fouls" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Is there offside in Under-9 matches?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">STRICTLY NO OFFSIDE</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-emerald-300">
+            <p><strong>RULING:</strong> <strong>NO OFFSIDES.</strong></p>
+            <p>Under-9 football has strictly no offside rule. Players may receive passes in any attacking position.</p>
+          </div>
+        </details>
+
+        <!-- 12. Fouls & Subs: Rolling Substitutions -->
+        <details data-topic="fouls" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">When and how can rolling substitutions happen?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-amber-500/20 text-amber-300 border border-amber-500/40">STOPPAGE + REF PERMISSION</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-amber-200 space-y-1.5">
+            <p><strong>RULING:</strong> Up to 3 rolling substitutes per team.</p>
+            <p>• Substitutions may <strong>ONLY</strong> take place during a natural stoppage in play.</p>
+            <p>• Coach must notify and receive the <strong>referee's explicit permission</strong> before players enter.</p>
+            <p>• Substituted players may return later in the match.</p>
+          </div>
+        </details>
+
+        <!-- 13. Fouls & Subs: Cards / Disciplinary Sanctions -->
+        <details data-topic="fouls" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Are yellow or red cards shown in Under-9?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-rose-500/20 text-rose-300 border border-rose-500/40">STRICTLY NO CARDS</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-rose-200 space-y-1.5">
+            <p><strong>RULING:</strong> <strong>NO CARDS.</strong></p>
+            <p>Referees do NOT issue yellow or red cards at U9. For persistent fouls or poor conduct, speak calmly to the player and their coach, or request a substitution for a cool-down period.</p>
+          </div>
+        </details>
+
+        <!-- 14. Fouls & Subs: Spectators / Sidelines -->
+        <details data-topic="fouls" class="p-3 bg-slate-950 rounded-xl border border-slate-800 group">
+          <summary class="font-bold text-xs text-slate-200 cursor-pointer list-none block select-none">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-start">
+                <span class="leading-snug pr-2">Spectators behind goal nets or interfering?</span>
+                <svg class="w-4 h-4 text-amber-400 group-open:rotate-90 transition shrink-0 ml-1 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-rose-500/20 text-rose-300 border border-rose-500/40">HOLD RESTART • CLEAR AREA</span>
+              </div>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2.5 border-t border-slate-800 text-xs text-rose-200 space-y-2">
+            <p><strong>RULING:</strong> Strictly NO spectators or coaches permitted behind or beside goal nets. Hold restart until area is clear behind the Respect barrier.</p>
+            <div class="p-2.5 bg-slate-900 border border-amber-500/40 rounded-lg text-[11px] text-amber-100">
+              <span class="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider block mb-1">🗣️ Referee Touchline Script:</span>
+              <em>"FA rules require all spectators behind the Respect line on the touchline. Nobody is permitted behind the goals. We will restart as soon as that area is clear."</em>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- TAB 2: COMPLETE LEAGUE RULEBOOK CONTAINER (All 6 sections from attached PDF) -->
+      <div id="allRulesContainer" class="hidden space-y-3 text-xs">
+        <div class="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-slate-400">
+          <span>Harrogate & Wharfedale U9 Official Rules</span>
+          <span class="text-amber-400">Season 2026–2027</span>
+        </div>
+
+        <!-- 1. Match Parameters & Team Setup -->
+        <div id="ruleSection-1" class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2 transition-all duration-300">
+          <div class="font-extrabold text-amber-400 text-xs uppercase flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>1. Match Parameters & Team Setup</span>
+          </div>
+
+          <!-- 2x2 High-Contrast Quick Spec Grid -->
+          <div class="grid grid-cols-2 gap-2 my-2">
+            <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl text-center">
+              <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Format</div>
+              <div class="text-sm font-black text-amber-400 font-mono-sport">5v5</div>
+              <div class="text-[9px] text-slate-400 font-medium">Min: 4 players</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl text-center">
+              <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Ball Size</div>
+              <div class="text-sm font-black text-amber-400 font-mono-sport">Size 3</div>
+              <div class="text-[9px] text-slate-400 font-medium">Standard U9 ball</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl text-center">
+              <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Match Duration</div>
+              <div class="text-sm font-black text-amber-400 font-mono-sport">2 × 15 mins</div>
+              <div class="text-[9px] text-slate-400 font-medium">15 min halves</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl text-center">
+              <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Half-Time</div>
+              <div class="text-sm font-black text-amber-400 font-mono-sport">5 mins</div>
+              <div class="text-[9px] text-slate-400 font-medium">Interval break</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Pitchside & Sideline Management -->
+        <div id="ruleSection-2" class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2 transition-all duration-300">
+          <div class="font-extrabold text-amber-400 text-xs uppercase flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>2. Pitchside & Sideline Management</span>
+          </div>
+          <ul class="list-disc list-inside text-slate-300 space-y-1 text-[11px] pl-1">
+            <li><strong>Sideline Split:</strong> Coaches and substitutes from BOTH teams must stay on one touchline. All spectators must remain on the opposite touchline behind the Respect barrier.</li>
+            <li><strong>Behind the Goals:</strong> Strictly NO coaches, substitutes, or spectators are permitted to stand beside or behind the goal nets.</li>
+            <li><strong>Referee Neutrality:</strong> Club-provided referees must remain impartial and are strictly prohibited from coaching their own team while refereeing.</li>
+          </ul>
+          <!-- Verbatim Touchline Script -->
+          <div class="p-2.5 bg-slate-900 border border-amber-500/40 rounded-lg text-[11px] text-amber-100">
+            <span class="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider block mb-1">🗣️ Verbatim De-escalation Script (Spectators):</span>
+            <em>"FA rules require all spectators behind the Respect line on the touchline. Nobody is permitted behind the goals. We will restart as soon as that area is clear."</em>
+          </div>
+        </div>
+
+        <!-- 3. In-Game Rules & Substitutions -->
+        <div id="ruleSection-3" class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 transition-all duration-300">
+          <div class="font-extrabold text-amber-400 text-xs uppercase flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>3. In-Game Rules & Substitutions</span>
+          </div>
+          <ul class="list-disc list-inside text-slate-300 space-y-1 text-[11px] pl-1">
+            <li><strong>Substitutions:</strong> Up to 3 rolling substitutes per team. Substitutions may only take place during a stoppage in play with the referee's explicit permission. Replaced players may return later.</li>
+            <li><strong>Offside:</strong> There are NO offsides in Under-9 matches.</li>
+          </ul>
+        </div>
+
+        <!-- 4. FA Deliberate Heading Rule (Referee Instructions) -->
+        <div id="ruleSection-4" class="p-3 bg-slate-950 rounded-xl border border-rose-900/50 space-y-2 transition-all duration-300">
+          <div class="font-extrabold text-rose-400 text-xs uppercase flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+            <span>4. FA Deliberate Heading Rule</span>
+          </div>
+          <ul class="list-disc list-inside text-slate-300 space-y-1 text-[11px] pl-1">
+            <li><strong>General Offence:</strong> Deliberately heading the ball is not permitted. Accidental contact (ball merely striking the head without intentional motion) is PLAY ON.</li>
+            <li><strong>Standard Restart:</strong> Award an Indirect Free Kick (IFK) to the opposing team at the exact location where the deliberate header took place. Signal by raising one arm straight overhead until touched.</li>
+            <li><strong>Defending Penalty Area Exception:</strong> If a defender deliberately heads the ball inside their own penalty box, DO NOT award a penalty or an IFK inside the box. Award the IFK on the nearest parallel penalty box boundary line.</li>
+            <li><strong>Sanctions:</strong> Do NOT issue yellow or red cards for deliberate heading.</li>
+          </ul>
+          <!-- Verbatim Heading Script -->
+          <div class="p-2.5 bg-rose-950/30 border border-rose-500/40 rounded-lg text-[11px] text-rose-100">
+            <span class="text-[10px] font-extrabold uppercase text-rose-400 tracking-wider block mb-1">🗣️ Verbatim Script (Heading Dispute):</span>
+            <em>"At U9, deliberate heading is an indirect free kick only. There are strictly no cards or penalties for heading."</em>
+          </div>
+        </div>
+
+        <!-- 5. Goalkeeper Rules & Retreat Line -->
+        <div id="ruleSection-5" class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 transition-all duration-300">
+          <div class="font-extrabold text-amber-400 text-xs uppercase flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>5. Goalkeeper Rules & Retreat Line</span>
+          </div>
+          <ul class="list-disc list-inside text-slate-300 space-y-1 text-[11px] pl-1">
+            <li><strong>Back-Pass Allowed:</strong> Goalkeepers ARE permitted to receive deliberate passes from their own teammates directly into their hands.</li>
+            <li><strong>Retreat Line (Halfway):</strong> When the goalkeeper gains possession with their hands or prepares for a goal kick, all opposition players MUST retreat behind the halfway line until the ball is released.</li>
+            <li><strong>Distribution Method:</strong> The goalkeeper must release the ball from within their half by rolling, throwing, or kicking it from the ground.</li>
+            <li><strong>No Punting:</strong> Drop-kicks and volleys directly out of the hands are NOT permitted. If a goalkeeper punts the ball, stop play and have them retake the restart using an approved ground or hand release.</li>
+          </ul>
+        </div>
+
+        <!-- 6. Restarts & Scoring Protocols -->
+        <div id="ruleSection-6" class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 transition-all duration-300">
+          <div class="font-extrabold text-amber-400 text-xs uppercase flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>6. Restarts & Scoring Protocols</span>
+          </div>
+          <ul class="list-disc list-inside text-slate-300 space-y-1 text-[11px] pl-1">
+            <li><strong>Touchline Restarts (Kick-In / Dribble-In):</strong> Throw-ins are not used. The ball is placed stationary on the touchline; opponents must retreat 5 yards.</li>
+            <li><strong>Pass-In (Touchline):</strong> A goal CANNOT be scored directly into the opponent's goal from an initial pass-in. If it goes straight in untouched, award a goal kick to the defending team.</li>
+            <li><strong>Dribble-In (Touchline):</strong> The taker may choose to take a second touch to dribble the ball into play. Once dribbling, they are an active player and CAN shoot and score. (The shot on goal needs to be at least the third touch).</li>
+            <li><strong>Goal Kicks:</strong> A goal CAN be scored directly into the opposing goal. If a goal kick is accidentally kicked directly into the kicker's own goal, award a corner kick to the opponents (no own goal directly).</li>
+            <li><strong>Kick-Offs & Dropped Balls:</strong> A goal CANNOT be scored directly from a kick-off or dropped ball. The ball must touch at least one other player before crossing the goal line.</li>
+          </ul>
+        </div>
+      </div>
+
+      <button onclick="closeModal('rulesModal')" class="w-full mt-3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-sm">
+        Back to Match
+      </button>
+    </div>
+  </div>
+
+  <!-- 5. POCKET & RAIN LOCK OVERLAY -->
+  <div id="pocketLockOverlay" class="hidden fixed inset-0 z-[80] bg-transparent flex flex-col justify-between items-center select-none touch-none">
+    <!-- Top Barrier Bar: Stretches across entire viewport, completely shielding Header Title and Settings Cog -->
+    <div class="w-full bg-slate-950/95 border-b border-amber-500/50 py-3 px-3 flex items-center justify-center gap-2 shadow-2xl shadow-black/80 backdrop-blur-md">
+      <div class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0"></div>
+      <span class="text-xs sm:text-sm font-black text-amber-300 tracking-wider font-mono-sport uppercase">
+        SCREEN LOCKED • BUTTONS PROTECTED
+      </span>
+    </div>
+
+    <!-- Center Spacer: 100% unobstructed, crystal-clear viewport for Match Clock & Scoreboard -->
+    <div class="flex-1 w-full pointer-events-none"></div>
+
+    <!-- Bottom Hold-to-Unlock Control Dock -->
+    <div class="w-full max-w-sm px-4 pb-4 pt-1">
+      <div class="flex flex-col items-center bg-slate-950/95 border-2 border-amber-500/60 p-3 rounded-2xl shadow-2xl shadow-black backdrop-blur-md w-full">
+        <button id="holdUnlockBtn" 
+                onmousedown="startUnlockProgress()" 
+                onmouseup="cancelUnlockProgress()" 
+                ontouchstart="startUnlockProgress()" 
+                ontouchend="cancelUnlockProgress()"
+                class="w-full py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm uppercase flex items-center justify-center gap-2 shadow-lg transition active:scale-98 cursor-pointer select-none">
+          <svg class="w-5 h-5 text-slate-950 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span class="tracking-wide">HOLD 1.5s TO UNLOCK</span>
+        </button>
+        <div id="unlockProgressBar" class="w-full h-2 bg-slate-800 rounded-full mt-2.5 overflow-hidden border border-slate-700">
+          <div id="unlockProgressFill" class="h-full bg-amber-400 w-0 transition-all duration-75"></div>
+        </div>
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5 text-center">
+          Prevents accidental touches in rain or pocket
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. TEAM CUSTOMIZATION MODAL (Rename & Kit Colors) -->
+  <div id="teamEditModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div>
+          <h3 id="teamEditTitle" class="font-extrabold text-base text-white flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+            <span>Edit Team Details</span>
+          </h3>
+          <p id="teamEditSubtitle" class="text-[11px] text-slate-400">Customise name & kit colour for quick pitch-side recognition</p>
+        </div>
+        <button onclick="closeModal('teamEditModal')" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body Form -->
+      <div class="my-4 space-y-4 text-xs">
+        <!-- League Team Dropdown Selector (From Official League Fixture List) -->
+        <div>
+          <label class="block text-amber-400 font-black uppercase tracking-wider mb-1.5 text-[11px] flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="10 8 16 12 10 16 10 8"></polygon>
+              </svg>
+              <span>League Team Dropdown</span>
+            </span>
+            <span class="text-[10px] text-slate-400 font-semibold">14 Teams</span>
+          </label>
+          <div class="relative">
+            <select id="leagueTeamSelect" onchange="onLeagueTeamSelected(this.value)" class="w-full bg-slate-950 border-2 border-amber-400 text-white font-extrabold rounded-xl px-3 py-2.5 text-xs tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer appearance-none pr-9">
+              <option value="">-- Choose Team from League Fixtures --</option>
+              <option value="Beckwithshaw Blues">Beckwithshaw Blues</option>
+              <option value="Beckwithshaw Whites">Beckwithshaw Whites</option>
+              <option value="Clifford Tigers">Clifford Tigers</option>
+              <option value="Harrogate Railway">Harrogate Railway</option>
+              <option value="Killinghall Falcons">Killinghall Falcons</option>
+              <option value="Killinghall Hawks">Killinghall Hawks</option>
+              <option value="Kirk Deighton Blues">Kirk Deighton Blues</option>
+              <option value="Kirk Deighton Whites">Kirk Deighton Whites</option>
+              <option value="Knaresborough Celtic">Knaresborough Celtic</option>
+              <option value="Pannal Ash Wolves">Pannal Ash Wolves</option>
+              <option value="Pannal Sports Lions">Pannal Sports Lions</option>
+              <option value="Pannal Sports Tigers">Pannal Sports Tigers</option>
+              <option value="Ripon City Panthers">Ripon City Panthers</option>
+              <option value="Wigton Moor Athletic">Wigton Moor Athletic</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-amber-400">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Team Name Input -->
+        <div>
+          <label class="block text-slate-300 font-bold uppercase tracking-wider mb-1.5 text-[11px]">Custom / Edit Name</label>
+          <div class="relative">
+            <input id="teamNameInput" type="text" maxlength="32" placeholder="Enter club or team name" onkeydown="if(event.key==='Enter') saveTeamChanges()" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-white font-bold text-sm tracking-wide focus:outline-none transition">
+          </div>
+        </div>
+
+
+        <!-- Kit Colour Swatches -->
+        <div>
+          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Pitch-Side Kit Colour</div>
+          <div id="kitColorGrid" class="grid grid-cols-4 gap-2">
+            <!-- Rendered by JS or static list with selection ring -->
+            <button type="button" onclick="selectKitColor('#f43f5e', 'border-rose-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-rose-500 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#f43f5e" data-border="border-rose-500/70">
+              <span class="text-[11px] font-black text-white drop-shadow">RED</span>
+            </button>
+            <button type="button" onclick="selectKitColor('#0284c7', 'border-sky-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-sky-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#0284c7" data-border="border-sky-500/70">
+              <span class="text-[11px] font-black text-white drop-shadow">SKY</span>
+            </button>
+            <button type="button" onclick="selectKitColor('#2563eb', 'border-blue-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-blue-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#2563eb" data-border="border-blue-500/70">
+              <span class="text-[11px] font-black text-white drop-shadow">BLUE</span>
+            </button>
+            <button type="button" onclick="selectKitColor('#eab308', 'border-yellow-400/70')" class="kit-swatch-btn h-10 rounded-xl bg-yellow-400 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#eab308" data-border="border-yellow-400/70">
+              <span class="text-[11px] font-black text-black">YELLOW</span>
+            </button>
+            <button type="button" onclick="selectKitColor('#16a34a', 'border-emerald-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-emerald-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#16a34a" data-border="border-emerald-500/70">
+              <span class="text-[11px] font-black text-white drop-shadow">GREEN</span>
+            </button>
+            <button type="button" onclick="selectKitColor('#ea580c', 'border-orange-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-orange-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#ea580c" data-border="border-orange-500/70">
+              <span class="text-[11px] font-black text-white drop-shadow">ORANGE</span>
+            </button>
+            <button type="button" onclick="selectKitColor('#9333ea', 'border-purple-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-purple-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#9333ea" data-border="border-purple-500/70">
+              <span class="text-[11px] font-black text-white drop-shadow">PURPLE</span>
+            </button>
+            <button type="button" onclick="selectKitColor('#f8fafc', 'border-slate-300')" class="kit-swatch-btn h-10 rounded-xl bg-white border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#f8fafc" data-border="border-slate-300">
+              <span class="text-[11px] font-black text-black">WHITE</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-3 border-t border-slate-800 flex gap-2 shrink-0">
+        <button onclick="closeModal('teamEditModal')" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold text-xs">
+          Cancel
+        </button>
+        <button onclick="saveTeamChanges()" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 shadow-md">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Save Team</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. RESET SCORES & TIMES CONFIRMATION MODAL ("Are you sure?") -->
+  <div id="confirmResetModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-rose-500/70 rounded-2xl max-w-xs w-full p-5 flex flex-col items-center text-center shadow-2xl animate-fade-in">
+      <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <h3 id="confirmResetTitle" class="text-base font-extrabold text-white mb-1">Reset Match 1?</h3>
+      <p id="confirmResetDesc" class="text-xs text-slate-300 mb-4 leading-relaxed">
+        Are you sure you want to reset all scores, goal history, and match clocks for Match 1 back to 00:00?
+      </p>
+      <div class="flex flex-col w-full gap-2">
+        <button id="confirmResetConfirmBtn" onclick="executeResetMatch('active')" class="w-full py-1.5 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span id="confirmResetConfirmBtnText">YES, RESET MATCH 1</span>
+        </button>
+        <button onclick="executeResetMatch('both')" class="w-full py-2 bg-slate-800/80 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-700/60 text-slate-300 hover:text-rose-300 font-bold rounded-xl text-[11px] transition cursor-pointer">
+          Reset Entire Session (Both Matches)
+        </button>
+        <button id="confirmResetCancelBtn" onclick="closeModal('confirmResetModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">
+          Cancel (Keep Match)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. RESET HALF CONFIRMATION MODAL -->
+  <div id="confirmResetHalfModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-amber-500/70 rounded-2xl max-w-xs w-full p-5 flex flex-col items-center text-center shadow-2xl animate-fade-in">
+      <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+          <path d="M3 3v5h5"></path>
+        </svg>
+      </div>
+      <h3 id="confirmResetHalfTitle" class="text-base font-extrabold text-white mb-1">Reset Current Half?</h3>
+      <p id="confirmResetHalfDesc" class="text-xs text-slate-300 mb-4 leading-relaxed">
+        Are you sure you want to reset the clock for this half back to 00:00? (Scores and goals will be kept).
+      </p>
+      <div class="flex flex-col w-full gap-2">
+        <button id="confirmResetHalfConfirmBtn" onclick="executeResetHalf()" class="w-full py-2 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>YES, RESET HALF CLOCK</span>
+        </button>
+        <button id="confirmResetHalfCancelBtn" onclick="closeModal('confirmResetHalfModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">
+          Cancel (Keep Running)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. END HALF CONFIRMATION MODAL -->
+  <div id="confirmEndHalfModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-emerald-500/70 rounded-2xl max-w-xs w-full p-5 flex flex-col items-center text-center shadow-2xl animate-fade-in">
+      <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+        </svg>
+      </div>
+      <h3 id="confirmEndHalfTitle" class="text-base font-extrabold text-white mb-1">End 1st Half?</h3>
+      <p id="confirmEndHalfDesc" class="text-xs text-slate-300 mb-4 leading-relaxed">
+        Finalise score for the 1st half and advance to 2nd half?
+      </p>
+      <div class="flex flex-col w-full gap-2">
+        <button id="confirmEndHalfConfirmBtn" onclick="executeEndHalf()" class="w-full py-2 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span id="confirmEndHalfConfirmBtnText">YES, END 1ST HALF</span>
+        </button>
+        <button id="confirmEndHalfCancelBtn" onclick="closeModal('confirmEndHalfModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">
+          Cancel (Continue Play)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8A. CONCLUDED MATCH GOAL CONFIRMATION MODAL -->
+  <div id="confirmConcludedGoalModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-amber-500/80 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-black text-sm text-white flex items-center gap-1.5">
+              <span>Add Concluded Goal</span>
+            </h3>
+            <p class="text-[10px] text-amber-400 font-bold uppercase tracking-wide">Match is at Full Time</p>
+          </div>
+        </div>
+        <button onclick="closeModal('confirmConcludedGoalModal')" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="my-3 space-y-3 text-xs">
+        <!-- Team Identifier Banner -->
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2 min-w-0">
+            <span id="concludedGoalTeamDot" class="w-3.5 h-3.5 rounded-full inline-block border border-white/40 shrink-0 bg-rose-500"></span>
+            <div class="min-w-0">
+              <span id="concludedGoalTeamLabel" class="text-[10px] uppercase font-black tracking-wider text-slate-400 block">Scoring Team</span>
+              <span id="concludedGoalTeamName" class="font-extrabold text-white text-xs truncate block">Home Team</span>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <span class="text-[10px] text-slate-400 font-bold block">New Score</span>
+            <span id="concludedGoalNewScorePreview" class="font-mono-sport font-black text-emerald-400 text-sm">1 - 0</span>
+          </div>
+        </div>
+
+        <!-- Half / Period Selector -->
+        <div>
+          <label class="block text-slate-300 font-bold uppercase tracking-wider mb-1 text-[10px]">Select Half</label>
+          <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+            <button id="concludedGoalHalf1Btn" type="button" onclick="setConcludedGoalPeriod('1st Half')" class="py-2 px-2 rounded-lg font-black text-xs transition text-center text-slate-400 hover:text-white cursor-pointer">
+              1st Half
+            </button>
+            <button id="concludedGoalHalf2Btn" type="button" onclick="setConcludedGoalPeriod('2nd Half')" class="py-2 px-2 rounded-lg font-black text-xs transition text-center bg-emerald-600 text-white shadow cursor-pointer">
+              2nd Half
+            </button>
+          </div>
+        </div>
+
+        <!-- Goal Time (Minute & Second Stepper) -->
+        <div>
+          <label class="block text-slate-300 font-bold uppercase tracking-wider mb-1 text-[10px] flex items-center justify-between">
+            <span>Time of Goal (Match Clock)</span>
+            <span class="text-slate-400 text-[10px] font-mono-sport" id="concludedGoalPeriodDurationHint">Half Length: 15m</span>
+          </label>
+          <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex flex-col items-center gap-2">
+            <!-- Large Digital Clock Display -->
+            <div class="flex items-center gap-2">
+              <span id="concludedGoalTimeDisplay" class="font-mono-sport text-3xl font-black text-emerald-400 tracking-wider">15:00</span>
+            </div>
+            
+            <!-- Quick Steppers -->
+            <div class="grid grid-cols-4 gap-1 w-full">
+              <button type="button" onclick="adjustConcludedGoalSeconds(-60)" class="py-1.5 px-1 titanium-pill hover:bg-slate-800 text-slate-200 rounded-lg text-xs font-bold transition text-center cursor-pointer">
+                -1m
+              </button>
+              <button type="button" onclick="adjustConcludedGoalSeconds(-15)" class="py-1.5 px-1 titanium-pill hover:bg-slate-800 text-slate-200 rounded-lg text-xs font-bold transition text-center cursor-pointer">
+                -15s
+              </button>
+              <button type="button" onclick="adjustConcludedGoalSeconds(15)" class="py-1.5 px-1 titanium-pill hover:bg-slate-800 text-slate-200 rounded-lg text-xs font-bold transition text-center cursor-pointer">
+                +15s
+              </button>
+              <button type="button" onclick="adjustConcludedGoalSeconds(60)" class="py-1.5 px-1 titanium-pill hover:bg-slate-800 text-slate-200 rounded-lg text-xs font-bold transition text-center cursor-pointer">
+                +1m
+              </button>
+            </div>
+
+            <!-- Direct Stepper Presets -->
+            <div class="flex items-center justify-between w-full pt-1 border-t border-slate-800/80 text-[11px] text-slate-400">
+              <button type="button" onclick="setConcludedGoalPreset('early')" class="hover:text-emerald-400 underline decoration-dotted cursor-pointer">1m (Early)</button>
+              <button type="button" onclick="setConcludedGoalPreset('mid')" class="hover:text-emerald-400 underline decoration-dotted cursor-pointer">Mid-Half</button>
+              <button type="button" onclick="setConcludedGoalPreset('full')" class="hover:text-emerald-400 underline decoration-dotted cursor-pointer">Full Duration</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-2 border-t border-slate-800 flex flex-col gap-2 shrink-0">
+        <button id="confirmConcludedGoalBtn" type="button" onclick="confirmConcludedGoal()" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-1.5 cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>CONFIRM &amp; ADD GOAL</span>
+        </button>
+        <button type="button" onclick="closeModal('confirmConcludedGoalModal')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8A-2. CONCLUDED MATCH SCORE REMOVAL / DECREMENT CONFIRMATION MODAL -->
+  <div id="confirmConcludedScoreRemovalModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-rose-500/70 rounded-2xl max-w-xs w-full p-5 flex flex-col items-center text-center shadow-2xl animate-fade-in">
+      <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          <line x1="10" y1="11" x2="10" y2="17"></line>
+          <line x1="14" y1="11" x2="14" y2="17"></line>
+        </svg>
+      </div>
+      <h3 id="confirmRemovalTitle" class="text-base font-extrabold text-white mb-1">Remove Goal?</h3>
+      <p id="confirmRemovalDesc" class="text-xs text-slate-300 mb-4 leading-relaxed">
+        This match is finished at Full Time. Are you sure you want to remove this goal and adjust the final score?
+      </p>
+      <div class="flex flex-col w-full gap-2">
+        <button id="confirmRemovalConfirmBtn" onclick="executeConcludedGoalRemoval()" class="w-full py-2 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span id="confirmRemovalBtnText">YES, REMOVE GOAL</span>
+        </button>
+        <button onclick="closeModal('confirmConcludedScoreRemovalModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">
+          Cancel (Keep Score)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8B. MATCH CARD GRAPHIC MODAL (HTML5 CANVAS EXPORT) -->
+  <div id="matchCardModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-amber-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[92vh] flex flex-col shadow-2xl animate-fadeIn">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-white">Official Match Card</h3>
+            <p class="text-[10px] text-slate-400">High-resolution score graphic for WhatsApp & social</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('matchCardModal')" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body (Canvas / Image Container) -->
+      <div class="my-2.5 flex-1 overflow-y-auto max-h-[60vh] flex flex-col items-center p-2 bg-slate-950 rounded-xl border border-slate-800 space-y-2.5">
+        <div id="matchCardPreviewContainer" class="w-full flex flex-col items-center justify-center">
+          <div class="text-center py-12 text-slate-500 text-xs animate-pulse">Generating match card graphic...</div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer Actions -->
+      <div class="pt-2 border-t border-slate-800 flex flex-col gap-2 shrink-0">
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Open Fullscreen HD Image -->
+          <button type="button" onclick="openFullMatchCardImage()" class="py-2 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer border border-slate-700 shadow-sm" title="Open full 800x1000 resolution image">
+            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+            <span>Open HD Image</span>
+          </button>
+
+          <!-- Return Button -->
+          <button type="button" onclick="closeModal('matchCardModal'); openReportModal();" class="py-2 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition active:scale-95 cursor-pointer">
+            Back to Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8C. MATCH CARD FULLSCREEN HD VIEWER (LIGHTBOX) -->
+  <div id="matchCardFullscreenModal" class="hidden fixed inset-0 z-[60] bg-black/95 backdrop-blur-md flex flex-col justify-between p-2 sm:p-4 animate-fadeIn">
+    <!-- Top Header -->
+    <div class="flex items-center justify-between p-2 shrink-0">
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg font-black text-xs font-mono-sport">HD 800×1000</span>
+        <span class="text-xs text-slate-300 font-bold" id="matchCardFullscreenTitle">Official Match Card</span>
+      </div>
+      <button type="button" onclick="closeModal('matchCardFullscreenModal')" class="p-2 text-slate-400 hover:text-white bg-slate-800/80 rounded-full active:scale-95 transition cursor-pointer">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Image Container (Pinch & Zoomable / Hold to Save on iPhone) -->
+    <div class="flex-1 flex items-center justify-center p-2 overflow-auto">
+      <img id="matchCardFullscreenImg" src="" alt="Official Match Card HD Graphic" class="max-w-full max-h-[75vh] w-auto h-auto rounded-2xl shadow-2xl border-2 border-amber-400/40 object-contain select-none">
+    </div>
+
+    <!-- Bottom Hold-to-Save Prompt -->
+    <div class="p-2 shrink-0">
+      <div class="text-[11px] text-center text-amber-300 font-bold bg-amber-950/60 border border-amber-500/40 py-1.5 px-3 rounded-xl">
+        📱 Long press (hold) image above → <strong>"Save to Photos"</strong> or <strong>"Share..."</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. QUICK MATCHDAY TOOLS DRAWER -->
+  <div id="quickToolsDrawer" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
+      <!-- Drawer Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-slate-800/60 border border-slate-700/70 flex items-center justify-center text-slate-400">
+            <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base text-white">Matchday Quick Tools</h3>
+            <p class="text-[11px] text-slate-400">Settings, utilities & match report</p>
+          </div>
+        </div>
+        <button onclick="closeModal('quickToolsDrawer')" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Drawer Body Items (Scrollable Category Stream) -->
+      <div class="my-3 space-y-3 overflow-y-auto max-h-[60vh] pr-1 flex-1 text-xs">
+        
+        <!-- CATEGORY: POST-MATCH -->
+        <div>
+          <div class="text-[10px] font-black uppercase text-emerald-400 tracking-wider px-1 mb-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>POST-MATCH REPORT</span>
+          </div>
+          <button onclick="closeModal('quickToolsDrawer'); openReportModal();" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-emerald-500/50 hover:border-emerald-400 active:scale-[0.98] transition cursor-pointer text-left shadow-sm">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+              </div>
+              <div class="min-w-0">
+                <div class="font-black text-white text-xs">Official Match Report</div>
+                <div class="text-[11px] text-slate-400 truncate">FA Full-Time copy, summary & score sharing</div>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">OPEN</span>
+          </button>
+        </div>
+
+        <!-- CATEGORY: MATCH SETTINGS -->
+        <div>
+          <div class="text-[10px] font-black uppercase text-indigo-400 tracking-wider px-1 mb-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            <span>MATCH SETTINGS & DISPLAY</span>
+          </div>
+          <div class="space-y-2">
+            <!-- Half Duration Setting -->
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                    <svg class="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="font-black text-white text-xs">Half Duration</div>
+                    <div class="text-[11px] text-slate-400 truncate">FA U9 default: 15m (10m - 25m)</div>
+                  </div>
+                </div>
+                <span id="quickToolsHalfDurationBadge" class="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 rounded-lg font-black text-xs font-mono-sport">15m</span>
+              </div>
+              <div class="grid grid-cols-5 gap-1.5 pt-1">
+                <button type="button" onclick="setHalfDuration(10)" id="durBtn10" class="half-dur-btn py-1.5 px-1 rounded-lg text-xs font-bold transition border border-slate-800 text-slate-400 hover:text-white bg-slate-900 cursor-pointer text-center">10m</button>
+                <button type="button" onclick="setHalfDuration(12)" id="durBtn12" class="half-dur-btn py-1.5 px-1 rounded-lg text-xs font-bold transition border border-slate-800 text-slate-400 hover:text-white bg-slate-900 cursor-pointer text-center">12m</button>
+                <button type="button" onclick="setHalfDuration(15)" id="durBtn15" class="half-dur-btn py-1.5 px-1 rounded-lg text-xs font-black transition border border-indigo-400 text-white bg-indigo-600 shadow-sm cursor-pointer text-center">15m</button>
+                <button type="button" onclick="setHalfDuration(20)" id="durBtn20" class="half-dur-btn py-1.5 px-1 rounded-lg text-xs font-bold transition border border-slate-800 text-slate-400 hover:text-white bg-slate-900 cursor-pointer text-center">20m</button>
+                <button type="button" onclick="setHalfDuration(25)" id="durBtn25" class="half-dur-btn py-1.5 px-1 rounded-lg text-xs font-bold transition border border-slate-800 text-slate-400 hover:text-white bg-slate-900 cursor-pointer text-center">25m</button>
+              </div>
+            </div>
+
+            <!-- Keep Screen Awake Toggle -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span></div>
+                <div class="min-w-0"><div class="font-black text-white text-xs">Keep Screen Awake</div><div class="text-[11px] text-slate-400 truncate">Prevents phone sleep/lock during play</div></div>
+              </div>
+              <button id="wakeToggleBtn" onclick="toggleWakeLock()" role="switch" aria-checked="true" class="flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-900 border border-emerald-500/50 cursor-pointer shadow-sm active:scale-95 transition shrink-0" title="Keep Screen Awake is ON. Tap to turn OFF.">
+                <span id="wakeStatusText" class="text-xs font-black text-emerald-400 font-mono-sport tracking-wider">ON</span>
+                <span class="w-8 h-4.5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end transition-colors shadow-inner">
+                  <span class="w-3.5 h-3.5 rounded-full bg-slate-950 shadow-md"></span>
+                </span>
+              </button>
+            </div>
+
+            <!-- Sound & Whistle Cues Toggle -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0"><svg id="soundStatusIcon" class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg></div>
+                <div class="min-w-0"><div class="font-black text-white text-xs">Whistle &amp; Melodic Cues</div><div class="text-[11px] text-slate-400 truncate">14:00 warning, 15:00 whistle, 7:30 sub alert</div></div>
+              </div>
+              <button id="soundToggleBtn" onclick="toggleAudioMute()" role="switch" aria-checked="true" class="flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-900 border border-emerald-500/50 cursor-pointer shadow-sm active:scale-95 transition shrink-0" title="Sound & Whistle cues are ON. Tap to MUTE.">
+                <span id="soundStatusText" class="text-xs font-black text-emerald-400 font-mono-sport tracking-wider">ON</span>
+                <span class="w-8 h-4.5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end transition-colors shadow-inner">
+                  <span class="w-3.5 h-3.5 rounded-full bg-slate-950 shadow-md"></span>
+                </span>
+              </button>
+            </div>
+
+            <!-- Sunlight High Contrast Toggle -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-slate-800/80 flex items-center justify-center text-slate-300 shrink-0"><svg id="sunIconSvg" class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></div>
+                <div class="min-w-0"><div class="font-black text-white text-xs">Sunlight High Contrast</div><div class="text-[11px] text-slate-400 truncate">Pitch-black and solar yellow for bright glare</div></div>
+              </div>
+              <button id="toggleContrastBtn" onclick="toggleSunlightMode()" role="switch" aria-checked="false" class="flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-900 border border-slate-700/60 cursor-pointer shadow-sm active:scale-95 transition shrink-0" title="Sunlight High Contrast is OFF. Tap to turn ON.">
+                <span id="sunBtnText" class="text-xs font-bold text-slate-400 font-mono-sport tracking-wider">OFF</span>
+                <span class="w-8 h-4.5 bg-slate-800 border border-slate-700 rounded-full p-0.5 flex items-center justify-start transition-colors">
+                  <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm"></span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATEGORY: PHONE INSTALLATION -->
+        <div>
+          <div class="text-[10px] font-black uppercase text-cyan-400 tracking-wider px-1 mb-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+            <span>PHONE INSTALLATION</span>
+          </div>
+          <button id="installPwaBtn" onclick="installPwaApp()" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-cyan-500/50 hover:border-cyan-400 active:scale-[0.98] transition cursor-pointer text-left shadow-sm">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                  <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <div class="font-black text-white text-xs">Add to Home Screen</div>
+                <div class="text-[11px] text-slate-400 truncate">Install as app for instant offline access</div>
+              </div>
+            </div>
+            <span id="installBtnBadge" class="px-2.5 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">INSTALL</span>
+          </button>
+        </div>
+
+        <!-- CATEGORY: UTILITIES & EXTERNAL LINKS -->
+        <div>
+          <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider px-1 mb-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            <span>UTILITIES &amp; LEAGUE PORTAL</span>
+          </div>
+          <div class="space-y-2">
+            <!-- Coin Toss -->
+            <button onclick="closeModal('quickToolsDrawer'); openModal('coinModal');" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-600 active:scale-[0.98] transition cursor-pointer text-left shadow-sm">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-slate-800/80 flex items-center justify-center text-slate-300 shrink-0"><svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v10"></path><path d="M9 10h6"></path></svg></div>
+                <div class="min-w-0"><div class="font-black text-white text-xs">Coin Toss</div><div class="text-[11px] text-slate-400 truncate">Flip official coin for kickoff & end selection</div></div>
+              </div>
+              <span class="px-2.5 py-1 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">FLIP</span>
+            </button>
+
+            <!-- Pre-Match Checklist -->
+            <button onclick="closeModal('quickToolsDrawer'); openModal('prematchModal');" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-600 active:scale-[0.98] transition cursor-pointer text-left shadow-sm">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-slate-800/80 flex items-center justify-center text-slate-300 shrink-0"><svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="m9 14 2 2 4-4"></path></svg></div>
+                <div class="min-w-0"><div class="font-black text-white text-xs">Pre-Match Checklist</div><div class="text-[11px] text-slate-400 truncate">Touchline briefing, gear check & player count</div></div>
+              </div>
+              <span class="px-2.5 py-1 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">VIEW</span>
+            </button>
+
+            <!-- Rule Check -->
+            <button onclick="closeModal('quickToolsDrawer'); openModal('rulesModal');" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-600 active:scale-[0.98] transition cursor-pointer text-left shadow-sm">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-slate-800/80 flex items-center justify-center text-slate-300 shrink-0"><svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
+                <div class="min-w-0"><div class="font-black text-white text-xs">Rule Check</div><div class="text-[11px] text-slate-400 truncate">Instant U9 FA rules & touchline dispute solver</div></div>
+              </div>
+              <span class="px-2.5 py-1 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">CHECK</span>
+            </button>
+
+            <!-- FA Full-Time Fixtures (Subdued Sky Blue / Muted Slate with clear external link indicator) -->
+            <a href="https://fulltime.thefa.com/index.html?selectedSeason=446241415&selectedFixtureGroupAgeGroup=0&selectedDivision=441699669&selectedCompetition=0#tab-2" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               id="topFixturesBtn"
+               class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-sky-500/50 active:scale-[0.98] transition cursor-pointer text-slate-300 shadow-sm group">
+              <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0 group-hover:bg-sky-500/20 transition">
+                  <svg class="w-4 h-4 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+                <div class="min-w-0 pr-1">
+                  <div class="font-black text-white text-xs truncate">Upcoming Fixtures</div>
+                  <div class="text-[11px] text-slate-400 truncate">FA Full-Time tables • Leaves app</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 text-slate-400 group-hover:text-sky-400 transition shrink-0 pl-1">
+                <span class="text-[10px] font-bold">Open</span>
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </div>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Drawer Footer -->
+      <button onclick="closeModal('quickToolsDrawer')" class="w-full mt-2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs transition active:scale-95 cursor-pointer">
+        Back to Match
+      </button>
+    </div>
+  </div>
+
+  <!-- Master Application Script -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
