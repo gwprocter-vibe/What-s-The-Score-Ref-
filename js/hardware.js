@@ -655,7 +655,7 @@ export function playWhistleTone(type = 'short') {
       createPeaWhistleBurst(now, 0.22);
       createPeaWhistleBurst(now + 0.32, 0.35);
     } else if (type === 'target_reached' || type === 'full_time_whistle') {
-      // Distinct official referee whistle blast: Long - Short - Long
+      // Distinct referee whistle blast: Long - Short - Long
       createPeaWhistleBurst(now, 0.35);
       createPeaWhistleBurst(now + 0.45, 0.18);
       createPeaWhistleBurst(now + 0.72, 0.55);

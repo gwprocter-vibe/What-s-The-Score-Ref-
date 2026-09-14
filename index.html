@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>What's The Score Ref? - Harrogate &amp; Wharfedale U9 Official</title>
+  <title>What's The Score Ref? - Harrogate &amp; Wharfedale U9</title>
 
   <!-- PWA & Mobile Web App Meta Tags -->
   <meta name="description" content="Offline-first referee tool for Harrogate and Wharfedale Junior Friendly League Under-9 matches">
@@ -330,7 +330,7 @@
   <!-- ================= TOP APP BRANDING & MATCHDAY STATUS ================= -->
   <header class="flex items-center justify-between gap-2 py-2 px-1 border-b border-[#141b27]">
     <div id="headerTitleContainer" class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-      <!-- Official Confused Referee Mascot -->
+      <!-- Confused Referee Mascot -->
       <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center overflow-hidden">
         <img id="headerLogoImg" src="icons/confused_ref.png" alt="Confused Ref" class="w-full h-full object-contain">
       </div>
@@ -726,7 +726,7 @@
   <div class="text-center pt-2.5 pb-1 text-[10px] font-mono-sport text-slate-400 tracking-wider flex items-center justify-center gap-1.5 opacity-75">
     <span>WHAT'S THE SCORE REF?</span>
     <span class="text-slate-600">•</span>
-    <span>OFFICIAL MATCHDAY COMPANION</span>
+    <span>MATCHDAY COMPANION</span>
   </div>
 
   <!-- ================= MODALS & DRAWERS ================= -->
@@ -790,7 +790,7 @@
     </div>
   </div>
 
-  <!-- 1B. OFFICIAL MATCH REPORT MODAL (1-Tap Share / WhatsApp / FA Full-Time Copy) -->
+  <!-- 1B. MATCH REPORT MODAL (1-Tap Share / WhatsApp / FA Full-Time Copy) -->
   <div id="reportModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-emerald-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[90vh] flex flex-col shadow-2xl">
       <!-- Modal Header -->
@@ -798,7 +798,7 @@
         <div>
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-            <h3 id="reportModalTitle" class="font-extrabold text-base text-white">Official Match 1 Report</h3>
+            <h3 id="reportModalTitle" class="font-extrabold text-base text-white">Match 1 Report</h3>
           </div>
           <p class="text-[11px] text-slate-400">Harrogate & Wharfedale JFL (U9) • 15m Halves</p>
         </div>
@@ -1200,7 +1200,7 @@
             </svg>
             <span>Rule Check & League Guide</span>
           </h3>
-          <p class="text-[11px] text-slate-400">Harrogate & Wharfedale U9 Official Rules</p>
+          <p class="text-[11px] text-slate-400">Harrogate & Wharfedale U9 Match Rules</p>
         </div>
         <button onclick="closeModal('rulesModal')" class="text-slate-400 hover:text-white p-1">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1512,7 +1512,7 @@
       <!-- TAB 2: COMPLETE LEAGUE RULEBOOK CONTAINER (All 6 sections from attached PDF) -->
       <div id="allRulesContainer" class="hidden space-y-3 text-xs">
         <div class="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-slate-400">
-          <span>Harrogate & Wharfedale U9 Official Rules</span>
+          <span>Harrogate & Wharfedale U9 Match Rules</span>
           <span class="text-amber-400">Season 2026–2027</span>
         </div>
 
@@ -1695,7 +1695,7 @@
 
       <!-- Modal Body Form -->
       <div class="my-4 space-y-4 text-xs">
-        <!-- League Team Dropdown Selector (From Official League Fixture List) -->
+        <!-- League Team Dropdown Selector (From League Fixture List) -->
         <div>
           <label class="block text-amber-400 font-black uppercase tracking-wider mb-1.5 text-[11px] flex items-center justify-between">
             <span class="flex items-center gap-1.5">
@@ -2017,7 +2017,7 @@
             </svg>
           </div>
           <div>
-            <h3 class="font-extrabold text-base text-white">Official Match Card</h3>
+            <h3 class="font-extrabold text-base text-white">Match Card</h3>
             <p class="text-[10px] text-slate-400">High-resolution score graphic for WhatsApp & social</p>
           </div>
         </div>
@@ -2063,7 +2063,7 @@
     <div class="flex items-center justify-between p-2 shrink-0">
       <div class="flex items-center gap-2">
         <span class="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg font-black text-xs font-mono-sport">HD 800×1000</span>
-        <span class="text-xs text-slate-300 font-bold" id="matchCardFullscreenTitle">Official Match Card</span>
+        <span class="text-xs text-slate-300 font-bold" id="matchCardFullscreenTitle">Match Card</span>
       </div>
       <button type="button" onclick="closeModal('matchCardFullscreenModal')" class="p-2 text-slate-400 hover:text-white bg-slate-800/80 rounded-full active:scale-95 transition cursor-pointer">
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -2075,7 +2075,7 @@
 
     <!-- Image Container (Pinch & Zoomable / Hold to Save on iPhone) -->
     <div class="flex-1 flex items-center justify-center p-2 overflow-auto">
-      <img id="matchCardFullscreenImg" src="" alt="Official Match Card HD Graphic" class="max-w-full max-h-[75vh] w-auto h-auto rounded-2xl shadow-2xl border-2 border-amber-400/40 object-contain select-none">
+      <img id="matchCardFullscreenImg" src="" alt="Match Card HD Graphic" class="max-w-full max-h-[75vh] w-auto h-auto rounded-2xl shadow-2xl border-2 border-amber-400/40 object-contain select-none">
     </div>
 
     <!-- Bottom Hold-to-Save Prompt -->
@@ -2126,7 +2126,7 @@
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
               </div>
               <div class="min-w-0">
-                <div class="font-black text-white text-xs">Official Match Report</div>
+                <div class="font-black text-white text-xs">Match Report</div>
                 <div class="text-[11px] text-slate-400 truncate">FA Full-Time copy, summary & score sharing</div>
               </div>
             </div>
@@ -2242,7 +2242,7 @@
             <button onclick="closeModal('quickToolsDrawer'); openModal('coinModal');" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-600 active:scale-[0.98] transition cursor-pointer text-left shadow-sm">
               <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-8 h-8 rounded-lg bg-slate-800/80 flex items-center justify-center text-slate-300 shrink-0"><svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v10"></path><path d="M9 10h6"></path></svg></div>
-                <div class="min-w-0"><div class="font-black text-white text-xs">Coin Toss</div><div class="text-[11px] text-slate-400 truncate">Flip official coin for kickoff & end selection</div></div>
+                <div class="min-w-0"><div class="font-black text-white text-xs">Coin Toss</div><div class="text-[11px] text-slate-400 truncate">Flip coin for kickoff & end selection</div></div>
               </div>
               <span class="px-2.5 py-1 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">FLIP</span>
             </button>

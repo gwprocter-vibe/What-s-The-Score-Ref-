@@ -1,4 +1,4 @@
-// What's The Score Ref - Official Match Report Module
+// What's The Score Ref - Match Report Module
 import { hapticFeedback } from './hardware.js';
 import { teams, getScoreState } from './score.js';
 import { getTimerState, getTargetHalfMinutes } from './timer.js';
@@ -104,7 +104,7 @@ export function generateReportText(scope = activeReportScope) {
       text += `\n`;
     }
 
-    if (ref) text += `Official: ${ref}\n`;
+    if (ref) text += `Referee: ${ref}\n`;
     text += `Recorded with "What's The Score Ref?"`;
     return text;
   }
@@ -154,7 +154,7 @@ export function generateReportText(scope = activeReportScope) {
     text += `⏱️ GOAL TIMELINE: No goals recorded.\n\n`;
   }
 
-  if (ref) text += `Official: ${ref}\n`;
+  if (ref) text += `Referee: ${ref}\n`;
   text += `Recorded with "What's The Score Ref?"`;
 
   return text;
@@ -225,7 +225,7 @@ export function updateReportUI() {
     if (cM2Score) cM2Score.innerText = `M2: ${m2.homeScore} - ${m2.awayScore} (${m2.period})`;
   } else {
     const matchNum = activeReportScope === 'm2' ? 2 : 1;
-    if (titleEl) titleEl.innerText = `Official Match ${matchNum} Report`;
+    if (titleEl) titleEl.innerText = `Match ${matchNum} Report`;
     if (combinedCard) combinedCard.classList.add('hidden');
     if (singleCard) singleCard.classList.remove('hidden');
 
@@ -741,7 +741,7 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
         ctx.fillStyle = '#94a3b8';
         ctx.font = '700 12px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`+ ${goals.length - maxGoalsToShow} more goals recorded in official match log`, 400, rowY);
+        ctx.fillText(`+ ${goals.length - maxGoalsToShow} more goals recorded in match log`, 400, rowY);
       }
     }
 
@@ -756,7 +756,7 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
 
     ctx.fillStyle = '#cbd5e1';
     ctx.font = '700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(ref ? `Official Referee: ${ref}` : `Official Match Result`, 65, 898);
+    ctx.fillText(ref ? `Referee: ${ref}` : `Match Result`, 65, 898);
 
     if (pitch) {
       ctx.fillText(`Pitch / Venue: ${pitch}`, 65, 922);
@@ -871,7 +871,7 @@ export function openMatchCardModal() {
         card1Wrap.className = 'flex flex-col items-center';
         const label1 = document.createElement('div');
         label1.className = 'text-[11px] font-black text-emerald-400 mb-1 tracking-wider uppercase flex items-center gap-1.5';
-        label1.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Match 1 Official Graphic';
+        label1.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Match 1 Graphic';
         const img1 = document.createElement('img');
         img1.src = dataUrl1;
         img1.alt = 'Match 1 Card Graphic';
@@ -885,7 +885,7 @@ export function openMatchCardModal() {
         card2Wrap.className = 'flex flex-col items-center pt-2 border-t border-slate-800/80';
         const label2 = document.createElement('div');
         label2.className = 'text-[11px] font-black text-amber-400 mb-1 tracking-wider uppercase flex items-center gap-1.5';
-        label2.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400"></span> Match 2 Official Graphic';
+        label2.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400"></span> Match 2 Graphic';
         const img2 = document.createElement('img');
         img2.src = dataUrl2;
         img2.alt = 'Match 2 Card Graphic';
@@ -936,7 +936,7 @@ export function openMatchCardModal() {
     const matchNum = currentScope === 'm2' ? 2 : 1;
     const label = document.createElement('div');
     label.className = 'text-[11px] font-black text-emerald-400 mb-1 tracking-wider uppercase flex items-center gap-1.5';
-    label.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Match ${matchNum} Official Graphic`;
+    label.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Match ${matchNum} Graphic`;
 
     const img = document.createElement('img');
     img.id = 'matchCardPreviewImg';
@@ -1096,7 +1096,7 @@ export function shareMatchCard() {
   const filename = `MatchCard_${safeHome}_vs_${safeAway}.png`;
 
   const shareTitle = `Match ${matchId}: ${home} ${scoreState.homeScore} - ${scoreState.awayScore} ${away}`;
-  const shareText = `Official Match Card: ${home} ${scoreState.homeScore} - ${scoreState.awayScore} ${away} (Harrogate & Wharfedale U9).`;
+  const shareText = `Match Card: ${home} ${scoreState.homeScore} - ${scoreState.awayScore} ${away} (Harrogate & Wharfedale U9).`;
 
   // Synchronously create File from canvas - maintains user gesture on iOS Safari!
   let file = null;
