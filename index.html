@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>What's The Score Ref? - Harrogate &amp; Wharfedale U9</title>
 
   <!-- PWA & Mobile Web App Meta Tags -->
   <meta name="description" content="Offline-first referee tool for Harrogate and Wharfedale Junior Friendly League Under-9 matches">
   <meta name="theme-color" content="#07090e">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="RefScore">
@@ -22,7 +23,7 @@
 
   <!-- 100% Offline Local Assets (Zero External CDN Dependency) -->
   <script src="js/tailwind.min.js"></script>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=111">
   <link rel="stylesheet" href="css/high-contrast.css">
   <script>
     window.openModal = function(id) {
@@ -276,7 +277,7 @@
     });
   </script>
 </head>
-<body class="bg-[#07090e] text-slate-100 min-h-screen px-2.5 py-1.5 sm:p-4 flex flex-col justify-between max-w-md mx-auto transition-colors duration-200">
+<body class="bg-[#07090e] text-slate-100 h-screen h-[100dvh] max-h-[100dvh] overflow-hidden px-2 py-1 sm:px-3 sm:py-2 flex flex-col justify-between max-w-md mx-auto transition-colors duration-200 mode-referee">
 
   <!-- ================= PITCH-SIDE APP LAUNCH SPLASH SCREEN ================= -->
   <div id="splashScreen" 
@@ -327,8 +328,14 @@
     </script>
   </div>
 
+  <!-- FLOATING MATCH NOTIFICATION TOAST -->
+  <div id="matchNotificationToast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-200 opacity-0 -translate-y-2 max-w-[90vw] sm:max-w-md w-max px-3.5 py-1.5 rounded-xl bg-slate-900/95 border border-slate-700 shadow-2xl backdrop-blur-md flex items-center gap-2 text-white text-xs font-bold select-none" role="status" aria-live="polite">
+    <span id="matchNotificationToastIcon" class="text-sm shrink-0">⚽</span>
+    <span id="matchNotificationToastText" class="truncate"></span>
+  </div>
+
   <!-- ================= TOP APP BRANDING & MATCHDAY STATUS ================= -->
-  <header class="flex items-center justify-between gap-2 py-2 px-1 border-b border-[#141b27]">
+  <header class="shrink-0 flex items-center justify-between gap-2 py-1.5 px-1 border-b border-[#141b27]">
     <div id="headerTitleContainer" class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
       <!-- Confused Referee Mascot -->
       <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center overflow-hidden">
@@ -339,14 +346,23 @@
       </h1>
     </div>
 
-    <!-- Match Tools Trigger (Placed to the right of logo & title) -->
-    <button id="quickToolsBtn" onclick="openModal('quickToolsDrawer')" class="titanium-pill flex items-center justify-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-xl text-xs font-black text-slate-300 bg-slate-800/50 border border-slate-700 hover:border-slate-500 active:scale-95 transition shadow-sm cursor-pointer shrink-0" title="Matchday Quick Tools" aria-label="Matchday Quick Tools">
-      <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"></circle>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-      </svg>
-      <span class="quick-tools-label tracking-wider font-mono-sport font-black uppercase text-[11px] text-slate-300">TOOLS</span>
-    </button>
+    <!-- Right Header Controls: Role Badge & Quick Tools -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <!-- Role Indicator Pill (Tap to toggle role directly) -->
+      <button id="appModeIndicatorBadge" type="button" onclick="toggleAppMode()" class="h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1 transition cursor-pointer active:scale-95 shadow-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400" title="Current Role: Referee (Tap to toggle)">
+        <span>⏱️</span>
+        <span id="appModeIndicatorText">REF</span>
+      </button>
+
+      <!-- Match Tools Trigger -->
+      <button id="quickToolsBtn" onclick="openModal('quickToolsDrawer')" class="titanium-pill flex items-center justify-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-xl text-xs font-black text-slate-300 bg-slate-800/50 border border-slate-700 hover:border-slate-500 active:scale-95 transition shadow-sm cursor-pointer shrink-0" title="Matchday Quick Tools" aria-label="Matchday Quick Tools">
+        <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span class="quick-tools-label tracking-wider font-mono-sport font-black uppercase text-[11px] text-slate-300">TOOLS</span>
+      </button>
+    </div>
   </header>
   <script>
     function fitHeaderTitle() {
@@ -374,39 +390,18 @@
   </script>
 
 
-  <!-- ================= GOAL SCORED WHILE PAUSED RECOVERY BANNER ================= -->
-  <section id="pausedGoalToast" class="hidden my-2 p-3 bg-emerald-950/90 border-2 border-emerald-500 rounded-xl flex items-center justify-between gap-2 shadow-lg animate-bounce">
-    <div class="flex items-center gap-2 min-w-0">
-      <div class="w-6 h-6 rounded-full bg-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg>
-      </div>
-      <div class="min-w-0">
-        <div class="text-xs font-black uppercase text-emerald-300 truncate">Goal Logged While Paused</div>
-        <div class="text-[11px] text-slate-300 truncate">Did play restart? Resume timer now:</div>
-      </div>
-    </div>
-    <div class="flex items-center gap-1.5 shrink-0">
-      <button type="button" onclick="resumeFromToast()" class="px-2.5 sm:px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 text-xs font-black rounded-lg shadow transition cursor-pointer">
-        RESUME
-      </button>
-      <button type="button" onclick="dismissPausedGoalToast()" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white text-xs font-bold rounded-lg transition cursor-pointer" title="Dismiss alert">
-        Dismiss
-      </button>
-    </div>
-  </section>
-
 
   <!-- ================= MAIN MATCH CLOCK HERO SECTION ================= -->
-  <main class="flex-1 my-2.5 sm:my-3 flex flex-col justify-between gap-2.5 sm:gap-3.5">
+  <main class="flex-1 min-h-0 my-1 sm:my-1.5 flex flex-col justify-between gap-1 sm:gap-2 overflow-hidden">
     
     <!-- 2-MATCH SESSION TABS (Match 1 vs Match 2) -->
-    <div id="matchSessionTabs" class="grid grid-cols-2 gap-2 sm:gap-2.5" role="tablist" aria-label="Session Matches">
-      <button id="tabMatch1Btn" onclick="switchMatchTab(1)" class="py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md bg-emerald-500 text-slate-950 border-2 border-emerald-300 active:scale-[0.98]">
+    <div id="matchSessionTabs" class="shrink-0 grid grid-cols-2 gap-1.5 sm:gap-2" role="tablist" aria-label="Session Matches">
+      <button id="tabMatch1Btn" onclick="switchMatchTab(1)" class="py-1.5 px-2.5 sm:py-2 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md bg-emerald-500 text-slate-950 border-2 border-emerald-300 active:scale-[0.98]">
         <span class="w-2 h-2 rounded-full bg-slate-950 shrink-0"></span>
         <span class="tracking-wider uppercase">Match 1</span>
         <span id="tabMatch1Badge" class="ml-1 text-[10px] font-mono-sport px-1.5 py-0.5 rounded-md bg-black/30 text-white font-bold">TBC</span>
       </button>
-      <button id="tabMatch2Btn" onclick="switchMatchTab(2)" class="py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition cursor-pointer bg-slate-900 text-slate-400 border border-slate-700 hover:text-white active:scale-[0.98]">
+      <button id="tabMatch2Btn" onclick="switchMatchTab(2)" class="py-1.5 px-2.5 sm:py-2 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition cursor-pointer bg-slate-900 text-slate-400 border border-slate-700 hover:text-white active:scale-[0.98]">
         <span class="w-2 h-2 rounded-full bg-slate-600 shrink-0"></span>
         <span class="tracking-wider uppercase">Match 2</span>
         <span id="tabMatch2Badge" class="ml-1 text-[10px] font-mono-sport px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-bold">TBC</span>
@@ -414,35 +409,53 @@
     </div>
 
     <!-- SCORE TRACKER SECTION (Split 50/50 Cards) -->
-    <div class="grid grid-cols-2 gap-2 sm:gap-2.5">
+    <div id="scoreCardsGrid" class="grid grid-cols-2 gap-1.5 sm:gap-2 shrink-0">
       <!-- HOME TEAM CARD -->
-      <div id="homeCardContainer" onclick="incrementScore('home')" role="button" tabindex="0" class="surface-card surface-onyx rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-2xl relative border-2 border-rose-500/70 hover:bg-slate-800/50 transition cursor-pointer active:scale-[0.98] w-full text-left overflow-hidden">
-        <div class="flex items-center justify-between border-b border-[#1b2230] pb-1.5 mb-1.5" onclick="event.stopPropagation()">
-          <button id="homeHeaderEditBtn" type="button" onclick="editTeamModal('home')" class="team-edit-btn flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer" title="Tap to change team or kit colour">
-            <span id="homeBadgeDot" class="w-3.5 h-3.5 rounded-full bg-rose-500 border border-white/50"></span>
-            <span id="homeLabel" class="text-xs font-black uppercase text-rose-400 tracking-wider">HOME</span>
+      <div id="homeCardContainer" onclick="incrementScore('home')" role="button" tabindex="0" class="surface-card surface-onyx rounded-2xl p-2.5 sm:p-3 h-full flex flex-col justify-between shadow-2xl relative border-2 border-rose-500/70 hover:bg-slate-800/50 transition cursor-pointer active:scale-[0.98] w-full text-left overflow-hidden">
+        <div class="flex items-center justify-between border-b border-[#1b2230] pb-1 mb-1" onclick="event.stopPropagation()">
+          <div class="flex items-center gap-1.5">
+            <button id="homeHeaderEditBtn" type="button" onclick="editTeamModal('home')" class="team-edit-btn flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer" title="Tap to change team or kit colour">
+              <span id="homeBadgeDot" class="w-3.5 h-3.5 rounded-full bg-rose-500 border border-white/50"></span>
+              <span id="homeLabel" class="text-xs font-black uppercase text-rose-400 tracking-wider">HOME</span>
+            </button>
+            <button id="homeKickoffBadge" type="button" class="kickoff-badge hidden px-1.5 py-0.5 rounded-md bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/50 text-rose-300 font-mono-sport font-black text-[10px] items-center gap-0.5 cursor-pointer active:scale-95 transition select-none shadow-sm" title="Home has Kick-Off (Hold to switch)">
+              <span>⚽</span>
+              <span>KO</span>
+            </button>
+          </div>
+          <!-- Log / Timeline Trigger Badge -->
+          <button id="homeTimelineBtn" type="button" onclick="openModal('timelineModal')" class="text-[10px] font-mono-sport font-black text-slate-400 hover:text-white px-1.5 py-0.5 rounded-md bg-slate-900/80 border border-slate-700/60 hover:border-slate-500 flex items-center gap-1 transition cursor-pointer shadow-sm shrink-0" title="View Full Goal Timeline">
+            <span>📋</span>
+            <span class="hidden sm:inline">LOG</span>
+            <span id="homeGoalCountBadge" class="text-amber-400 font-bold">0</span>
           </button>
         </div>
 
         <!-- Interactive Team Name with Edit Icon -->
-        <button id="homeTeamEditBtn" onclick="editTeamModal('home'); event.stopPropagation();" class="team-edit-btn w-full min-h-[32px] group flex items-center justify-center gap-1.5 py-1 px-1 rounded-lg hover:bg-slate-800/50 transition cursor-pointer mb-1.5 text-center" title="Tap to name team">
-          <span id="homeTeamNameDisplay" class="text-xs sm:text-sm font-extrabold text-white leading-tight text-center line-clamp-2">Home Team</span>
+        <button id="homeTeamEditBtn" onclick="editTeamModal('home'); event.stopPropagation();" class="team-edit-btn w-full min-h-[26px] group flex items-center justify-center gap-1 py-0.5 px-1 rounded-lg hover:bg-slate-800/50 transition cursor-pointer mb-0.5 text-center" title="Tap to name team">
+          <span id="homeCoachStar" class="coach-star text-amber-400 text-xs sm:text-sm font-bold shrink-0 hidden" title="Coach's Team">⭐</span>
+          <span id="homeTeamNameDisplay" class="text-xs sm:text-sm font-extrabold text-white leading-tight text-center line-clamp-1">Home Team</span>
           <svg id="homeEditPencil" class="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 shrink-0 team-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
           </svg>
         </button>
 
         <!-- Score Digit -->
-        <div class="flex-1 flex flex-col items-center justify-center py-3 sm:py-4 pointer-events-none">
-          <div id="homeScoreDisplay" class="font-mono-sport text-5xl sm:text-6xl font-black text-center text-white sunlight-yellow-text drop-shadow-md">
+        <div class="flex-1 flex flex-col items-center justify-center py-0.5 pointer-events-none">
+          <div id="homeScoreDisplay" class="font-mono-sport text-5xl sm:text-6xl font-black text-center text-white sunlight-yellow-text drop-shadow-md leading-none">
             0
           </div>
-          <div class="text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-1.5 opacity-70">TAP TO ADD GOAL</div>
+          <div id="homeTapHint" class="text-[9px] sm:text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-0.5 opacity-70">TAP TO ADD GOAL</div>
         </div>
 
-        <!-- Inline Undo Pill directly below each score -->
-        <div class="mt-1 flex justify-center" onclick="event.stopPropagation()">
-          <button id="homeUndoBtn" type="button" onclick="event.stopPropagation(); decrementScore('home');" class="py-1 px-4 titanium-pill hover:bg-slate-800 active:scale-95 text-slate-300 font-bold text-xs uppercase tracking-wider rounded-full border border-[#232c3f] flex items-center justify-center gap-1 shadow-sm undo-pill-hidden transition-all duration-200" style="display: none;">
+        <!-- Goal Chips Strip (Displays team goals e.g. ⚽ 4', ⚽ 11' #7, ⚠️ 18' OG) -->
+        <div id="homeGoalChips" class="flex flex-nowrap items-center justify-center gap-1.5 my-0.5 min-h-[26px] max-h-[28px] overflow-x-auto no-scrollbar px-1 w-full" onclick="event.stopPropagation()">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Inline Undo Pill directly below chips -->
+        <div class="mt-0.5 flex justify-center shrink-0" onclick="event.stopPropagation()">
+          <button id="homeUndoBtn" type="button" onclick="event.stopPropagation(); decrementScore('home');" class="py-0.5 px-3 titanium-pill hover:bg-slate-800 active:scale-95 text-slate-300 hover:text-amber-400 font-bold text-[11px] uppercase tracking-wider rounded-full border border-[#232c3f] flex items-center justify-center gap-1 shadow-sm undo-pill-hidden transition-all duration-200" style="display: none;">
             <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 7v6h6"></path>
               <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
@@ -453,33 +466,51 @@
       </div>
 
       <!-- AWAY TEAM CARD -->
-      <div id="awayCardContainer" onclick="incrementScore('away')" role="button" tabindex="0" class="surface-card surface-onyx rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-2xl relative border-2 border-blue-500/70 hover:bg-slate-800/50 transition cursor-pointer active:scale-[0.98] w-full text-left overflow-hidden">
-        <div class="flex items-center justify-between border-b border-[#1b2230] pb-1.5 mb-1.5" onclick="event.stopPropagation()">
-          <button id="awayHeaderEditBtn" type="button" onclick="editTeamModal('away')" class="team-edit-btn flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer" title="Tap to change team or kit colour">
-            <span id="awayBadgeDot" class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-white/50"></span>
-            <span id="awayLabel" class="text-xs font-black uppercase text-blue-400 tracking-wider">AWAY</span>
+      <div id="awayCardContainer" onclick="incrementScore('away')" role="button" tabindex="0" class="surface-card surface-onyx rounded-2xl p-2.5 sm:p-3 h-full flex flex-col justify-between shadow-2xl relative border-2 border-blue-500/70 hover:bg-slate-800/50 transition cursor-pointer active:scale-[0.98] w-full text-left overflow-hidden">
+        <div class="flex items-center justify-between border-b border-[#1b2230] pb-1 mb-1" onclick="event.stopPropagation()">
+          <div class="flex items-center gap-1.5">
+            <button id="awayHeaderEditBtn" type="button" onclick="editTeamModal('away')" class="team-edit-btn flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer" title="Tap to change team or kit colour">
+              <span id="awayBadgeDot" class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-white/50"></span>
+              <span id="awayLabel" class="text-xs font-black uppercase text-blue-400 tracking-wider">AWAY</span>
+            </button>
+            <button id="awayKickoffBadge" type="button" class="kickoff-badge hidden px-1.5 py-0.5 rounded-md bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/50 text-blue-300 font-mono-sport font-black text-[10px] items-center gap-0.5 cursor-pointer active:scale-95 transition select-none shadow-sm" title="Away has Kick-Off (Hold to switch)">
+              <span>⚽</span>
+              <span>KO</span>
+            </button>
+          </div>
+          <!-- Log / Timeline Trigger Badge -->
+          <button id="awayTimelineBtn" type="button" onclick="openModal('timelineModal')" class="text-[10px] font-mono-sport font-black text-slate-400 hover:text-white px-1.5 py-0.5 rounded-md bg-slate-900/80 border border-slate-700/60 hover:border-slate-500 flex items-center gap-1 transition cursor-pointer shadow-sm shrink-0" title="View Full Goal Timeline">
+            <span>📋</span>
+            <span class="hidden sm:inline">LOG</span>
+            <span id="awayGoalCountBadge" class="text-amber-400 font-bold">0</span>
           </button>
         </div>
 
         <!-- Interactive Team Name with Edit Icon -->
-        <button id="awayTeamEditBtn" onclick="editTeamModal('away'); event.stopPropagation();" class="team-edit-btn w-full min-h-[32px] group flex items-center justify-center gap-1.5 py-1 px-1 rounded-lg hover:bg-slate-800/50 transition cursor-pointer mb-1.5 text-center" title="Tap to name team">
-          <span id="awayTeamNameDisplay" class="text-xs sm:text-sm font-extrabold text-white leading-tight text-center line-clamp-2">Away Team</span>
+        <button id="awayTeamEditBtn" onclick="editTeamModal('away'); event.stopPropagation();" class="team-edit-btn w-full min-h-[26px] group flex items-center justify-center gap-1 py-0.5 px-1 rounded-lg hover:bg-slate-800/50 transition cursor-pointer mb-0.5 text-center" title="Tap to name team">
+          <span id="awayCoachStar" class="coach-star text-amber-400 text-xs sm:text-sm font-bold shrink-0 hidden" title="Coach's Team">⭐</span>
+          <span id="awayTeamNameDisplay" class="text-xs sm:text-sm font-extrabold text-white leading-tight text-center line-clamp-1">Away Team</span>
           <svg id="awayEditPencil" class="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 shrink-0 team-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
           </svg>
         </button>
 
         <!-- Score Digit -->
-        <div class="flex-1 flex flex-col items-center justify-center py-3 sm:py-4 pointer-events-none">
-          <div id="awayScoreDisplay" class="font-mono-sport text-5xl sm:text-6xl font-black text-center text-white sunlight-yellow-text drop-shadow-md">
+        <div class="flex-1 flex flex-col items-center justify-center py-0.5 pointer-events-none">
+          <div id="awayScoreDisplay" class="font-mono-sport text-5xl sm:text-6xl font-black text-center text-white sunlight-yellow-text drop-shadow-md leading-none">
             0
           </div>
-          <div class="text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-1.5 opacity-70">TAP TO ADD GOAL</div>
+          <div id="awayTapHint" class="text-[9px] sm:text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-0.5 opacity-70">TAP TO ADD GOAL</div>
         </div>
 
-        <!-- Inline Undo Pill directly below each score -->
-        <div class="mt-1 flex justify-center" onclick="event.stopPropagation()">
-          <button id="awayUndoBtn" type="button" onclick="event.stopPropagation(); decrementScore('away');" class="py-1 px-4 titanium-pill hover:bg-slate-800 active:scale-95 text-slate-300 font-bold text-xs uppercase tracking-wider rounded-full border border-[#232c3f] flex items-center justify-center gap-1 shadow-sm undo-pill-hidden transition-all duration-200" style="display: none;">
+        <!-- Goal Chips Strip (Displays team goals e.g. ⚽ 4', ⚽ 11' #7, ⚠️ 18' OG) -->
+        <div id="awayGoalChips" class="flex flex-nowrap items-center justify-center gap-1.5 my-0.5 min-h-[26px] max-h-[28px] overflow-x-auto no-scrollbar px-1 w-full" onclick="event.stopPropagation()">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Inline Undo Pill directly below chips -->
+        <div class="mt-0.5 flex justify-center shrink-0" onclick="event.stopPropagation()">
+          <button id="awayUndoBtn" type="button" onclick="event.stopPropagation(); decrementScore('away');" class="py-0.5 px-3 titanium-pill hover:bg-slate-800 active:scale-95 text-slate-300 hover:text-amber-400 font-bold text-[11px] uppercase tracking-wider rounded-full border border-[#232c3f] flex items-center justify-center gap-1 shadow-sm undo-pill-hidden transition-all duration-200" style="display: none;">
             <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 7v6h6"></path>
               <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
@@ -490,62 +521,151 @@
       </div>
     </div>
 
-    <!-- FA POWER PLAY BANNER (Auto-activates when score difference is >= 4) -->
-    <div id="powerPlayBanner" class="hidden p-3 rounded-2xl bg-amber-950/40 border-2 border-amber-400 text-amber-300 flex items-center justify-between gap-3 shadow-lg animate-fadeIn">
-      <div class="flex items-center gap-2.5 min-w-0 flex-1">
-        <span class="w-7 h-7 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-sm shrink-0 shadow-sm">⚡</span>
-        <div class="min-w-0 flex-1">
-          <div class="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5 mb-0.5">
-            <span>FA Power Play Active</span>
-            <span class="px-1.5 py-0.5 bg-amber-400/20 border border-amber-400/40 rounded text-[9px] font-mono-sport text-amber-300 font-bold">+1 Player</span>
-          </div>
-          <div id="powerPlayMessage" class="text-xs font-bold text-white leading-snug">
-            Trailing team may field 1 extra player
-          </div>
-        </div>
-      </div>
-      <button type="button" onclick="dismissPowerPlayBanner()" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/40 text-amber-200 border border-amber-400/50 font-black rounded-xl text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 shrink-0" title="Dismiss Power Play Banner">
-        Dismiss
-      </button>
-    </div>
-
-    <!-- TALLER, COMFORTABLE SCORE LOG & LAST GOAL TICKER -->
-    <div class="surface-card surface-onyx rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2.5 shadow-md text-xs border border-slate-700/60">
-      <div id="lastGoalTicker" class="flex items-center gap-2.5 truncate cursor-pointer" onclick="openModal('timelineModal')">
-        <!-- Target / Goal Icon SVG -->
-        <div class="w-7 h-7 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 border border-emerald-500/30">
-          <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="4"></circle>
-          </svg>
-        </div>
-        <div class="truncate">
-          <div class="flex items-center gap-1.5 leading-tight">
-            <span class="text-emerald-400 font-mono-sport font-black text-xs" id="tickerTime">--:--</span>
-            <span class="font-mono-sport text-amber-300 font-black text-xs" id="tickerScore">[ TBC ]</span>
-          </div>
-          <div class="text-slate-200 font-bold truncate text-[11px]" id="tickerDesc">Match not started</div>
+    <!-- REFEREE EXTRA INFO & ALERTS WINDOW (Referee Mode Only - Single Unified Window) -->
+    <div id="refHelperBar" class="surface-card surface-onyx rounded-2xl p-2.5 sm:p-3 border border-slate-700/60 shadow-lg flex flex-col justify-between gap-1 sm:gap-1.5 text-xs animate-fadeIn min-h-[64px]">
+      <!-- Header: Match Alerts and Reminders -->
+      <div id="refHelperHeader" class="flex items-center justify-between border-b border-slate-800/80 pb-1 px-0.5 shrink-0 w-full">
+        <div class="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-black uppercase font-mono-sport text-slate-400 tracking-wider">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400/90 shadow-sm"></span>
+          <span>Match Alerts and Reminders</span>
+          <span id="refHelperAlertCountBadge" class="hidden text-[9px] font-bold bg-amber-500/25 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded-md ml-1"></span>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 shrink-0">
-        <!-- Log Button with Chevron -->
-        <button onclick="openModal('timelineModal')" class="px-3.5 py-2 titanium-pill hover:bg-slate-800 text-slate-100 rounded-xl text-xs font-black flex items-center gap-1.5 active:scale-95 transition shadow-sm">
-          <span>Log</span>
-          <span id="tickerCountBadge" class="bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-[10px] text-amber-300 font-mono-sport font-black">0</span>
-          <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
+      <!-- Content Area (Default kick-off memory or active alerts) -->
+      <div id="refHelperContentArea" class="flex-1 flex flex-col justify-center gap-1 sm:gap-1.5 w-full min-h-0">
+        <!-- Default State: Either Kick-off Prompt or Idle Match Status -->
+        <div id="refHelperDefaultContent" class="w-full flex items-center justify-between min-h-[28px]">
+          <!-- Kick-Off Selection Prompt (Shown when 1st half starts and KO not yet chosen) -->
+          <div id="refHelperKickoffPrompt" class="hidden w-full flex items-center justify-between gap-2 py-0.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-sm shrink-0">⚽</span>
+              <span class="text-slate-200 text-xs sm:text-sm font-black whitespace-nowrap">Who kicked off?</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button id="refKickoffHomeBtn" type="button" onclick="setKickoffTeam('home')" class="px-2.5 sm:px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/50 rounded-lg text-xs font-black transition active:scale-95 cursor-pointer truncate max-w-[100px] sm:max-w-[130px]">
+                Home Team
+              </button>
+              <button id="refKickoffAwayBtn" type="button" onclick="setKickoffTeam('away')" class="px-2.5 sm:px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/50 rounded-lg text-xs font-black transition active:scale-95 cursor-pointer truncate max-w-[100px] sm:max-w-[130px]">
+                Away Team
+              </button>
+            </div>
+          </div>
+
+          <!-- Idle Match Status (Shown when KO is set and no alerts are active) -->
+          <div id="refHelperIdleContent" class="w-full flex items-center justify-between gap-2 py-0.5 text-slate-400">
+            <!-- Pre-match button (shown before match start) -->
+            <button id="refHelperPrematchBtn" type="button" onclick="openModal('prematchModal')" class="py-1 px-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold text-xs rounded-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span>Pre-Match Checks</span>
+            </button>
+
+            <!-- Active match status text (shown during play / paused / full time) -->
+            <div id="refHelperIdleStatus" class="hidden flex items-center gap-2 min-w-0">
+              <span id="refHelperIdleDot" class="w-2 h-2 rounded-full bg-slate-500 shrink-0"></span>
+              <span id="refHelperIdleStatusText" class="text-xs font-bold text-slate-300 truncate"></span>
+            </div>
+
+            <span id="refHelperPeriodTargetText" class="text-[11px] font-mono-sport text-slate-400 shrink-0"></span>
+          </div>
+        </div>
+
+        <!-- Alert: Kick-Off Confirmed / Switched (auto-dismisses) -->
+        <div id="refHelperKickoffConfirmAlert" class="hidden w-full flex items-center justify-between gap-2 bg-emerald-500/15 border border-emerald-400/50 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm shrink-0">⚽</span>
+            <div class="min-w-0">
+              <span id="refHelperKickoffConfirmMsg" class="text-white text-[11px] sm:text-xs font-bold leading-tight block truncate"></span>
+              <span class="text-emerald-400 text-[10px] font-semibold">Long hold KO badge to switch</span>
+            </div>
+          </div>
+          <button type="button" onclick="dismissKickoffConfirmAlert()" class="px-1.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold rounded-lg transition cursor-pointer active:scale-95 shrink-0" title="Dismiss">
+            ✕
+          </button>
+        </div>
+
+        <!-- Alert: Goal Logged While Paused -->
+        <div id="refHelperPausedGoalAlert" class="hidden w-full flex items-center justify-between gap-2 bg-emerald-500/15 border border-emerald-400/50 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 animate-pulse">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm shrink-0">⚠️</span>
+            <span class="text-white text-[11px] sm:text-xs font-bold leading-tight">Goal logged while paused. Resume?</span>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" onclick="resumeFromToast()" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] sm:text-xs font-black rounded-lg shadow transition cursor-pointer active:scale-95">
+              RESUME
+            </button>
+            <button type="button" onclick="dismissPausedGoalToast()" class="px-1.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold rounded-lg transition cursor-pointer active:scale-95" title="Dismiss">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Alert: 1-Minute Remaining -->
+        <div id="refHelperOneMinuteAlert" class="hidden w-full flex items-center justify-between gap-2 bg-amber-500/15 border border-amber-400/50 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 animate-pulse">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm shrink-0">⏱️</span>
+            <span id="refHelperOneMinuteMsg" class="text-white text-[11px] sm:text-xs font-bold leading-tight">Final minute of 1st Half</span>
+          </div>
+          <button type="button" onclick="dismissOneMinuteBanner()" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] sm:text-xs font-black rounded-lg transition active:scale-95 cursor-pointer shrink-0 shadow">
+            Dismiss
+          </button>
+        </div>
+
+        <!-- Alert: Mid-Half Sub Window (7:30) -->
+        <div id="refHelperSubAlert" class="hidden w-full flex items-center justify-between gap-2 bg-amber-500/15 border border-amber-400/50 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 animate-pulse">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm shrink-0">🔄</span>
+            <span class="text-white text-[11px] sm:text-xs font-bold leading-tight">Halfway sub window (7:30)</span>
+          </div>
+          <button type="button" onclick="dismissSubBanner()" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] sm:text-xs font-black rounded-lg transition active:scale-95 cursor-pointer shrink-0 shadow">
+            Dismiss
+          </button>
+        </div>
+
+        <!-- Alert: FA Power Play -->
+        <div id="refHelperPowerPlayAlert" class="hidden w-full flex items-center justify-between gap-2 bg-amber-500/15 border border-amber-400/50 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 animate-pulse">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm shrink-0">⚡</span>
+            <span id="refHelperPowerPlayMsg" class="text-white text-[11px] sm:text-xs font-bold leading-tight">Away Team may field +1 player</span>
+          </div>
+          <button type="button" onclick="dismissPowerPlayBanner()" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] sm:text-xs font-black rounded-lg transition active:scale-95 cursor-pointer shrink-0 shadow">
+            Dismiss
+          </button>
+        </div>
+
+        <!-- Alert: Forgot to Resume Timer (45s+ stoppage) -->
+        <div id="refHelperForgotResumeAlert" class="hidden w-full flex items-center justify-between gap-1.5 sm:gap-2 bg-amber-500/15 border border-amber-400/50 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 animate-pulse">
+          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span class="text-sm shrink-0">⏱️</span>
+            <div class="flex items-center gap-1 sm:gap-1.5 min-w-0">
+              <span class="text-white text-[10.5px] sm:text-xs font-bold leading-tight whitespace-nowrap">Forgot to resume?</span>
+              <span id="refHelperLostTimeBadge" class="text-amber-300 font-mono-sport text-[10px] sm:text-[11px] font-black shrink-0 whitespace-nowrap">+00:45 lost</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" onclick="catchUpAllStoppage()" class="px-2 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] sm:text-xs font-black rounded-lg shadow transition cursor-pointer active:scale-95 whitespace-nowrap" title="Add all lost time and resume">
+              Add Lost
+            </button>
+            <button type="button" onclick="resumeFromToast()" class="px-2 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] sm:text-xs font-black rounded-lg shadow transition cursor-pointer active:scale-95 whitespace-nowrap" title="Resume timer as is">
+              Resume
+            </button>
+            <button type="button" onclick="dismissForgotResumeAlert()" class="px-1.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold rounded-lg transition cursor-pointer active:scale-95" title="Dismiss">
+              ✕
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- DIGITAL CLOCK UNIT -->
-    <div class="surface-card surface-onyx rounded-2xl p-3.5 sm:p-4 text-center shadow-2xl relative overflow-hidden">
+    <div id="clockUnitCard" class="surface-card surface-onyx rounded-2xl p-2.5 sm:p-3 text-center shadow-2xl relative overflow-hidden flex flex-col justify-between">
       <!-- Quick Period Badge & Controls (Top of Timer Window) -->
-      <div class="flex items-center justify-between gap-2 mb-2 sm:mb-2.5">
+      <div class="flex items-center justify-between gap-1.5 mb-1 sm:mb-2">
         <!-- Reset Current Half -->
-        <button id="resetHalfBtn" class="flex-1 py-1.5 sm:py-2 px-2 text-slate-300 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer titanium-pill rounded-xl active:scale-95 transition text-center font-bold text-xs shadow-sm border border-slate-700/60" title="Hold 1.5s to reset half clock back to 00:00">
+        <button id="resetHalfBtn" type="button" class="flex-1 py-1.5 sm:py-2 px-2 text-slate-300 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer titanium-pill rounded-xl active:scale-95 transition text-center font-bold text-xs shadow-sm border border-slate-700/60" title="Hold to Reset Current Half Clock & Scores">
           <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
             <path d="M3 3v5h5"></path>
@@ -585,12 +705,13 @@
         </div>
       </div>
 
-      <!-- Target Time and Stoppage Time Under Target Time -->
-      <div class="flex flex-col items-center justify-center gap-0.5 mb-3">
-        <button type="button" onclick="openModal('quickToolsDrawer')" class="text-xs text-slate-400 hover:text-slate-200 font-medium cursor-pointer transition flex items-center gap-1" title="Tap to change half duration (10m - 25m)">
+      <!-- Combined Target Time and Stoppage Time on Single Line -->
+      <div class="flex items-center justify-center gap-2 mb-1.5 text-xs">
+        <button type="button" onclick="openModal('quickToolsDrawer')" class="text-slate-400 hover:text-slate-200 font-medium cursor-pointer transition flex items-center gap-1" title="Tap to change half duration (10m - 25m)">
           <span>Target:</span> <span id="targetTimeSpan" class="font-bold text-slate-200 underline decoration-dotted decoration-slate-600 underline-offset-2">15:00</span>
         </button>
-        <div class="text-xs text-amber-400 font-mono-sport font-bold tracking-wide">
+        <span class="text-slate-600">•</span>
+        <div class="text-amber-400 font-mono-sport font-bold tracking-wide">
           <span id="stoppageDisplay">Stoppage: +00:00</span>
         </div>
       </div>
@@ -621,25 +742,6 @@
         </div>
       </div>
 
-      <!-- ================= INTEGRATED MID-HALF SUB REMINDER (7:30 Alert) ================= -->
-      <div id="subReminderBanner" class="hidden mb-3 p-2.5 bg-amber-500/15 border border-amber-500/70 rounded-xl flex items-center justify-between gap-2 shadow-lg shadow-amber-500/10 animate-pulse text-left">
-        <div class="flex items-center gap-2 min-w-0">
-          <!-- Clock Vector SVG -->
-          <div class="w-6 h-6 rounded-lg bg-amber-500/25 flex items-center justify-center text-amber-400 shrink-0">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <div class="text-[11px] font-black uppercase tracking-wider text-amber-400">Halfway Sub Reminder (7:30)</div>
-            <div class="text-[10px] text-amber-100 font-medium leading-tight">Allow rolling substitutions at next stoppage.</div>
-          </div>
-        </div>
-        <button type="button" onclick="dismissSubBanner()" class="px-2.5 py-1 text-[11px] font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg shrink-0 transition active:scale-95 cursor-pointer">
-          DISMISS
-        </button>
-      </div>
 
 
       <!-- ================= MATCH 1 -> MATCH 2 HANDOVER SUCCESS TOAST ================= -->
@@ -661,7 +763,7 @@
       </div>
 
       <!-- Big Start / Pause / Resume Button with Vector SVG -->
-      <button id="timerToggleBtn" onclick="toggleTimer()" class="w-full py-3 sm:py-3.5 px-4 rounded-xl font-extrabold text-base sm:text-lg tracking-wide uppercase shadow-lg transition active:scale-[0.98] bg-emerald-600 hover:bg-emerald-500 text-white border-2 border-emerald-300 shadow-emerald-950/40 flex items-center justify-center gap-2 cursor-pointer">
+      <button id="timerToggleBtn" onclick="toggleTimer()" class="w-full py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-base sm:text-lg tracking-wide uppercase shadow-lg transition active:scale-[0.98] bg-emerald-600 hover:bg-emerald-500 text-white border-2 border-emerald-300 shadow-emerald-950/40 flex items-center justify-center gap-2 cursor-pointer">
         <span id="timerIconContainer">
           <!-- Play Triangle SVG -->
           <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -670,38 +772,111 @@
         </span>
         <span id="timerBtnText">START PLAY</span>
       </button>
+    </div>
 
-      <!-- STOPPAGE RECOVERY SAFEGUARD PANEL (Appears when paused) -->
-      <div id="stoppageRecoveryPanel" class="hidden mt-3 p-2.5 bg-amber-950/30 border border-amber-500/40 rounded-xl text-left animate-fadeIn">
-        <div class="flex items-center justify-between text-xs text-amber-300 font-bold mb-1.5">
-          <span class="flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-amber-400 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <span>Forgot to resume? Quick Catch-Up:</span>
-          </span>
-          <span class="text-[10px] text-amber-300/80 font-mono-sport" id="ghostClockElapsed">+00:00 lost</span>
+    <!-- COACH MODE TOUCHLINE QUICK-BAR (Zero-Modal Heads-Up Bar) -->
+    <div id="coachTouchlineBar" class="shrink-0 hidden surface-card surface-onyx rounded-2xl p-2 sm:p-2.5 shadow-lg border border-amber-500/40 animate-fadeIn text-xs">
+      <!-- Touchline Bar Header -->
+      <div class="flex items-center justify-between pb-1.5 border-b border-slate-800/80 mb-1.5 gap-1">
+        <div class="flex items-center gap-1.5 min-w-0 overflow-hidden">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+          <span class="font-black text-amber-300 text-[11px] sm:text-xs tracking-wider uppercase shrink-0">Touchline</span>
+          <!-- POTM Touchline Badge -->
+          <button id="coachTouchlinePotmBadge" type="button" onclick="openCoachNotesModal()" class="hidden px-1.5 py-0.5 rounded-full bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/70 text-amber-300 font-extrabold text-[10px] items-center gap-0.5 transition cursor-pointer active:scale-95 shadow-sm truncate shrink-0" title="Player of the Match (Tap to view/edit in Notes)">
+            <span class="text-[10px]">⭐</span>
+            <span class="text-[9px] uppercase tracking-wider text-amber-400/80 font-bold hidden sm:inline">POTM:</span>
+            <span id="coachTouchlinePotmText" class="font-black"></span>
+          </button>
         </div>
-        <div class="grid grid-cols-3 gap-1.5 text-[11px] font-bold">
-          <button onclick="catchUpTime(60)" class="py-1.5 px-1 titanium-pill hover:bg-slate-700 text-slate-200 rounded-lg text-center transition">
-            +1 Min
+        <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          <!-- Squad Initials Button -->
+          <button id="coachSquadInitialsBtn" type="button" onclick="openSquadInitialsModal()" class="px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer active:scale-95" title="Set or edit squad player initials">
+            <span>👥</span>
+            <span>Squad</span>
           </button>
-          <button onclick="catchUpTime(120)" class="py-1.5 px-1 titanium-pill hover:bg-slate-700 text-slate-200 rounded-lg text-center transition">
-            +2 Min
+          <!-- Moments Feed Modal Button -->
+          <button id="coachMomentsToggleBtn" type="button" onclick="openCoachMomentsModal()" class="px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer" title="View Logged Match Moments">
+            <span>📋</span>
+            <span>Moments</span>
+            <span id="coachMomentsCountBadge" class="bg-amber-400 text-slate-950 px-1 py-0.2 rounded-full font-mono-sport font-black text-[9px]">0</span>
           </button>
-          <button onclick="catchUpAllStoppage()" class="py-1.5 px-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-center font-black transition whitespace-nowrap">
-            Add All Lost
+          <!-- Notes Modal Button -->
+          <button id="coachNotesToggleBtn" type="button" onclick="openCoachNotesModal()" class="px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer" title="Open Coach Private Notes">
+            <span>📝</span>
+            <span>Notes</span>
           </button>
         </div>
       </div>
+
+      <!-- Full Time POTM Prompt Card (Visible at Full Time in Coach Mode) -->
+      <div id="coachTouchlinePotmPrompt" class="hidden mb-2 p-2.5 bg-gradient-to-r from-amber-950/40 to-yellow-950/20 border-2 border-amber-400/80 rounded-xl animate-fadeIn">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm">⭐</span>
+            <span class="font-black text-amber-300 text-xs uppercase tracking-wide">Full Time: Pick Player of the Match</span>
+          </div>
+          <span class="text-[9px] text-emerald-400 font-bold">Shared in Report</span>
+        </div>
+        <div id="coachTouchlinePotmChips" class="flex flex-wrap gap-1.5">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- State 1: Default Tag Buttons Row (Vertical touch tiles with ample room - zero truncation) -->
+      <div id="coachTouchlineDefaultRow" class="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <button type="button" onclick="selectInlineTag('Great Pressing', '⚡')" class="py-2 sm:py-2.5 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
+          <span class="text-base sm:text-lg mb-0.5 leading-none">⚡</span>
+          <span class="text-xs font-bold text-slate-200 leading-tight">Pressing</span>
+        </button>
+        <button type="button" onclick="selectInlineTag('Passing Vision', '🎯')" class="py-2 sm:py-2.5 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
+          <span class="text-base sm:text-lg mb-0.5 leading-none">🎯</span>
+          <span class="text-xs font-bold text-slate-200 leading-tight">Passing</span>
+        </button>
+        <button type="button" onclick="selectInlineTag('Solid Defending', '🛡️')" class="py-2 sm:py-2.5 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
+          <span class="text-base sm:text-lg mb-0.5 leading-none">🛡️</span>
+          <span class="text-xs font-bold text-slate-200 leading-tight">Defending</span>
+        </button>
+        <button type="button" onclick="selectInlineTag('Great Save', '🧤')" class="py-2 sm:py-2.5 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
+          <span class="text-base sm:text-lg mb-0.5 leading-none">🧤</span>
+          <span class="text-xs font-bold text-slate-200 leading-tight">Save</span>
+        </button>
+        <button type="button" onclick="selectInlineTag('Positioning', '📍')" class="py-2 sm:py-2.5 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
+          <span class="text-base sm:text-lg mb-0.5 leading-none">📍</span>
+          <span class="text-xs font-bold text-slate-200 leading-tight">Positioning</span>
+        </button>
+        <button type="button" onclick="selectInlineTag('Great Shot', '🚀')" class="py-2 sm:py-2.5 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Great Shot">
+          <span class="text-base sm:text-lg mb-0.5 leading-none">🚀</span>
+          <span class="text-xs font-bold text-slate-200 leading-tight">Great Shot</span>
+        </button>
+      </div>
+
+      <!-- State 2: Active Tag / Inline Player Picker Row -->
+      <div id="coachTouchlineActiveRow" class="hidden space-y-1.5 animate-fadeIn">
+        <div class="flex items-center justify-between text-xs">
+          <span id="coachTouchlineActivePrompt" class="font-bold text-white flex items-center gap-1.5">
+            <span>⚡ Great Pressing: Who showed this?</span>
+          </span>
+          <button type="button" onclick="cancelInlineTag()" class="text-[11px] font-bold text-amber-300 hover:text-white px-2.5 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 cursor-pointer transition active:scale-95 shadow-sm" title="Finish selecting players">
+            Done ✓
+          </button>
+        </div>
+        <div id="coachTouchlinePlayerChips" class="flex flex-wrap gap-1.5">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Status Toast / Feedback Strip -->
+      <div id="coachTouchlineToast" class="hidden mt-2 p-1.5 bg-emerald-500/20 border border-emerald-400/50 rounded-lg text-emerald-300 font-bold text-[11px] flex items-center justify-between animate-fadeIn">
+        <span id="coachTouchlineToastText">✓ Moment logged</span>
+        <button type="button" onclick="document.getElementById('coachTouchlineToast').classList.add('hidden')" class="text-emerald-400 hover:text-white text-xs px-1">✕</button>
+      </div>
+    </div>
     </div>
   </main>
 
-  <footer class="grid grid-cols-2 gap-2 sm:gap-2.5 pt-2.5 sm:pt-3 border-t border-[#1b2230]">
+  <footer class="shrink-0 grid grid-cols-2 gap-2 sm:gap-2.5 pt-1.5 sm:pt-2.5 border-t border-[#1b2230]">
     <!-- 1. Field / Rain Lock Button -->
-    <button id="fieldLockBtn" onclick="activateLock()" class="py-3 px-3.5 min-h-[48px] sm:min-h-[54px] titanium-pill hover:bg-[#182030] rounded-xl flex items-center justify-center gap-2 text-xs font-black text-slate-200 border border-slate-700 hover:border-slate-500 active:scale-95 transition shadow-sm cursor-pointer" title="Lock screen against rain/pocket touches">
+    <button id="fieldLockBtn" onclick="activateLock()" class="py-2 sm:py-2.5 px-3 min-h-[40px] sm:min-h-[48px] titanium-pill hover:bg-[#182030] rounded-xl flex items-center justify-center gap-2 text-xs font-black text-slate-200 border border-slate-700 hover:border-slate-500 active:scale-95 transition shadow-sm cursor-pointer" title="Lock screen against rain/pocket touches">
       <!-- Lock SVG -->
       <svg class="w-5 h-5 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -711,7 +886,7 @@
     </button>
 
     <!-- 2. Reset Button (Full Red Box) -->
-    <button id="resetMatchBtn" class="py-3 px-3.5 min-h-[48px] sm:min-h-[54px] bg-red-600 hover:bg-red-500 border border-red-400 rounded-xl flex items-center justify-center gap-2 text-xs font-black text-white active:scale-95 transition shadow-lg shadow-red-950/40 cursor-pointer" title="Hold 1.5s to Reset Match">
+    <button id="resetMatchBtn" type="button" class="py-2 sm:py-2.5 px-3 min-h-[40px] sm:min-h-[48px] bg-red-600 hover:bg-red-500 border border-red-400 rounded-xl flex items-center justify-center gap-2 text-xs font-black text-white active:scale-95 transition shadow-lg shadow-red-950/40 cursor-pointer" title="Hold to Reset Both Matches">
       <!-- Reset / Trash SVG -->
       <svg class="w-5 h-5 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -723,7 +898,7 @@
   </footer>
 
   <!-- Subtle Bottom Brand Signature -->
-  <div class="text-center pt-2.5 pb-1 text-[10px] font-mono-sport text-slate-400 tracking-wider flex items-center justify-center gap-1.5 opacity-75">
+  <div class="bottom-brand-sig shrink-0 text-center pt-1.5 pb-1 text-[10px] font-mono-sport text-slate-400 tracking-wider flex items-center justify-center gap-1.5 opacity-75">
     <span>WHAT'S THE SCORE REF?</span>
     <span class="text-slate-600">•</span>
     <span>MATCHDAY COMPANION</span>
@@ -785,6 +960,112 @@
         </button>
         <button onclick="closeModal('timelineModal')" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs">
           Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1C. COACH MATCH MOMENTS MODAL (Pop up like Goal Timeline) -->
+  <div id="coachMomentsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-amber-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div>
+          <h3 class="font-extrabold text-base text-white flex items-center gap-2">
+            <span>📋</span>
+            <span>Match Moments</span>
+            <span id="coachMomentsModalBadge" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-amber-400 font-bold">0 Moments</span>
+          </h3>
+          <p class="text-[11px] text-slate-400">Private coach timeline &amp; player tags</p>
+        </div>
+        <button onclick="closeModal('coachMomentsModal')" class="text-slate-400 hover:text-white p-1 cursor-pointer" title="Close Moments">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Scrollable Moments Feed -->
+      <div id="coachMomentsModalList" class="my-3 space-y-2 overflow-y-auto max-h-[50vh] pr-1 text-xs flex-1">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 flex gap-2 shrink-0">
+        <button onclick="closeModal('coachMomentsModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs cursor-pointer transition active:scale-95 shadow-md">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1D. COACH MATCH NOTES MODAL (Full Screen Pop Up For Reflections & Tactics) -->
+  <div id="coachNotesModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-sm w-full p-4 sm:p-5 max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-base shrink-0">
+            <span>📝</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-white flex items-center gap-1.5">
+              <span>Coach Match Notes</span>
+            </h3>
+            <p class="text-[11px] text-slate-400">Tactical reflections &amp; training thoughts</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('coachNotesModal')" class="text-slate-400 hover:text-white p-1 cursor-pointer" title="Close Notes">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Scrollable Modal Body -->
+      <div class="overflow-y-auto space-y-3 my-3 pr-0.5 flex-1">
+        <!-- Quick Insert Prompts -->
+        <div>
+          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center justify-between">
+            <span>Quick Reflection Starters</span>
+            <span class="text-[9px] text-slate-500">Tap to insert</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button type="button" onclick="insertCoachNotesPrompt('💬 Half-time Talk: ')" class="py-1.5 px-2.5 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg border border-slate-800 hover:border-amber-400/50 text-[11px] font-bold transition active:scale-95 cursor-pointer text-left truncate shadow-sm">
+              💬 Half-time Talk
+            </button>
+            <button type="button" onclick="insertCoachNotesPrompt('🎯 Training Focus: ')" class="py-1.5 px-2.5 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg border border-slate-800 hover:border-amber-400/50 text-[11px] font-bold transition active:scale-95 cursor-pointer text-left truncate shadow-sm">
+              🎯 Training Focus
+            </button>
+            <button type="button" onclick="insertCoachNotesPrompt('⭐ Key Positives: ')" class="py-1.5 px-2.5 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg border border-slate-800 hover:border-amber-400/50 text-[11px] font-bold transition active:scale-95 cursor-pointer text-left truncate shadow-sm">
+              ⭐ Key Positives
+            </button>
+            <button type="button" onclick="insertCoachNotesPrompt('⚡ Areas to Improve: ')" class="py-1.5 px-2.5 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg border border-slate-800 hover:border-amber-400/50 text-[11px] font-bold transition active:scale-95 cursor-pointer text-left truncate shadow-sm">
+              ⚡ Areas to Improve
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Notes Textarea (Expanded Canvas) -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Match Reflections &amp; Notes</label>
+            <button type="button" onclick="clearCoachNotesModalText()" class="text-[10px] font-bold text-slate-500 hover:text-rose-400 cursor-pointer">Clear</button>
+          </div>
+          <textarea id="coachNotesModalTextarea" oninput="setCoachNotesText(this.value)" rows="9" placeholder="Tactical thoughts, half-time talks, training focus for Tuesday, individual player encouragement..." class="w-full min-h-[210px] bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl p-3 text-white text-xs placeholder-slate-500 focus:outline-none resize-none leading-relaxed transition shadow-inner"></textarea>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="pt-3 border-t border-slate-800 flex gap-2 shrink-0">
+        <button type="button" onclick="closeModal('coachNotesModal')" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 rounded-xl font-bold text-xs cursor-pointer transition">
+          Close
+        </button>
+        <button type="button" onclick="saveCoachNotesModal()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Save Notes</span>
         </button>
       </div>
     </div>
@@ -858,6 +1139,21 @@
             <span id="reportCombM1Score" class="text-slate-400">M1: 0 - 0</span>
             <span class="text-slate-600">•</span>
             <span id="reportCombM2Score" class="text-slate-400">M2: 0 - 0</span>
+          </div>
+        </div>
+
+        <!-- POTM Selector (Coach Mode - Prompted at end of match) -->
+        <div id="reportPotmSection" class="hidden p-3 bg-gradient-to-r from-amber-950/40 to-yellow-950/20 border-2 border-amber-400/80 rounded-xl text-left animate-fadeIn">
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm">⭐</span>
+              <span class="text-xs font-black uppercase tracking-wider text-amber-300">Player of the Match</span>
+            </div>
+            <span class="text-[9px] text-emerald-400 font-bold">Shared in WhatsApp Report</span>
+          </div>
+          <p id="reportPotmPromptText" class="text-[10px] text-slate-400 mb-2">Tap a player to award Player of the Match (Initials only):</p>
+          <div id="reportPotmChipsContainer" class="flex flex-wrap gap-1.5">
+            <!-- Rendered dynamically -->
           </div>
         </div>
 
@@ -1672,8 +1968,8 @@
   </div>
 
   <!-- 6. TEAM CUSTOMIZATION MODAL (Rename & Kit Colors) -->
-  <div id="teamEditModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl">
+  <div id="teamEditModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-sm w-full p-4 sm:p-5 max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
         <div>
@@ -1685,7 +1981,7 @@
           </h3>
           <p id="teamEditSubtitle" class="text-[11px] text-slate-400">Customise name & kit colour for quick pitch-side recognition</p>
         </div>
-        <button onclick="closeModal('teamEditModal')" class="text-slate-400 hover:text-white p-1">
+        <button type="button" onclick="closeModal('teamEditModal')" class="text-slate-400 hover:text-white p-1 cursor-pointer">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1693,22 +1989,36 @@
         </button>
       </div>
 
-      <!-- Modal Body Form -->
-      <div class="my-4 space-y-4 text-xs">
+      <!-- Scrollable Modal Body -->
+      <div class="overflow-y-auto space-y-3 my-2.5 px-0.5 flex-1">
+        <!-- Coach Mode: Set as Coach's Team Role -->
+        <div id="teamEditCoachRoleSection" class="p-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">⭐</span>
+            <div>
+              <div class="font-bold text-white text-xs">Coach's Team</div>
+              <div class="text-[10px] text-slate-400">Mark as your team for match tracking</div>
+            </div>
+          </div>
+          <button type="button" id="teamEditCoachToggleBtn" onclick="toggleEditTeamCoachRole()" class="py-1 px-2.5 rounded-lg font-black text-xs transition cursor-pointer">
+            <!-- Rendered dynamically -->
+          </button>
+        </div>
+
         <!-- League Team Dropdown Selector (From League Fixture List) -->
         <div>
-          <label class="block text-amber-400 font-black uppercase tracking-wider mb-1.5 text-[11px] flex items-center justify-between">
+          <label class="block text-amber-400 font-black uppercase tracking-wider mb-1 text-[11px] flex items-center justify-between">
             <span class="flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <svg class="w-3.5 h-3.5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polygon points="10 8 16 12 10 16 10 8"></polygon>
               </svg>
-              <span>League Team Dropdown</span>
+              <span>League Team</span>
             </span>
             <span class="text-[10px] text-slate-400 font-semibold">14 Teams</span>
           </label>
           <div class="relative">
-            <select id="leagueTeamSelect" onchange="onLeagueTeamSelected(this.value)" class="w-full bg-slate-950 border-2 border-amber-400 text-white font-extrabold rounded-xl px-3 py-2.5 text-xs tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer appearance-none pr-9">
+            <select id="leagueTeamSelect" onchange="onLeagueTeamSelected(this.value)" class="w-full bg-slate-950 border-2 border-amber-400 text-white font-extrabold rounded-xl px-3 py-2 text-xs tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer appearance-none pr-9">
               <option value="">-- Choose Team from League Fixtures --</option>
               <option value="Beckwithshaw Blues">Beckwithshaw Blues</option>
               <option value="Beckwithshaw Whites">Beckwithshaw Whites</option>
@@ -1735,56 +2045,221 @@
 
         <!-- Custom Team Name Input -->
         <div>
-          <label class="block text-slate-300 font-bold uppercase tracking-wider mb-1.5 text-[11px]">Custom / Edit Name</label>
+          <label class="block text-slate-300 font-bold uppercase tracking-wider mb-1 text-[11px]">Team Name</label>
           <div class="relative">
-            <input id="teamNameInput" type="text" maxlength="32" placeholder="Enter club or team name" onkeydown="if(event.key==='Enter') saveTeamChanges()" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-white font-bold text-sm tracking-wide focus:outline-none transition">
+            <input id="teamNameInput" type="text" maxlength="32" placeholder="Enter club or team name" onkeydown="if(event.key==='Enter') saveTeamChanges()" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-white font-bold text-sm tracking-wide focus:outline-none transition">
           </div>
         </div>
 
-
-        <!-- Kit Colour Swatches -->
+        <!-- Kit Colour Swatches (Compact 8-in-a-row bar with safe padding) -->
         <div>
-          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Pitch-Side Kit Colour</div>
-          <div id="kitColorGrid" class="grid grid-cols-4 gap-2">
-            <!-- Rendered by JS or static list with selection ring -->
-            <button type="button" onclick="selectKitColor('#f43f5e', 'border-rose-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-rose-500 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#f43f5e" data-border="border-rose-500/70">
-              <span class="text-[11px] font-black text-white drop-shadow">RED</span>
+          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+            <span>Kit Colour</span>
+            <span id="selectedColorNameLabel" class="text-[10px] font-black text-amber-400 uppercase tracking-wide"></span>
+          </div>
+          <div id="kitColorGrid" class="grid grid-cols-8 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+            <button type="button" onclick="selectKitColor('#f43f5e', 'border-rose-500/70')" class="kit-swatch-btn h-8 rounded-lg bg-rose-500 border-2 border-transparent flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm relative" data-color="#f43f5e" data-border="border-rose-500/70" title="Red">
+              <span class="swatch-check hidden text-white text-xs font-black drop-shadow">✓</span>
             </button>
-            <button type="button" onclick="selectKitColor('#0284c7', 'border-sky-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-sky-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#0284c7" data-border="border-sky-500/70">
-              <span class="text-[11px] font-black text-white drop-shadow">SKY</span>
+            <button type="button" onclick="selectKitColor('#0284c7', 'border-sky-500/70')" class="kit-swatch-btn h-8 rounded-lg bg-sky-500 border-2 border-transparent flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm relative" data-color="#0284c7" data-border="border-sky-500/70" title="Sky Blue">
+              <span class="swatch-check hidden text-white text-xs font-black drop-shadow">✓</span>
             </button>
-            <button type="button" onclick="selectKitColor('#2563eb', 'border-blue-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-blue-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#2563eb" data-border="border-blue-500/70">
-              <span class="text-[11px] font-black text-white drop-shadow">BLUE</span>
+            <button type="button" onclick="selectKitColor('#2563eb', 'border-blue-500/70')" class="kit-swatch-btn h-8 rounded-lg bg-blue-600 border-2 border-transparent flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm relative" data-color="#2563eb" data-border="border-blue-500/70" title="Royal Blue">
+              <span class="swatch-check hidden text-white text-xs font-black drop-shadow">✓</span>
             </button>
-            <button type="button" onclick="selectKitColor('#eab308', 'border-yellow-400/70')" class="kit-swatch-btn h-10 rounded-xl bg-yellow-400 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#eab308" data-border="border-yellow-400/70">
-              <span class="text-[11px] font-black text-black">YELLOW</span>
+            <button type="button" onclick="selectKitColor('#eab308', 'border-yellow-400/70')" class="kit-swatch-btn h-8 rounded-lg bg-yellow-400 border-2 border-transparent flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm relative" data-color="#eab308" data-border="border-yellow-400/70" title="Yellow">
+              <span class="swatch-check hidden text-slate-950 text-xs font-black drop-shadow">✓</span>
             </button>
-            <button type="button" onclick="selectKitColor('#16a34a', 'border-emerald-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-emerald-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#16a34a" data-border="border-emerald-500/70">
-              <span class="text-[11px] font-black text-white drop-shadow">GREEN</span>
+            <button type="button" onclick="selectKitColor('#16a34a', 'border-emerald-500/70')" class="kit-swatch-btn h-8 rounded-lg bg-emerald-600 border-2 border-transparent flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm relative" data-color="#16a34a" data-border="border-emerald-500/70" title="Green">
+              <span class="swatch-check hidden text-white text-xs font-black drop-shadow">✓</span>
             </button>
-            <button type="button" onclick="selectKitColor('#ea580c', 'border-orange-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-orange-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#ea580c" data-border="border-orange-500/70">
-              <span class="text-[11px] font-black text-white drop-shadow">ORANGE</span>
+            <button type="button" onclick="selectKitColor('#ea580c', 'border-orange-500/70')" class="kit-swatch-btn h-8 rounded-lg bg-orange-600 border-2 border-transparent flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm relative" data-color="#ea580c" data-border="border-orange-500/70" title="Orange">
+              <span class="swatch-check hidden text-white text-xs font-black drop-shadow">✓</span>
             </button>
-            <button type="button" onclick="selectKitColor('#9333ea', 'border-purple-500/70')" class="kit-swatch-btn h-10 rounded-xl bg-purple-600 border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#9333ea" data-border="border-purple-500/70">
-              <span class="text-[11px] font-black text-white drop-shadow">PURPLE</span>
+            <button type="button" onclick="selectKitColor('#9333ea', 'border-purple-500/70')" class="kit-swatch-btn h-8 rounded-lg bg-purple-600 border-2 border-transparent flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm relative" data-color="#9333ea" data-border="border-purple-500/70" title="Purple">
+              <span class="swatch-check hidden text-white text-xs font-black drop-shadow">✓</span>
             </button>
-            <button type="button" onclick="selectKitColor('#f8fafc', 'border-slate-300')" class="kit-swatch-btn h-10 rounded-xl bg-white border-2 border-transparent flex items-center justify-center transition active:scale-95" data-color="#f8fafc" data-border="border-slate-300">
-              <span class="text-[11px] font-black text-black">WHITE</span>
+            <button type="button" onclick="selectKitColor('#f8fafc', 'border-slate-300')" class="kit-swatch-btn h-8 rounded-lg bg-white border-2 border-transparent flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm relative" data-color="#f8fafc" data-border="border-slate-300" title="White">
+              <span class="swatch-check hidden text-slate-950 text-xs font-black drop-shadow">✓</span>
             </button>
+          </div>
+        </div>
+
+        <!-- Squad Roster (Initials Only - Direct 2-Column Input Grid) -->
+        <div class="pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between mb-1.5">
+            <div>
+              <div class="text-[11px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
+                <span>Squad Roster</span>
+                <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/30">Initials Only</span>
+              </div>
+              <span class="text-[10px] text-slate-400 block font-normal">FA Safeguarding: Initials only (e.g. JD)</span>
+            </div>
+            <button type="button" onclick="resetRosterToDefault()" class="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold text-slate-300 rounded-lg border border-slate-700 cursor-pointer" title="Reset all initials back to blank #1-8">
+              Reset #1-8
+            </button>
+          </div>
+          <!-- 2-Column Roster Grid (Direct Inputs) -->
+          <div id="teamRosterList" class="grid grid-cols-2 gap-1.5">
+            <!-- Rendered dynamically -->
           </div>
         </div>
       </div>
 
       <!-- Action Buttons -->
       <div class="pt-3 border-t border-slate-800 flex gap-2 shrink-0">
-        <button onclick="closeModal('teamEditModal')" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold text-xs">
+        <button type="button" onclick="closeModal('teamEditModal')" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 rounded-xl font-bold text-xs cursor-pointer transition">
           Cancel
         </button>
-        <button onclick="saveTeamChanges()" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 shadow-md">
+        <button type="button" onclick="saveTeamChanges()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
           <span>Save Team</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5B. GOAL ATTRIBUTION MODAL (Scorer & Assist - Safeguarding Initials Only) -->
+  <div id="goalAttributionModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-emerald-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2">
+          <span id="attributionTeamDot" class="w-3.5 h-3.5 rounded-full inline-block border border-white/40 shrink-0 bg-rose-500"></span>
+          <div>
+            <h3 id="attributionModalTitle" class="font-extrabold text-sm text-white">Goal Logged!</h3>
+            <span id="attributionStepIndicator" class="text-[9px] font-black uppercase tracking-wider text-emerald-400 font-mono-sport">STEP 1 OF 2</span>
+          </div>
+        </div>
+        <button type="button" onclick="cancelGoalAttribution()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Stage Instructions & Safeguarding Notice -->
+      <div class="my-2 text-left">
+        <div id="attributionStageDesc" class="text-xs font-bold text-white mb-0.5">Who scored the goal?</div>
+        <div class="text-[10px] text-amber-400/90 flex items-center gap-1 font-medium">
+          <svg class="w-3 h-3 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <span>FA Safeguarding: Player initials only</span>
+        </div>
+      </div>
+
+      <!-- Player Chips Grid -->
+      <div id="attributionChipContainer" class="grid grid-cols-3 sm:grid-cols-4 gap-2 my-2 overflow-y-auto max-h-[42vh] pr-0.5">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="pt-2.5 border-t border-slate-800 flex flex-col gap-1.5 shrink-0">
+        <div class="grid grid-cols-2 gap-1.5">
+          <button id="attributionBackBtn" type="button" onclick="attributionBackToScorer()" class="hidden py-2 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">
+            ← Back to Scorer
+          </button>
+          <button id="attributionOwnGoalBtn" type="button" onclick="setGoalOwnGoal()" class="py-2 px-2 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-bold rounded-xl text-xs transition cursor-pointer">
+            ⚠️ Own Goal
+          </button>
+          <button id="attributionQuickSkipBtn" type="button" onclick="skipGoalAttribution()" class="py-2 px-2 bg-slate-800 hover:bg-slate-750 text-slate-200 font-bold rounded-xl text-xs transition cursor-pointer">
+            Skip / Uncredited
+          </button>
+        </div>
+        <button type="button" onclick="cancelGoalAttribution()" class="w-full py-1.5 text-slate-400 hover:text-white text-xs font-semibold cursor-pointer">
+          Cancel (Don't Add Goal)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5C. SQUAD PLAYER EDIT MODAL (Initials Only) -->
+  <div id="rosterPlayerEditModal" class="hidden fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-xs w-full p-4 shadow-2xl animate-fade-in">
+      <h3 class="font-extrabold text-sm text-white mb-2 flex items-center justify-between">
+        <span>Squad Player</span>
+        <span class="text-[10px] text-amber-400 font-bold">Initials Only</span>
+      </h3>
+      <div class="space-y-3 my-2 text-xs">
+        <div>
+          <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Squad Number</label>
+          <input id="rosterPlayerNumInput" type="number" min="1" max="99" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-white font-mono-sport font-black text-sm focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Player Initials (Max 3 letters)</label>
+          <input id="rosterPlayerInitialsInput" type="text" maxlength="3" placeholder="e.g. JD" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '')" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-white font-mono-sport font-black text-sm focus:outline-none uppercase">
+          <span class="text-[9px] text-slate-400 mt-1 block">FA Safeguarding: Do not use full names.</span>
+        </div>
+      </div>
+      <div class="flex gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="closeModal('rosterPlayerEditModal')" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs cursor-pointer">
+          Cancel
+        </button>
+        <button type="button" onclick="saveRosterPlayer()" class="flex-1 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs cursor-pointer shadow">
+          Save Player
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5D. QUICK SQUAD INITIALS SETUP MODAL (All-In-One Coach Setup) -->
+  <div id="squadInitialsModal" class="hidden fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-sm w-full p-4 sm:p-5 shadow-2xl animate-fade-in flex flex-col max-h-[90vh]">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-base shrink-0">
+            <span>⭐</span>
+          </div>
+          <div>
+            <h3 class="font-black text-sm text-white flex items-center gap-1.5">
+              <span>Squad Initials Setup</span>
+            </h3>
+            <p id="squadInitialsSubtitle" class="text-[11px] text-slate-400">Home Team • Matchday Logging</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('squadInitialsModal')" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Which Team Are You Coaching? Selector -->
+      <div class="my-2 p-2 bg-slate-950 rounded-xl border border-slate-800 flex flex-col gap-1.5 shrink-0">
+        <div class="flex items-center justify-between text-[11px]">
+          <span class="font-black text-amber-400 uppercase tracking-wider">Which team are you coaching?</span>
+          <span class="text-[10px] text-slate-400 font-mono-sport">Tap to choose</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="squadInitialsHomeBtn" onclick="selectSquadModalTeam('home')" class="py-2 px-2.5 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-amber-500 text-slate-950 shadow">
+            <span>⭐</span>
+            <span id="squadInitialsHomeLabel" class="truncate">Home Team</span>
+          </button>
+          <button type="button" id="squadInitialsAwayBtn" onclick="selectSquadModalTeam('away')" class="py-2 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700">
+            <span id="squadInitialsAwayLabel" class="truncate">Away Team</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Notice -->
+      <div class="my-2.5 p-2 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-amber-300 flex items-start gap-2 shrink-0">
+        <span class="text-sm shrink-0">🔒</span>
+        <span><strong>FA Safeguarding:</strong> Enter player initials only (e.g. <span class="font-mono-sport font-black text-white">JD</span>). Full names are not stored.</span>
+      </div>
+
+      <!-- Roster Grid (#1 to #8) -->
+      <div id="squadInitialsInputsContainer" class="grid grid-cols-2 gap-2 my-2 overflow-y-auto max-h-[45vh] pr-0.5">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="pt-3 border-t border-slate-800 flex gap-2 shrink-0">
+        <button type="button" onclick="closeModal('squadInitialsModal')" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">
+          Skip / Later
+        </button>
+        <button type="button" onclick="saveSquadInitials()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs shadow-lg transition active:scale-95 cursor-pointer">
+          Save Squad
         </button>
       </div>
     </div>
@@ -1800,20 +2275,20 @@
           <line x1="12" y1="17" x2="12.01" y2="17"></line>
         </svg>
       </div>
-      <h3 id="confirmResetTitle" class="text-base font-extrabold text-white mb-1">Reset Match 1?</h3>
+      <h3 id="confirmResetTitle" class="text-base font-extrabold text-white mb-1">Reset Both Matches?</h3>
       <p id="confirmResetDesc" class="text-xs text-slate-300 mb-4 leading-relaxed">
-        Are you sure you want to reset all scores, goal history, and match clocks for Match 1 back to 00:00?
+        Are you sure you want to reset all scores, goal history, and match clocks for both Match 1 and Match 2 back to 00:00?
       </p>
       <div class="flex flex-col w-full gap-2">
-        <button id="confirmResetConfirmBtn" onclick="executeResetMatch('active')" class="w-full py-1.5 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+        <button id="confirmResetConfirmBtn" onclick="executeResetMatch('both')" class="w-full py-2 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span id="confirmResetConfirmBtnText">YES, RESET MATCH 1</span>
+          <span id="confirmResetConfirmBtnText">YES, RESET BOTH MATCHES</span>
         </button>
-        <button onclick="executeResetMatch('both')" class="w-full py-2 bg-slate-800/80 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-700/60 text-slate-300 hover:text-rose-300 font-bold rounded-xl text-[11px] transition cursor-pointer">
-          Reset Entire Session (Both Matches)
+        <button onclick="executeResetMatch('active')" class="w-full py-1.5 bg-slate-800/80 hover:bg-slate-750 border border-slate-700 text-slate-300 hover:text-white font-bold rounded-xl text-[11px] transition cursor-pointer">
+          Reset Current Match Only
         </button>
         <button id="confirmResetCancelBtn" onclick="closeModal('confirmResetModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">
-          Cancel (Keep Match)
+          Cancel (Keep Matches)
         </button>
       </div>
     </div>
@@ -1828,14 +2303,14 @@
           <path d="M3 3v5h5"></path>
         </svg>
       </div>
-      <h3 id="confirmResetHalfTitle" class="text-base font-extrabold text-white mb-1">Reset Current Half?</h3>
+      <h3 id="confirmResetHalfTitle" class="text-base font-extrabold text-white mb-1">Reset Match Clock & Scores?</h3>
       <p id="confirmResetHalfDesc" class="text-xs text-slate-300 mb-4 leading-relaxed">
-        Are you sure you want to reset the clock for this half back to 00:00? (Scores and goals will be kept).
+        Are you sure you want to reset the clock and scores for this match back to 00:00 and 0-0?
       </p>
       <div class="flex flex-col w-full gap-2">
         <button id="confirmResetHalfConfirmBtn" onclick="executeResetHalf()" class="w-full py-2 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span>YES, RESET HALF CLOCK</span>
+          <span>YES, RESET CLOCK & SCORES</span>
         </button>
         <button id="confirmResetHalfCancelBtn" onclick="closeModal('confirmResetHalfModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">
           Cancel (Keep Running)
@@ -2114,6 +2589,60 @@
       <!-- Drawer Body Items (Scrollable Category Stream) -->
       <div class="my-3 space-y-3 overflow-y-auto max-h-[60vh] pr-1 flex-1 text-xs">
         
+        <!-- CATEGORY: TOUCHLINE ROLE -->
+        <div>
+          <div class="text-[10px] font-black uppercase text-amber-400 tracking-wider px-1 mb-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>TOUCHLINE ROLE</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="flex items-center justify-between mb-2">
+              <div class="min-w-0">
+                <div class="font-black text-white text-xs">Active Operation Mode</div>
+                <div class="text-[11px] text-slate-400 truncate">Tailors controls for refereeing vs coaching</div>
+              </div>
+              <span id="quickToolsRoleBadge" class="px-2 py-0.5 rounded-lg font-black text-[10px] font-mono-sport uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">REFEREE</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button type="button" id="appModeRefBtn" onclick="setAppMode('referee')" class="p-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition cursor-pointer shadow bg-emerald-500 text-slate-950 border border-emerald-300">
+                <span class="text-lg">⏱️</span>
+                <div class="text-left min-w-0">
+                  <div class="font-black text-xs leading-tight">Referee</div>
+                  <div class="text-[10px] font-normal opacity-80 leading-tight">Whistle &amp; time</div>
+                </div>
+              </button>
+              <button type="button" id="appModeCoachBtn" onclick="setAppMode('coach')" class="p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition cursor-pointer text-slate-400 hover:text-white bg-slate-900 border border-slate-800">
+                <span class="text-lg">📋</span>
+                <div class="text-left min-w-0">
+                  <div class="font-black text-xs leading-tight">Coach</div>
+                  <div class="text-[10px] font-normal opacity-80 leading-tight">Moments &amp; POTM</div>
+                </div>
+              </button>
+            </div>
+
+            <!-- Coach's Team Selector & Squad Initials (Visible when in Coach Mode) -->
+            <div id="quickToolsCoachTeamSection" class="hidden mt-2.5 pt-2 border-t border-slate-800/80">
+              <div class="flex items-center justify-between mb-1.5 text-xs">
+                <span class="font-bold text-slate-300 flex items-center gap-1">
+                  <span>⭐ Coach's Team:</span>
+                </span>
+                <button type="button" onclick="closeModal('quickToolsDrawer'); openSquadInitialsModal();" class="text-[10px] text-amber-400 hover:underline font-bold cursor-pointer">
+                  Edit Squad Initials ›
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button type="button" id="quickToolsCoachHomeBtn" onclick="setCoachTeam('home')" class="py-1.5 px-2 rounded-lg font-black text-xs transition cursor-pointer bg-amber-500 text-slate-950 flex items-center justify-center gap-1">
+                  <span>⭐</span>
+                  <span id="quickToolsCoachHomeName">Home Team</span>
+                </button>
+                <button type="button" id="quickToolsCoachAwayBtn" onclick="setCoachTeam('away')" class="py-1.5 px-2 rounded-lg font-bold text-xs transition cursor-pointer text-slate-400 bg-slate-900 border border-slate-800 flex items-center justify-center gap-1">
+                  <span id="quickToolsCoachAwayName">Away Team</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- CATEGORY: POST-MATCH -->
         <div>
           <div class="text-[10px] font-black uppercase text-emerald-400 tracking-wider px-1 mb-1.5 flex items-center gap-1.5">
@@ -2336,6 +2865,6 @@
   </div>
 
   <!-- Master Application Script -->
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js?v=111"></script>
 </body>
 </html>

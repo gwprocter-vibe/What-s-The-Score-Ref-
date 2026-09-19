@@ -21,6 +21,11 @@ function createDefaultMatchState(id = 1) {
       isTimerRunning: false,
       currentPeriod: '1st Half',
       subReminderTriggered: false,
+      subBannerDismissed: false,
+      oneMinuteAlertTriggered: false,
+      oneMinuteBannerDismissed: false,
+      targetAlertTriggered: false,
+      forgotResumeDismissed: false,
       hasHalfStarted: false,
       firstHalfEnded: false,
       targetHalfSeconds: 15 * 60
@@ -29,10 +34,15 @@ function createDefaultMatchState(id = 1) {
       homeScore: 0,
       awayScore: 0,
       halfTimeScores: { home: null, away: null },
+      kickoffTeam: 'home',
+      kickoffChosen: false,
+      isPowerPlayDismissed: false,
+      isPausedGoalAlertActive: false,
       goals: [],
+      coachNotes: { potm: null, notes: '', moments: [] },
       teams: {
-        home: { name: 'Home Team', color: '#f43f5e', border: 'border-rose-500/70' },
-        away: { name: 'Away Team', color: '#2563eb', border: 'border-blue-500/70' }
+        home: { name: 'Home Team', color: '#f43f5e', border: 'border-rose-500/70', roster: score.createDefaultRoster() },
+        away: { name: 'Away Team', color: '#2563eb', border: 'border-blue-500/70', roster: score.createDefaultRoster() }
       }
     }
   };
@@ -212,28 +222,10 @@ export function saveMatch1AndPrepareMatch2() {
   const m1TargetSec = sessionState.matches[1]?.timer?.targetHalfSeconds || timer.getTargetHalfSeconds() || 15 * 60;
 
   // 5. Cleanly configure Match 2 with fresh timer & scoreboard, but retained teams
-  sessionState.matches[2] = {
-    id: 2,
-    timer: {
-      timerSeconds: 0,
-      stoppageSeconds: 0,
-      isTimerRunning: false,
-      currentPeriod: '1st Half',
-      subReminderTriggered: false,
-      oneMinuteAlertTriggered: false,
-      targetAlertTriggered: false,
-      hasHalfStarted: false,
-      firstHalfEnded: false,
-      targetHalfSeconds: m1TargetSec
-    },
-    score: {
-      homeScore: 0,
-      awayScore: 0,
-      halfTimeScores: { home: null, away: null },
-      goals: [],
-      teams: retainedTeams
-    }
-  };
+  const freshMatch2 = createDefaultMatchState(2);
+  freshMatch2.timer.targetHalfSeconds = m1TargetSec;
+  freshMatch2.score.teams = retainedTeams;
+  sessionState.matches[2] = freshMatch2;
 
   // 6. Switch active session to Match 2
   sessionState.activeMatchId = 2;
@@ -350,23 +342,75 @@ window.downloadMatchCard = report.downloadMatchCard;
 window.shareMatchCard = report.shareMatchCard;
 window.promptResetMatch = function() {
   updateTabBadges();
-  const modal = document.getElementById('confirmResetModal');
-  if (modal) {
-    modal.classList.remove('hidden');
-    hardware.hapticFeedback('tap');
-  } else if (window.confirm(`Are you sure you want to reset all scores and times for Match ${sessionState.activeMatchId}?`)) {
-    window.executeResetMatch('active');
+  const title = document.getElementById('confirmResetTitle');
+  const desc = document.getElementById('confirmResetDesc');
+  const confirmBtnText = document.getElementById('confirmResetConfirmBtnText');
+  if (title) title.innerText = 'Reset Both Matches?';
+  if (desc) desc.innerText = 'Are you sure you want to reset all scores, timers, and goal history for both Match 1 and Match 2 back to 00:00?';
+  if (confirmBtnText) confirmBtnText.innerText = 'YES, RESET BOTH MATCHES';
+
+  if (window.openModal) {
+    window.openModal('confirmResetModal');
+  } else {
+    const modal = document.getElementById('confirmResetModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
   }
+  hardware.hapticFeedback('warning');
 };
-window.executeResetMatch = function(scope = 'active') {
+window.executeResetMatch = function(scope = 'both') {
   if (scope === 'both') {
+    // Retain customized team names, colors, and squad rosters
+    const homeName = sessionState.matches[1]?.score?.teams?.home?.name;
+    const awayName = sessionState.matches[1]?.score?.teams?.away?.name;
+    const homeColor = sessionState.matches[1]?.score?.teams?.home?.color;
+    const awayColor = sessionState.matches[1]?.score?.teams?.away?.color;
+    const homeBorder = sessionState.matches[1]?.score?.teams?.home?.border;
+    const awayBorder = sessionState.matches[1]?.score?.teams?.away?.border;
+    const homeRoster = sessionState.matches[1]?.score?.teams?.home?.roster;
+    const awayRoster = sessionState.matches[1]?.score?.teams?.away?.roster;
+
     sessionState.matches[1] = createDefaultMatchState(1);
     sessionState.matches[2] = createDefaultMatchState(2);
+
+    if (homeName) {
+      sessionState.matches[1].score.teams.home.name = homeName;
+      sessionState.matches[2].score.teams.home.name = homeName;
+    }
+    if (awayName) {
+      sessionState.matches[1].score.teams.away.name = awayName;
+      sessionState.matches[2].score.teams.away.name = awayName;
+    }
+    if (homeColor) {
+      sessionState.matches[1].score.teams.home.color = homeColor;
+      sessionState.matches[1].score.teams.home.border = homeBorder;
+      sessionState.matches[2].score.teams.home.color = homeColor;
+      sessionState.matches[2].score.teams.home.border = homeBorder;
+    }
+    if (awayColor) {
+      sessionState.matches[1].score.teams.away.color = awayColor;
+      sessionState.matches[1].score.teams.away.border = awayBorder;
+      sessionState.matches[2].score.teams.away.color = awayColor;
+      sessionState.matches[2].score.teams.away.border = awayBorder;
+    }
+    if (homeRoster && homeRoster.length > 0) {
+      sessionState.matches[1].score.teams.home.roster = JSON.parse(JSON.stringify(homeRoster));
+      sessionState.matches[2].score.teams.home.roster = JSON.parse(JSON.stringify(homeRoster));
+    }
+    if (awayRoster && awayRoster.length > 0) {
+      sessionState.matches[1].score.teams.away.roster = JSON.parse(JSON.stringify(awayRoster));
+      sessionState.matches[2].score.teams.away.roster = JSON.parse(JSON.stringify(awayRoster));
+    }
+
     timer.resetMatchTimer();
     score.resetScoreState();
     if (typeof prematch.resetPlayerCounts === 'function') prematch.resetPlayerCounts();
     if (typeof prematch.resetChecklist === 'function') prematch.resetChecklist();
+    dismissFirstHalfMustEndToast();
     storage.clearSessionState();
+    persistState();
   } else {
     // Retain team names if already customised
     const currentTeams = sessionState.matches[sessionState.activeMatchId]?.score?.teams;
@@ -379,16 +423,21 @@ window.executeResetMatch = function(scope = 'active') {
     score.restoreScoreState(fresh.score);
     if (typeof prematch.resetPlayerCounts === 'function') prematch.resetPlayerCounts();
     if (typeof prematch.resetChecklist === 'function') prematch.resetChecklist();
+    dismissFirstHalfMustEndToast();
     persistState();
   }
   updateTabBadges();
-  const modal = document.getElementById('confirmResetModal');
-  if (modal) modal.classList.add('hidden');
+  if (window.closeModal) {
+    window.closeModal('confirmResetModal');
+  } else {
+    const modal = document.getElementById('confirmResetModal');
+    if (modal) modal.classList.add('hidden');
+  }
   hardware.hapticFeedback('success');
 };
 window.resetMatch = function(force = false) {
   if (force) {
-    window.executeResetMatch('active');
+    window.executeResetMatch('both');
   } else {
     window.promptResetMatch();
   }
@@ -399,23 +448,37 @@ export function promptResetHalf() {
   const period = tState.currentPeriod || 'Current Half';
   const title = document.getElementById('confirmResetHalfTitle');
   const desc = document.getElementById('confirmResetHalfDesc');
-  if (title) title.innerText = `Reset ${period} Clock?`;
-  if (desc) desc.innerText = `Are you sure you want to reset the clock for ${period} back to 00:00? (Scores and logged goals will be kept).`;
+  if (title) title.innerText = `Reset ${period} & Scores?`;
+  if (desc) desc.innerText = `Are you sure you want to reset the clock and scores for this match back to 00:00 and 0-0?`;
   
-  const modal = document.getElementById('confirmResetHalfModal');
-  if (modal) {
-    modal.classList.remove('hidden');
-    hardware.hapticFeedback('tap');
-  } else if (window.confirm(`Are you sure you want to reset the clock for ${period} back to 00:00?`)) {
-    executeResetHalf();
+  if (window.openModal) {
+    window.openModal('confirmResetHalfModal');
+  } else {
+    const modal = document.getElementById('confirmResetHalfModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
   }
+  hardware.hapticFeedback('warning');
 }
 window.promptResetHalf = promptResetHalf;
 
 export function executeResetHalf() {
   const modal = document.getElementById('confirmResetHalfModal');
   if (modal) modal.classList.add('hidden');
+
+  // Retain custom team names
+  const currentTeams = sessionState.matches[sessionState.activeMatchId]?.score?.teams;
+  const fresh = createDefaultMatchState(sessionState.activeMatchId);
+  if (currentTeams) {
+    fresh.score.teams = JSON.parse(JSON.stringify(currentTeams));
+  }
+  sessionState.matches[sessionState.activeMatchId] = fresh;
+
   timer.resetHalf();
+  score.restoreScoreState(fresh.score);
+  dismissFirstHalfMustEndToast();
   updateTabBadges();
   persistState();
   hardware.hapticFeedback('success');
@@ -537,16 +600,29 @@ window.resetMatchTimer = timer.resetMatchTimer;
 window.nextPeriod = timer.nextPeriod;
 window.nextHalf = timer.nextPeriod;
 window.setPeriod = timer.setPeriod;
+window.setFirstHalfEnded = timer.setFirstHalfEnded;
+window.isFirstHalfEnded = timer.isFirstHalfEnded;
 window.finishMatch = timer.finishMatch;
 window.dismissSubBanner = timer.dismissSubBanner;
-window.resumeFromToast = timer.startTimer;
+window.dismissOneMinuteBanner = timer.dismissOneMinuteBanner;
+window.triggerSubReminder = timer.triggerSubReminder;
+window.triggerOneMinuteAlert = timer.triggerOneMinuteAlert;
+window.catchUpAllStoppage = timer.catchUpAllStoppage;
+window.dismissForgotResumeAlert = timer.dismissForgotResumeAlert;
+window.dismissPausedGoalToast = score.dismissPausedGoalToast;
+window.resumeFromToast = score.resumeFromToast;
 window.syncWallClock = timer.syncWallClock;
+window.getTimerState = timer.getTimerState;
+window.restoreTimerState = timer.restoreTimerState;
+window.getScoreState = score.getScoreState;
 window.updateEditPencilsUI = timer.updateEditPencilsUI;
 
 window.incrementScore = score.incrementScore;
 window.decrementScore = score.decrementScore;
+window.finaliseHalfScore = score.finaliseHalfScore;
 window.undoLastGoal = score.undoLastGoal;
 window.removeGoal = score.removeGoal;
+window.resetScoreState = score.resetScoreState;
 window.dismissPowerPlayBanner = score.dismissPowerPlayBanner;
 window.openConcludedGoalModal = score.openConcludedGoalModal;
 window.setConcludedGoalPeriod = score.setConcludedGoalPeriod;
@@ -557,6 +633,72 @@ window.adjustConcludedGoalSeconds = score.adjustConcludedGoalSeconds;
 window.confirmConcludedGoal = score.confirmConcludedGoal;
 window.promptConcludedGoalRemoval = score.promptConcludedGoalRemoval;
 window.executeConcludedGoalRemoval = score.executeConcludedGoalRemoval;
+
+window.setAppMode = function(mode) {
+  score.setAppMode(mode);
+  persistState();
+};
+window.getAppMode = score.getAppMode;
+window.toggleAppMode = score.toggleAppMode;
+window.showAppModeToast = score.showAppModeToast;
+window.restoreScoreState = score.restoreScoreState;
+window.setKickoffTeam = score.setKickoffTeam;
+window.toggleKickoffTeam = score.toggleKickoffTeam;
+window.dismissKickoffConfirmAlert = score.dismissKickoffConfirmAlert;
+window.updateKickoffBadges = score.updateKickoffBadges;
+window.showMatchToast = score.showMatchToast;
+window.renderRefereeHelperBar = score.renderRefereeHelperBar;
+window.openGoalAttributionModal = score.openGoalAttributionModal;
+window.openGoalAttributionForExistingGoal = score.openGoalAttributionForExistingGoal;
+window.selectAttributionScorer = score.selectAttributionScorer;
+window.selectAttributionAssist = score.selectAttributionAssist;
+window.skipGoalAssist = score.skipGoalAssist;
+window.attributionBackToScorer = score.attributionBackToScorer;
+window.skipGoalAttribution = score.skipGoalAttribution;
+window.setGoalOwnGoal = score.setGoalOwnGoal;
+window.cancelGoalAttribution = score.cancelGoalAttribution;
+
+window.openMatchNotesModal = score.openMatchNotesModal;
+window.selectMomentTag = score.selectMomentTag;
+window.cancelMomentTagSelection = score.cancelMomentTagSelection;
+window.recordMomentForPlayer = score.recordMomentForPlayer;
+window.setCoachPotm = score.setCoachPotm;
+window.setCoachNotesText = score.setCoachNotesText;
+window.addCoachMoment = score.addCoachMoment;
+window.removeCoachMoment = score.removeCoachMoment;
+window.renderMatchNotesUI = score.renderMatchNotesUI;
+
+window.selectInlineTag = score.selectInlineTag;
+window.selectInlinePotmMode = score.selectInlinePotmMode;
+window.cancelInlineTag = score.cancelInlineTag;
+window.recordInlineMomentForPlayer = score.recordInlineMomentForPlayer;
+window.openCoachMomentsModal = score.openCoachMomentsModal;
+window.renderCoachMomentsModal = score.renderCoachMomentsModal;
+window.openCoachNotesModal = score.openCoachNotesModal;
+window.saveCoachNotesModal = score.saveCoachNotesModal;
+window.insertCoachNotesPrompt = score.insertCoachNotesPrompt;
+window.clearCoachNotesModalText = score.clearCoachNotesModalText;
+window.toggleInlineNotesDrawer = score.toggleInlineNotesDrawer;
+window.renderTouchlineBarUI = score.renderTouchlineBarUI;
+
+window.getCoachTeam = score.getCoachTeam;
+window.setCoachTeam = score.setCoachTeam;
+window.toggleCoachTeam = score.toggleCoachTeam;
+window.updateCoachTeamUI = score.updateCoachTeamUI;
+window.checkCoachSquadPrompt = score.checkCoachSquadPrompt;
+window.openSquadInitialsModal = score.openSquadInitialsModal;
+window.selectSquadModalTeam = score.selectSquadModalTeam;
+window.saveSquadInitials = score.saveSquadInitials;
+window.createDefaultRoster = score.createDefaultRoster;
+window.toggleEditTeamCoachRole = score.toggleEditTeamCoachRole;
+
+window.renderTeamRosterEditor = score.renderTeamRosterEditor;
+window.editRosterPlayerModal = score.editRosterPlayerModal;
+window.openAddRosterPlayerModal = score.openAddRosterPlayerModal;
+window.saveRosterPlayer = score.saveRosterPlayer;
+window.removeRosterPlayer = score.removeRosterPlayer;
+window.resetRosterToDefault = score.resetRosterToDefault;
+
 window.openEditTeamModal = score.openEditTeamModal;
 window.editTeamModal = score.openEditTeamModal;
 window.onLeagueTeamSelected = score.onLeagueTeamSelected;
@@ -578,7 +720,10 @@ window.filterRulesTopic = rules.filterRulesTopic;
 window.scrollToRuleSection = rules.scrollToRuleSection;
 
 window.openReportModal = report.openReportModal;
+window.updateReportUI = report.updateReportUI;
 window.updateReportText = report.updateReportText;
+window.getActiveReportText = report.getActiveReportText;
+window.generateReportText = report.generateReportText;
 window.copyReportToClipboard = report.copyReportToClipboard;
 window.copyFaFullTimeToClipboard = report.copyFaFullTimeToClipboard;
 window.shareReportNative = report.shareReportNative;
@@ -666,10 +811,12 @@ timer.registerTimerTickCallback((sec) => {
   if (sec === 1) {
     updateTabBadges();
   }
+  score.renderRefereeHelperBar();
 });
 timer.registerPeriodChangeCallback(() => {
   persistState();
   updateTabBadges();
+  score.renderRefereeHelperBar();
 });
 score.registerScoreChangeCallback(() => {
   persistState();
@@ -680,67 +827,107 @@ score.registerScoreChangeCallback(() => {
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Setup long press logic for reset buttons
+  // Setup long press logic for reset buttons (short press ignored, long press 1.5s opens confirmation modal)
   function setupLongPress(elementId, callback, duration = 1500) {
     const el = document.getElementById(elementId);
     if (!el) return;
     
-    let pressTimer;
+    let pressTimer = null;
     let isPressed = false;
-    let hasTriggered = false;
+    let startX = 0;
+    let startY = 0;
 
     function start(e) {
       if (e.type === 'mousedown' && e.button !== 0) return;
       isPressed = true;
-      hasTriggered = false;
+      
+      if (e.touches && e.touches[0]) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      } else {
+        startX = e.clientX;
+        startY = e.clientY;
+      }
       
       // Visual feedback for holding
-      const originalTransition = el.style.transition;
       el.style.transition = `transform ${duration}ms linear, background-color ${duration}ms linear`;
-      el.style.transform = 'scale(0.9)';
+      el.style.transform = 'scale(0.92)';
       
       if (el.classList.contains('bg-red-600')) {
-          el.dataset.origBg = el.style.backgroundColor;
-          el.style.backgroundColor = '#991b1b'; // darker red
+        el.dataset.origBg = el.style.backgroundColor;
+        el.style.backgroundColor = '#991b1b'; // darker red
       } else {
-          el.dataset.origBg = el.style.backgroundColor;
-          el.style.backgroundColor = '#1e293b'; // slate-800
+        el.dataset.origBg = el.style.backgroundColor;
+        el.style.backgroundColor = '#1e293b'; // slate-800
       }
 
       pressTimer = setTimeout(() => {
-        hasTriggered = true;
-        if (hardware && hardware.hapticFeedback) hardware.hapticFeedback('success');
+        if (!isPressed) return;
+        isPressed = false;
         
-        // Temporarily reset styles so the modal looks normal
-        cancel(e);
+        // Reset visual feedback
+        el.style.transition = '';
+        el.style.transform = '';
+        if (el.dataset.origBg !== undefined) {
+          el.style.backgroundColor = el.dataset.origBg;
+        }
+
+        if (hardware && hardware.hapticFeedback) hardware.hapticFeedback('warning');
+        
         callback(e);
       }, duration);
     }
 
-    function cancel(e) {
+    function move(e) {
       if (!isPressed) return;
+      let curX = 0, curY = 0;
+      if (e.touches && e.touches[0]) {
+        curX = e.touches[0].clientX;
+        curY = e.touches[0].clientY;
+      } else {
+        curX = e.clientX;
+        curY = e.clientY;
+      }
+      const dist = Math.hypot(curX - startX, curY - startY);
+      if (dist > 15) {
+        cancel(e);
+      }
+    }
+
+    function cancel(e) {
+      if (!isPressed && !pressTimer) return;
       isPressed = false;
-      clearTimeout(pressTimer);
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
       
       // Reset visual feedback
-      el.style.transition = '';
+      el.style.transition = 'transform 0.15s ease, background-color 0.15s ease';
       el.style.transform = '';
       if (el.dataset.origBg !== undefined) {
-          el.style.backgroundColor = el.dataset.origBg;
+        el.style.backgroundColor = el.dataset.origBg;
       }
     }
 
     el.addEventListener('mousedown', start);
     el.addEventListener('touchstart', start, {passive: true});
+    el.addEventListener('mousemove', move);
+    el.addEventListener('touchmove', move, {passive: true});
     el.addEventListener('mouseup', cancel);
     el.addEventListener('mouseleave', cancel);
     el.addEventListener('touchend', cancel);
     el.addEventListener('touchcancel', cancel);
     el.addEventListener('contextmenu', (e) => { e.preventDefault(); });
+    el.addEventListener('click', (e) => {
+      // Short press does not put up the window
+      e.preventDefault();
+      e.stopPropagation();
+    });
   }
 
-  setupLongPress('resetHalfBtn', () => { window.executeResetHalf(); }, 1500);
-  setupLongPress('resetMatchBtn', () => { window.executeResetMatch('active'); }, 1500);
+  setupLongPress('resetHalfBtn', () => { window.promptResetHalf(); }, 1500);
+  setupLongPress('resetMatchBtn', () => { window.promptResetMatch(); }, 1500);
 
   // 1. Initialize fixture dropdowns and timer UI
   timer.initTimer();
@@ -748,6 +935,7 @@ document.addEventListener('DOMContentLoaded', () => {
   score.applyTeamVisuals('home');
   score.applyTeamVisuals('away');
   score.renderGoalTimeline();
+  score.setupKickoffLongPress();
 
   // 2. Load saved session if present
   const saved = storage.loadSessionState();
@@ -787,8 +975,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSunlightUI(false);
   }
 
-  // 3. Update Tab Badges & Highlights
+  // 3. Update Tab Badges & Highlights & App Mode
   updateTabBadges();
+  score.updateAppModeUI();
 
   // 4. Acquire Screen Wake Lock
   hardware.requestWakeLock();
@@ -839,6 +1028,11 @@ document.addEventListener('DOMContentLoaded', () => {
       window.closeModal('prematchModal');
       window.closeModal('teamEditModal');
       window.closeModal('installAppModal');
+      window.closeModal('goalAttributionModal');
+      window.closeModal('rosterPlayerEditModal');
+      window.closeModal('matchNotesModal');
+      window.closeModal('coachMomentsModal');
+      window.closeModal('coachNotesModal');
     }
   });
 

@@ -22,23 +22,545 @@
   padding: 0;
 }
 
+html, body {
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg-onyx);
   color: var(--text-primary);
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 12px;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  padding: 8px 10px env(safe-area-inset-bottom, 8px) 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  max-width: 460px;
+  max-width: 440px;
   margin: 0 auto;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Fluid Adaptive Typography */
+#mainTimer {
+  font-size: clamp(2.2rem, 6.5dvh, 4rem);
+  line-height: 1;
+}
+
+#homeScoreDisplay, #awayScoreDisplay {
+  font-size: clamp(2.6rem, 7dvh, 4.5rem);
+  line-height: 1;
+}
+
+/* ==========================================================================
+   PROPORTIONAL HERO SECTIONS: HARMONIC REAL ESTATE DISTRIBUTION
+   Spreads available viewport height evenly across Scorecards, Clock, & Coach Bar
+   ========================================================================== */
+
+/* 1. Score Tracker Grid & Cards */
+#scoreCardsGrid {
+  flex: 0 0 auto;
+  height: 220px;
+  max-height: 240px;
+}
+
+#homeCardContainer,
+#awayCardContainer {
+  height: 100%;
+}
+
+body.mode-referee #scoreCardsGrid {
+  height: 235px;
+  max-height: 250px;
+}
+
+body.mode-referee #clockUnitCard {
+  min-height: 215px;
+}
+
+/* 2. Referee Matchday Helper Bar (Single Unified Extra Info & Alerts Window) */
+#refHelperBar {
+  flex: 1 1 auto;
+  min-height: 58px;
+  max-height: 120px;
+}
+
+body.mode-coach #refHelperBar {
+  display: none !important;
+}
+
+body.mode-referee #refHelperBar {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 64px;
+  max-height: 130px;
+}
+
+body.mode-referee #clockUnitCard {
+  flex: 0 0 auto;
+  height: 215px;
+  min-height: 215px;
+  max-height: 215px;
+}
+
+body.mode-coach #scoreCardsGrid {
+  height: 195px;
+  min-height: 190px;
+  max-height: 210px;
+}
+
+body.mode-coach #homeCardContainer,
+body.mode-coach #awayCardContainer {
+  height: 100%;
+  padding: 8px 10px;
+}
+
+/* 3. Touchline Tags Bar (in Coach Mode) */
+body.mode-coach #coachTouchlineBar {
+  flex: 0 0 auto;
+  min-height: 140px;
+}
+
+/* 4. Clock Unit Hero */
+#clockUnitCard {
+  flex: 0 0 auto;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+body.mode-coach #clockUnitCard {
+  min-height: 180px;
+}
+
+/* 4. Scorebox Goal Chips & Scrollbar Suppression */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#homeGoalChips,
+#awayGoalChips {
+  flex: 0 0 28px;
+  min-height: 26px;
+  max-height: 28px;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+  padding: 2px 4px;
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid rgba(51, 65, 85, 0.45);
+  border-radius: 8px;
+  position: relative;
+  mask-image: linear-gradient(to right, transparent, black 6px, black calc(100% - 6px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 6px, black calc(100% - 6px), transparent);
+}
+
+@keyframes goalChipsCarousel {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.goal-chips-carousel {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  will-change: transform;
+}
+
+.goal-chips-carousel:hover,
+.goal-chips-carousel:active {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-chips-carousel {
+    animation: none !important;
+    overflow-x: auto !important;
+  }
+}
+
+/* Context-Aware Compacting: Coach Mode (When touchline action tiles are visible) */
+body.mode-coach #homeScoreDisplay,
+body.mode-coach #awayScoreDisplay {
+  font-size: clamp(2.2rem, 5.2dvh, 3.4rem);
+}
+
+body.mode-coach #mainTimer {
+  font-size: clamp(2rem, 5.5dvh, 3.2rem);
+}
+
+body.mode-coach .bottom-brand-sig {
+  display: none !important;
+}
+
+body.mode-coach #matchSessionTabs button {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+body.mode-coach #timerToggleBtn {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+body.mode-coach #fieldLockBtn,
+body.mode-coach #resetMatchBtn {
+  min-height: 40px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* Height Breakpoints for Compact Devices (e.g. iPhone SE 667px, Safari with URL bar 580px) */
+@media (max-height: 720px) {
+  body {
+    padding: 3px 6px env(safe-area-inset-bottom, 3px) 6px;
+  }
+
+  .bottom-brand-sig {
+    display: none !important;
+  }
+
+  header {
+    height: 38px !important;
+    min-height: 38px !important;
+    margin-bottom: 2px !important;
+  }
+
+  #quickToolsBtn,
+  #appModeBadge {
+    height: 28px !important;
+    padding: 2px 6px !important;
+    font-size: 10px !important;
+  }
+
+  #matchSessionTabs {
+    margin-bottom: 2px !important;
+  }
+
+  #matchSessionTabs button {
+    padding: 4px 6px !important;
+    font-size: 10px !important;
+  }
+
+  body.mode-coach #scoreCardsGrid {
+    height: 155px !important;
+    min-height: 150px !important;
+    max-height: 160px !important;
+  }
+
+  body.mode-referee #scoreCardsGrid {
+    height: 170px !important;
+    min-height: 165px !important;
+    max-height: 175px !important;
+  }
+
+  #homeCardContainer,
+  #awayCardContainer {
+    padding: 4px 6px !important;
+    border-radius: 12px !important;
+  }
+
+  #homeTeamEditBtn,
+  #awayTeamEditBtn {
+    min-height: 20px !important;
+    margin-bottom: 1px !important;
+    padding: 1px 3px !important;
+    font-size: 11px !important;
+  }
+
+  #homeScoreDisplay,
+  #awayScoreDisplay {
+    font-size: clamp(1.8rem, 4.6dvh, 2.6rem) !important;
+  }
+
+  #homeGoalChips,
+  #awayGoalChips {
+    min-height: 22px !important;
+    max-height: 24px !important;
+    flex: 0 0 24px !important;
+    gap: 4px !important;
+    padding: 1px 2px !important;
+  }
+
+  #homeGoalChips button,
+  #awayGoalChips button {
+    padding: 1px 4px !important;
+    font-size: 9.5px !important;
+  }
+
+  #homeUndoBtn,
+  #awayUndoBtn {
+    padding: 1px 6px !important;
+    font-size: 9px !important;
+  }
+
+  #clockUnitCard,
+  body.mode-coach #clockUnitCard,
+  body.mode-referee #clockUnitCard {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 5px 8px !important;
+    overflow: visible !important;
+  }
+
+  #mainTimer {
+    font-size: clamp(2.2rem, 5.5dvh, 3.2rem) !important;
+    margin: 1px 0 !important;
+    line-height: 1 !important;
+  }
+
+  #clockUnitCard .relative.w-full.max-w-\[280px\] {
+    margin-top: 3px !important;
+    margin-bottom: 3px !important;
+  }
+
+  #timerToggleBtn {
+    min-height: 38px !important;
+    padding: 7px 12px !important;
+    font-size: 13px !important;
+  }
+
+  body.mode-coach #coachTouchlineBar {
+    min-height: 110px !important;
+    padding: 4px 6px !important;
+  }
+
+  #coachTouchlineBar button {
+    padding: 4px 3px !important;
+  }
+
+  #coachTouchlineDefaultRow {
+    gap: 4px !important;
+  }
+
+  #coachTouchlineDefaultRow button {
+    padding: 4px 2px !important;
+  }
+
+  #coachTouchlineDefaultRow button span:first-child {
+    font-size: 13px !important;
+    margin-bottom: 1px !important;
+  }
+
+  #coachTouchlineDefaultRow button span:last-child {
+    font-size: 9.5px !important;
+    line-height: 1.1 !important;
+  }
+
+  #refHelperBar {
+    min-height: 48px !important;
+    max-height: 120px !important;
+    padding: 3px 6px !important;
+  }
+
+  #refHelperHeader {
+    padding-bottom: 2px !important;
+  }
+
+  #refHelperHeader span {
+    font-size: 9px !important;
+  }
+
+  footer {
+    padding-top: 4px !important;
+  }
+
+  #fieldLockBtn,
+  #resetMatchBtn {
+    min-height: 36px !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-height: 600px) {
+  body {
+    padding: 2px 4px env(safe-area-inset-bottom, 2px) 4px;
+  }
+
+  header {
+    height: 34px !important;
+    min-height: 34px !important;
+    margin-bottom: 1px !important;
+  }
+
+  #matchSessionTabs {
+    margin-bottom: 1px !important;
+  }
+
+  #matchSessionTabs button {
+    padding: 3px 4px !important;
+    font-size: 9.5px !important;
+  }
+
+  body.mode-coach #scoreCardsGrid {
+    height: 138px !important;
+    min-height: 135px !important;
+    max-height: 142px !important;
+  }
+
+  body.mode-referee #scoreCardsGrid {
+    height: 150px !important;
+    min-height: 145px !important;
+    max-height: 155px !important;
+  }
+
+  #homeCardContainer,
+  #awayCardContainer {
+    padding: 3px 5px !important;
+    border-radius: 10px !important;
+  }
+
+  #homeCardContainer .border-b,
+  #awayCardContainer .border-b {
+    padding-bottom: 2px !important;
+    margin-bottom: 2px !important;
+  }
+
+  #homeTeamEditBtn,
+  #awayTeamEditBtn {
+    min-height: 16px !important;
+    margin-bottom: 0px !important;
+    padding: 0px 2px !important;
+    font-size: 10px !important;
+  }
+
+  #homeScoreDisplay,
+  #awayScoreDisplay {
+    font-size: clamp(1.5rem, 4dvh, 2.1rem) !important;
+  }
+
+  /* Subtitle hidden on screens under 600px to guarantee zero-scroll */
+  #homeCardContainer span.text-\[9px\],
+  #awayCardContainer span.text-\[9px\] {
+    display: none !important;
+  }
+
+  #homeGoalChips,
+  #awayGoalChips {
+    min-height: 20px !important;
+    max-height: 20px !important;
+    flex: 0 0 20px !important;
+    gap: 3px !important;
+    padding: 0px 2px !important;
+  }
+
+  #homeGoalChips button,
+  #awayGoalChips button {
+    padding: 0.5px 3px !important;
+    font-size: 8.5px !important;
+  }
+
+  #homeUndoBtn,
+  #awayUndoBtn {
+    padding: 0.5px 4px !important;
+    font-size: 8.5px !important;
+  }
+
+  #clockUnitCard,
+  body.mode-coach #clockUnitCard,
+  body.mode-referee #clockUnitCard {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 4px 6px !important;
+    overflow: visible !important;
+  }
+
+  #mainTimer {
+    font-size: clamp(2rem, 5dvh, 2.7rem) !important;
+    margin: 1px 0 !important;
+    line-height: 1 !important;
+  }
+
+  #clockUnitCard .relative.w-full.max-w-\[280px\] {
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
+  }
+
+  #timerToggleBtn {
+    min-height: 36px !important;
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+
+  body.mode-coach #coachTouchlineBar {
+    min-height: 98px !important;
+    max-height: 104px !important;
+    padding: 3px 5px !important;
+    border-radius: 10px !important;
+  }
+
+  #coachTouchlineBar .border-b {
+    padding-bottom: 2px !important;
+    margin-bottom: 3px !important;
+  }
+
+  #coachTouchlineBar button {
+    padding: 2px 3px !important;
+    font-size: 8.5px !important;
+  }
+
+  #coachTouchlineDefaultRow {
+    gap: 3px !important;
+  }
+
+  #coachTouchlineDefaultRow button {
+    padding: 2px 1px !important;
+    min-height: 28px !important;
+    border-radius: 6px !important;
+  }
+
+  #coachTouchlineDefaultRow button span:first-child {
+    font-size: 11px !important;
+    margin-bottom: 0px !important;
+  }
+
+  #coachTouchlineDefaultRow button span:last-child {
+    font-size: 8.5px !important;
+    line-height: 1 !important;
+  }
+
+  #refHelperBar {
+    max-height: 80px !important;
+    min-height: 38px !important;
+    padding: 2px 4px !important;
+  }
+
+  footer {
+    padding-top: 2px !important;
+  }
+
+  #fieldLockBtn,
+  #resetMatchBtn {
+    min-height: 30px !important;
+    padding: 2px 6px !important;
+    font-size: 10px !important;
+    border-radius: 8px !important;
+  }
 }
 
 /* Sports / Timer Tabular Typography */
@@ -194,6 +716,21 @@ body.zen-mode #endHalfBtn:hover {
   opacity: 1 !important;
   filter: none !important;
   pointer-events: auto !important;
+}
+
+/* In referee zen-mode (timer running), collapse the match-session tabs to free
+   vertical space so the Alerts & Reminders bar is always fully visible */
+body.zen-mode.mode-referee #matchSessionTabs {
+  display: none !important;
+}
+
+/* Guarantee the referee alerts window stays prominent while the clock is running */
+body.zen-mode.mode-referee #refHelperBar {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  filter: none !important;
+  min-height: 64px !important;
+  flex-shrink: 0 !important;
 }
 
 /* While timer is running, prominently highlight the Field Lock button */
@@ -401,6 +938,14 @@ summary::-webkit-details-marker {
   display: none !important;
 }
 
-
-
-
+/* Kick-Off Badge in Score Cards */
+.kickoff-badge {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.kickoff-badge:active {
+  transform: scale(0.92);
+}

@@ -1,6 +1,6 @@
 // What's The Score Ref - Match Report Module
 import { hapticFeedback } from './hardware.js';
-import { teams, getScoreState } from './score.js';
+import { teams, getScoreState, getAppMode, setCoachPotm } from './score.js';
 import { getTimerState, getTargetHalfMinutes } from './timer.js';
 
 let activeReportScope = 'm1'; // 'm1', 'm2', 'combined'
@@ -35,6 +35,7 @@ export function getMatchDataForScope(scopeNum) {
       homeScore: sState.homeScore,
       awayScore: sState.awayScore,
       goals: sState.goals || [],
+      coachNotes: sState.coachNotes || null,
       period: formatPeriod(tState.currentPeriod, isFT, tState.timerSeconds, tState.hasHalfStarted),
       isFT: isFT
     };
@@ -52,6 +53,7 @@ export function getMatchDataForScope(scopeNum) {
       homeScore: m.score.homeScore ?? 0,
       awayScore: m.score.awayScore ?? 0,
       goals: m.score.goals || [],
+      coachNotes: m.score.coachNotes || null,
       period: formatPeriod(m.timer?.currentPeriod, isFT, m.timer?.timerSeconds || 0, m.timer?.hasHalfStarted),
       isFT: isFT
     };
@@ -66,9 +68,75 @@ export function getMatchDataForScope(scopeNum) {
     homeScore: 0,
     awayScore: 0,
     goals: [],
+    coachNotes: null,
     period: 'Full Time',
     isFT: true
   };
+}
+
+export function formatGoalAttribution(g) {
+  if (g.isOwnGoal) {
+    return ' — ⚽ Own Goal';
+  }
+  if (!g.scorer) {
+    return '';
+  }
+  const sStr = `#${g.scorer.number}${g.scorer.initials ? ' ' + g.scorer.initials : ''}`;
+  if (!g.assist) {
+    return ` — ⚽ ${sStr}`;
+  }
+  const aStr = `#${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''}`;
+  return ` — ⚽ ${sStr} (🅰️ ${aStr})`;
+}
+
+export function buildScorersSummaryText(goalsList) {
+  const creditedGoals = goalsList.filter(g => g.scorer || g.isOwnGoal);
+  if (creditedGoals.length === 0) return '';
+
+  const teamScorers = {};
+  const teamAssists = {};
+
+  goalsList.forEach(g => {
+    const tName = g.teamName || (g.team === 'home' ? 'Home' : 'Away');
+    if (!teamScorers[tName]) teamScorers[tName] = {};
+    if (!teamAssists[tName]) teamAssists[tName] = {};
+
+    if (g.isOwnGoal) {
+      teamScorers[tName]['Own Goal'] = (teamScorers[tName]['Own Goal'] || 0) + 1;
+    } else if (g.scorer) {
+      const sKey = `#${g.scorer.number}${g.scorer.initials ? ' ' + g.scorer.initials : ''}`;
+      teamScorers[tName][sKey] = (teamScorers[tName][sKey] || 0) + 1;
+    }
+
+    if (g.assist) {
+      const aKey = `#${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''}`;
+      teamAssists[tName][aKey] = (teamAssists[tName][aKey] || 0) + 1;
+    }
+  });
+
+  let summary = `🎯 SCORERS & ASSISTS (Initials):\n`;
+  let hasAny = false;
+  Object.keys(teamScorers).forEach(tName => {
+    const sObj = teamScorers[tName];
+    const aObj = teamAssists[tName] || {};
+    const sKeys = Object.keys(sObj);
+    const aKeys = Object.keys(aObj);
+
+    if (sKeys.length > 0 || aKeys.length > 0) {
+      hasAny = true;
+      summary += `• ${tName}:\n`;
+      if (sKeys.length > 0) {
+        const sList = sKeys.map(k => `${k} (${sObj[k]})`).join(', ');
+        summary += `   Goals: ${sList}\n`;
+      }
+      if (aKeys.length > 0) {
+        const aList = aKeys.map(k => `${k} (${aObj[k]})`).join(', ');
+        summary += `   Assists: ${aList}\n`;
+      }
+    }
+  });
+  summary += `\n`;
+  return hasAny ? summary : '';
 }
 
 export function generateReportText(scope = activeReportScope) {
@@ -99,8 +167,24 @@ export function generateReportText(scope = activeReportScope) {
     if (allGoals.length > 0) {
       text += `⏱️ COMBINED GOAL TIMELINE (${allGoals.length} goals):\n`;
       allGoals.forEach((g, i) => {
-        text += `${i + 1}. [M${g.match} ${g.time}] (${g.period}) ${g.teamName} [${g.scoreHome}-${g.scoreAway}]\n`;
+        text += `${i + 1}. [M${g.match} ${g.time}] (${g.period}) ${g.teamName} [${g.scoreHome}-${g.scoreAway}]${formatGoalAttribution(g)}\n`;
       });
+      text += `\n`;
+
+      const summaryText = buildScorersSummaryText(allGoals);
+      if (summaryText) text += summaryText;
+    }
+
+    if ((m1.coachNotes && m1.coachNotes.potm) || (m2.coachNotes && m2.coachNotes.potm)) {
+      text += `⭐ PLAYER OF THE MATCH:\n`;
+      if (m1.coachNotes && m1.coachNotes.potm) {
+        const p1 = m1.coachNotes.potm;
+        text += `• Match 1 POTM: #${p1.number}${p1.initials ? ' ' + p1.initials : ''}\n`;
+      }
+      if (m2.coachNotes && m2.coachNotes.potm) {
+        const p2 = m2.coachNotes.potm;
+        text += `• Match 2 POTM: #${p2.number}${p2.initials ? ' ' + p2.initials : ''}\n`;
+      }
       text += `\n`;
     }
 
@@ -147,11 +231,19 @@ export function generateReportText(scope = activeReportScope) {
   if (goals.length > 0) {
     text += `⏱️ GOAL TIMELINE (${goals.length} goals):\n`;
     goals.forEach((g, i) => {
-      text += `${i + 1}. [${g.time}] (${g.period}) ${g.teamName} [${g.scoreHome}-${g.scoreAway}]\n`;
+      text += `${i + 1}. [${g.time}] (${g.period}) ${g.teamName} [${g.scoreHome}-${g.scoreAway}]${formatGoalAttribution(g)}\n`;
     });
     text += `\n`;
+
+    const summaryText = buildScorersSummaryText(goals);
+    if (summaryText) text += summaryText;
   } else {
     text += `⏱️ GOAL TIMELINE: No goals recorded.\n\n`;
+  }
+
+  if (data.coachNotes && data.coachNotes.potm) {
+    const potm = data.coachNotes.potm;
+    text += `⭐ Player of the Match: #${potm.number}${potm.initials ? ' ' + potm.initials : ''}\n\n`;
   }
 
   if (ref) text += `Referee: ${ref}\n`;
@@ -257,6 +349,8 @@ export function updateReportUI() {
     if (half2El) half2El.innerText = `${h2Home} - ${h2Away}`;
   }
 
+  renderReportPotmUI();
+
   const handoverBtn = document.getElementById('saveMatch1PrepareMatch2ReportBtn');
   if (handoverBtn) {
     const activeMatchId = (window.getActiveMatchId && typeof window.getActiveMatchId === 'function') ? window.getActiveMatchId() : 1;
@@ -267,6 +361,74 @@ export function updateReportUI() {
     }
   }
 }
+
+export function renderReportPotmUI() {
+  const potmSection = document.getElementById('reportPotmSection');
+  const potmContainer = document.getElementById('reportPotmChipsContainer');
+  const promptText = document.getElementById('reportPotmPromptText');
+  if (!potmSection || !potmContainer) return;
+
+  const isCoach = typeof getAppMode === 'function' && getAppMode() === 'coach';
+  if (!isCoach) {
+    potmSection.classList.add('hidden');
+    return;
+  }
+  potmSection.classList.remove('hidden');
+
+  const matchNum = activeReportScope === 'm2' ? 2 : 1;
+  const data = getMatchDataForScope(matchNum);
+  const currentPotm = data.coachNotes?.potm;
+  const roster = teams.home.roster || [];
+
+  if (promptText) {
+    promptText.innerText = activeReportScope === 'combined'
+      ? `Tap player to award Match 1 POTM (Initials only):`
+      : `Tap player to award Match ${matchNum} POTM (Initials only):`;
+  }
+
+  potmContainer.innerHTML = roster.map(p => {
+    const isSelected = currentPotm && currentPotm.number === p.number;
+    const label = p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
+    const btnClass = isSelected
+      ? 'py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs border-2 border-yellow-200 shadow-md scale-105 transition cursor-pointer flex items-center gap-1'
+      : 'py-1.5 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs border border-slate-700 transition cursor-pointer';
+
+    return `
+      <button type="button" onclick="setReportScopePotm(${matchNum}, ${p.number})" class="${btnClass}">
+        ${isSelected ? '⭐ ' : ''}<span>${label}</span>
+      </button>
+    `;
+  }).join('');
+}
+
+export function setReportScopePotm(scopeNum, playerNumber) {
+  const session = (window.getSessionState && typeof window.getSessionState === 'function') ? window.getSessionState() : null;
+  const activeId = (window.getActiveMatchId && typeof window.getActiveMatchId === 'function') ? window.getActiveMatchId() : 1;
+
+  if (scopeNum === activeId || !session) {
+    const roster = teams.home.roster || [];
+    const player = roster.find(p => p.number === playerNumber) || { number: playerNumber, initials: '' };
+    setCoachPotm(player);
+  } else {
+    const m = session.matches && session.matches[scopeNum];
+    if (m && m.score) {
+      if (!m.score.coachNotes) {
+        m.score.coachNotes = { potm: null, notes: '', moments: [] };
+      }
+      const roster = m.score.teams?.home?.roster || [];
+      const player = roster.find(p => p.number === playerNumber) || { number: playerNumber, initials: '' };
+      if (m.score.coachNotes.potm && m.score.coachNotes.potm.number === player.number) {
+        m.score.coachNotes.potm = null;
+      } else {
+        m.score.coachNotes.potm = player;
+      }
+      hapticFeedback('success');
+    }
+  }
+  updateReportUI();
+  updateReportText();
+}
+window.setReportScopePotm = setReportScopePotm;
 
 export function openReportModal() {
   const activeMatchId = (window.getActiveMatchId && typeof window.getActiveMatchId === 'function') ? window.getActiveMatchId() : 1;
@@ -717,7 +879,16 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
 
         ctx.fillStyle = '#ffffff';
         ctx.font = '800 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.fillText(truncateText(ctx, g.teamName, 360), 235, rowY);
+        let scorerText = '';
+        if (g.isOwnGoal) {
+          scorerText = ' • ⚠️ Own Goal';
+        } else if (g.scorer) {
+          const sInit = g.scorer.initials ? `#${g.scorer.number} ${g.scorer.initials}` : `#${g.scorer.number}`;
+          const aInit = g.assist ? ` (🅰️ #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
+          scorerText = ` • ⚽ ${sInit}${aInit}`;
+        }
+        const fullGoalLabel = `${g.teamName}${scorerText}`;
+        ctx.fillText(truncateText(ctx, fullGoalLabel, 360), 235, rowY);
 
         // Score at that goal
         ctx.fillStyle = '#cbd5e1';
@@ -762,6 +933,14 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
       ctx.fillText(`Pitch / Venue: ${pitch}`, 65, 922);
     } else {
       ctx.fillText(`Rules: Harrogate & Wharfedale U9 Grassroots League`, 65, 922);
+    }
+
+    if (matchData.coachNotes && matchData.coachNotes.potm) {
+      const potm = matchData.coachNotes.potm;
+      const potmStr = `#${potm.number}${potm.initials ? ' ' + potm.initials : ''}`;
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = '900 12px monospace';
+      ctx.fillText(`⭐ POTM: ${potmStr}`, 65, 944);
     }
 
     ctx.fillStyle = '#64748b';

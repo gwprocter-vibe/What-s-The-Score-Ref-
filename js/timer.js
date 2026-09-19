@@ -61,13 +61,16 @@ let isTimerRunning = false;
 let timerInterval = null;
 let currentPeriod = '1st Half'; // '1st Half', '2nd Half', 'Full Time'
 let subReminderTriggered = false;
+let subBannerDismissed = false;
 let oneMinuteAlertTriggered = false;
+let oneMinuteBannerDismissed = false;
 let targetAlertTriggered = false;
 let hasHalfStarted = false;
 let firstHalfEnded = false;
 let pausedTimeTracker = 0;
 let startTimestamp = 0;
 let stoppageStartTimestamp = 0;
+let forgotResumeDismissed = false;
 
 let halvesData = {
   '1st Half': {
@@ -133,11 +136,16 @@ export function getTimerState() {
     isTimerRunning,
     currentPeriod,
     subReminderTriggered,
+    subBannerDismissed,
     oneMinuteAlertTriggered,
+    oneMinuteBannerDismissed,
     targetAlertTriggered,
+    forgotResumeDismissed,
     hasHalfStarted,
     firstHalfEnded,
     targetHalfSeconds,
+    oneMinuteWarningSeconds,
+    subReminderSeconds,
     halvesData: JSON.parse(JSON.stringify(halvesData))
   };
 }
@@ -155,6 +163,7 @@ export function restoreTimerState(state) {
   subReminderTriggered = state.subReminderTriggered || false;
   oneMinuteAlertTriggered = state.oneMinuteAlertTriggered || (timerSeconds >= oneMinuteWarningSeconds);
   targetAlertTriggered = state.targetAlertTriggered || (timerSeconds >= targetHalfSeconds);
+  forgotResumeDismissed = state.forgotResumeDismissed || false;
   hasHalfStarted = typeof state.hasHalfStarted === 'boolean' ? state.hasHalfStarted : (timerSeconds > 0);
   firstHalfEnded = typeof state.firstHalfEnded === 'boolean' ? state.firstHalfEnded : (currentPeriod === '2nd Half' || currentPeriod === 'Full Time');
   isTimerRunning = false; // Always reload in safe paused state
@@ -187,24 +196,15 @@ export function restoreTimerState(state) {
     stoppageSeconds = 0;
   }
 
+  stoppageStartTimestamp = (stoppageSeconds > 0) ? Date.now() - (stoppageSeconds * 1000) : 0;
+
   updateTimerUI();
   updateTimerButtonUI();
 
-  if (hasHalfStarted && stoppageSeconds >= 45 && currentPeriod !== 'Full Time') {
-    document.getElementById('stoppageRecoveryPanel')?.classList.remove('hidden');
-    const ghostClock = document.getElementById('ghostClockElapsed');
-    if (ghostClock) ghostClock.innerText = `+${formatTime(stoppageSeconds)} lost`;
-  } else {
-    document.getElementById('stoppageRecoveryPanel')?.classList.add('hidden');
-  }
-
-  const subBanner = document.getElementById('subReminderBanner');
-  if (subBanner) {
-    if (subReminderTriggered && timerSeconds >= subReminderSeconds && timerSeconds < subReminderSeconds + 60 && currentPeriod !== 'Full Time') {
-      subBanner.classList.remove('hidden');
-    } else {
-      subBanner.classList.add('hidden');
-    }
+  const refLostTimeBadge = document.getElementById('refHelperLostTimeBadge');
+  if (refLostTimeBadge) refLostTimeBadge.innerText = `+${formatTime(stoppageSeconds)} lost`;
+  if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+    window.renderRefereeHelperBar();
   }
 }
 
@@ -248,9 +248,19 @@ export function startTimer() {
   updateEditPencilsUI();
 
   updateTimerButtonUI();
-  document.getElementById('stoppageRecoveryPanel')?.classList.add('hidden');
+  forgotResumeDismissed = false;
+  document.getElementById('refHelperForgotResumeAlert')?.classList.add('hidden');
   document.getElementById('pausedGoalToast')?.classList.add('hidden');
+  document.getElementById('refHelperPausedGoalAlert')?.classList.add('hidden');
   document.getElementById('firstHalfMustEndToast')?.classList.add('hidden');
+
+  if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+    window.renderRefereeHelperBar();
+  }
+
+  if (typeof window !== 'undefined' && typeof window.dismissPausedGoalToast === 'function') {
+    window.dismissPausedGoalToast();
+  }
 
   if (typeof window !== 'undefined' && typeof window.updateTabBadges === 'function') {
     window.updateTabBadges();
@@ -305,12 +315,15 @@ export function pauseTimer() {
   clearInterval(timerInterval);
 
   if (hasHalfStarted && currentPeriod !== 'Full Time') {
-    if (stoppageSeconds >= 45) {
-      document.getElementById('stoppageRecoveryPanel')?.classList.remove('hidden');
-    } else {
-      document.getElementById('stoppageRecoveryPanel')?.classList.add('hidden');
-    }
     stoppageStartTimestamp = Date.now() - (stoppageSeconds * 1000);
+
+    const refLostTimeBadge = document.getElementById('refHelperLostTimeBadge');
+    if (refLostTimeBadge) refLostTimeBadge.innerText = `+${formatTime(stoppageSeconds)} lost`;
+    if (stoppageSeconds >= 45 && !forgotResumeDismissed) {
+      if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+        window.renderRefereeHelperBar();
+      }
+    }
 
     timerInterval = setInterval(() => {
       stoppageSeconds = Math.max(0, Math.floor((Date.now() - stoppageStartTimestamp) / 1000));
@@ -319,9 +332,14 @@ export function pauseTimer() {
       if (stoppageDisplay) stoppageDisplay.innerText = `Stoppage: +${formatTime(stoppageSeconds)}`;
       if (ghostClockElapsed) ghostClockElapsed.innerText = `+${formatTime(stoppageSeconds)} lost`;
 
-      // Reveal Forgot to Resume Catch-Up Panel only after 45s of pause
-      if (stoppageSeconds >= 45) {
-        document.getElementById('stoppageRecoveryPanel')?.classList.remove('hidden');
+      const refBadge = document.getElementById('refHelperLostTimeBadge');
+      if (refBadge) refBadge.innerText = `+${formatTime(stoppageSeconds)} lost`;
+
+      // Reveal Forgot to Resume Catch-Up Alert only after 45s of pause
+      if (stoppageSeconds >= 45 && !forgotResumeDismissed) {
+        if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+          window.renderRefereeHelperBar();
+        }
       }
 
       // Periodic gentle nudge if paused for > 45s while clock was running
@@ -332,7 +350,7 @@ export function pauseTimer() {
       onTimerTickCallbacks.forEach(cb => cb(timerSeconds, isTimerRunning));
     }, 250);
   } else {
-    document.getElementById('stoppageRecoveryPanel')?.classList.add('hidden');
+    document.getElementById('refHelperForgotResumeAlert')?.classList.add('hidden');
   }
 }
 
@@ -373,8 +391,20 @@ export function catchUpAllStoppage() {
   if (stoppageDisplay) stoppageDisplay.innerText = 'Stoppage: +00:00';
   const ghostClock = document.getElementById('ghostClockElapsed');
   if (ghostClock) ghostClock.innerText = '+00:00 lost';
+  const refBadge = document.getElementById('refHelperLostTimeBadge');
+  if (refBadge) refBadge.innerText = '+00:00 lost';
+  forgotResumeDismissed = false;
+  document.getElementById('refHelperForgotResumeAlert')?.classList.add('hidden');
   updateTimerUI();
   startTimer();
+}
+
+export function dismissForgotResumeAlert() {
+  forgotResumeDismissed = true;
+  document.getElementById('refHelperForgotResumeAlert')?.classList.add('hidden');
+  if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+    window.renderRefereeHelperBar();
+  }
 }
 
 function stopTimerComplete() {
@@ -385,7 +415,7 @@ function stopTimerComplete() {
   timerInterval = null;
   startTimestamp = 0;
   stoppageStartTimestamp = 0;
-  document.getElementById('stoppageRecoveryPanel')?.classList.add('hidden');
+  document.getElementById('refHelperForgotResumeAlert')?.classList.add('hidden');
   document.getElementById('pausedGoalToast')?.classList.add('hidden');
 }
 
@@ -398,8 +428,11 @@ export function resetMatchTimer() {
   stoppageSeconds = 0;
   startTimestamp = 0;
   stoppageStartTimestamp = 0;
+  forgotResumeDismissed = false;
   subReminderTriggered = false;
+  subBannerDismissed = false;
   oneMinuteAlertTriggered = false;
+  oneMinuteBannerDismissed = false;
   targetAlertTriggered = false;
 
   halvesData = {
@@ -428,9 +461,23 @@ export function resetMatchTimer() {
 
   updateTimerUI();
   updateTimerButtonUI();
-  dismissSubBanner();
+  if (subReminderTimeout) {
+    clearTimeout(subReminderTimeout);
+    subReminderTimeout = null;
+  }
+  document.getElementById('subReminderBanner')?.classList.add('hidden');
+  document.getElementById('refHelperSubAlert')?.classList.add('hidden');
+  document.getElementById('refHelperOneMinuteAlert')?.classList.add('hidden');
+  document.getElementById('refHelperForgotResumeAlert')?.classList.add('hidden');
+  document.getElementById('refHelperPowerPlayAlert')?.classList.add('hidden');
+  document.getElementById('refHelperPausedGoalAlert')?.classList.add('hidden');
+  document.getElementById('pausedGoalToast')?.classList.add('hidden');
+  document.getElementById('firstHalfMustEndToast')?.classList.add('hidden');
   hapticFeedback('tap');
   onPeriodChangeCallbacks.forEach(cb => cb(currentPeriod));
+  if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+    window.renderRefereeHelperBar();
+  }
 }
 
 export function resetHalf() {
@@ -440,8 +487,11 @@ export function resetHalf() {
   startTimestamp = 0;
   stoppageStartTimestamp = 0;
   hasHalfStarted = false;
+  forgotResumeDismissed = false;
   subReminderTriggered = false;
+  subBannerDismissed = false;
   oneMinuteAlertTriggered = false;
+  oneMinuteBannerDismissed = false;
   targetAlertTriggered = false;
 
   // Reset the data for the active half
@@ -471,9 +521,22 @@ export function resetHalf() {
 
   updateTimerUI();
   updateTimerButtonUI();
-  dismissSubBanner();
+  if (subReminderTimeout) {
+    clearTimeout(subReminderTimeout);
+    subReminderTimeout = null;
+  }
+  document.getElementById('subReminderBanner')?.classList.add('hidden');
+  document.getElementById('refHelperSubAlert')?.classList.add('hidden');
+  document.getElementById('refHelperOneMinuteAlert')?.classList.add('hidden');
+  document.getElementById('refHelperForgotResumeAlert')?.classList.add('hidden');
+  document.getElementById('refHelperPausedGoalAlert')?.classList.add('hidden');
+  document.getElementById('pausedGoalToast')?.classList.add('hidden');
+  document.getElementById('firstHalfMustEndToast')?.classList.add('hidden');
   hapticFeedback('tap');
   onPeriodChangeCallbacks.forEach(cb => cb(currentPeriod));
+  if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+    window.renderRefereeHelperBar();
+  }
 }
 
 export function prepareSecondHalf() {
@@ -538,7 +601,9 @@ export function setPeriod(period) {
   stoppageStartTimestamp = 0;
   hasHalfStarted = Boolean(targetHalfData.hasHalfStarted && timerSeconds > 0);
   subReminderTriggered = targetHalfData.subReminderTriggered || false;
+  subBannerDismissed = false;
   oneMinuteAlertTriggered = targetHalfData.oneMinuteAlertTriggered || (timerSeconds >= oneMinuteWarningSeconds);
+  oneMinuteBannerDismissed = false;
   targetAlertTriggered = targetHalfData.targetAlertTriggered || (timerSeconds >= targetHalfSeconds);
 
   const stoppageDisplay = document.getElementById('stoppageDisplay');
@@ -548,7 +613,13 @@ export function setPeriod(period) {
 
   updateTimerUI();
   updateTimerButtonUI();
-  dismissSubBanner();
+  if (subReminderTimeout) {
+    clearTimeout(subReminderTimeout);
+    subReminderTimeout = null;
+  }
+  document.getElementById('subReminderBanner')?.classList.add('hidden');
+  document.getElementById('refHelperSubAlert')?.classList.add('hidden');
+  document.getElementById('refHelperOneMinuteAlert')?.classList.add('hidden');
   hapticFeedback('tap');
   onPeriodChangeCallbacks.forEach(cb => cb(currentPeriod));
 }
@@ -565,7 +636,9 @@ export function nextPeriod() {
   stoppageSeconds = 0;
   hasHalfStarted = false;
   subReminderTriggered = false;
+  subBannerDismissed = false;
   oneMinuteAlertTriggered = false;
+  oneMinuteBannerDismissed = false;
   targetAlertTriggered = false;
 
   const stoppageDisplay = document.getElementById('stoppageDisplay');
@@ -575,13 +648,24 @@ export function nextPeriod() {
 
   updateTimerUI();
   updateTimerButtonUI();
-  dismissSubBanner();
+  if (subReminderTimeout) {
+    clearTimeout(subReminderTimeout);
+    subReminderTimeout = null;
+  }
+  document.getElementById('subReminderBanner')?.classList.add('hidden');
+  document.getElementById('refHelperSubAlert')?.classList.add('hidden');
+  document.getElementById('refHelperOneMinuteAlert')?.classList.add('hidden');
   onPeriodChangeCallbacks.forEach(cb => cb(currentPeriod));
 }
 
 export function finishMatch() {
   stopTimerComplete();
   currentPeriod = 'Full Time';
+  subReminderTriggered = false;
+  subBannerDismissed = false;
+  oneMinuteAlertTriggered = false;
+  oneMinuteBannerDismissed = false;
+  targetAlertTriggered = false;
   playWhistleTone('double');
   hapticFeedback('long');
   updateTimerUI();
@@ -709,13 +793,18 @@ export function updateTimerButtonUI() {
 
 let subReminderTimeout = null;
 
-function triggerSubReminder() {
+export function triggerSubReminder() {
   subReminderTriggered = true;
+  subBannerDismissed = false;
   const banner = document.getElementById('subReminderBanner');
   if (banner) banner.classList.remove('hidden');
 
   playWhistleTone('triple_chime');
   hapticFeedback('alert');
+
+  if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+    window.renderRefereeHelperBar();
+  }
 
   if (subReminderTimeout) clearTimeout(subReminderTimeout);
   subReminderTimeout = setTimeout(() => {
@@ -723,10 +812,15 @@ function triggerSubReminder() {
   }, 60000); // Auto-dismiss after 1 minute
 }
 
-function triggerOneMinuteAlert() {
+export function triggerOneMinuteAlert() {
   oneMinuteAlertTriggered = true;
+  oneMinuteBannerDismissed = false;
   playWhistleTone('warning');
   hapticFeedback('one_minute');
+
+  if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+    window.renderRefereeHelperBar();
+  }
 }
 
 function triggerTargetTimeAlert() {
@@ -740,13 +834,32 @@ export function dismissSubBanner() {
     clearTimeout(subReminderTimeout);
     subReminderTimeout = null;
   }
+  subBannerDismissed = true;
+  hapticFeedback('tap');
   const banner = document.getElementById('subReminderBanner');
   if (banner) banner.classList.add('hidden');
+  const helperSub = document.getElementById('refHelperSubAlert');
+  if (helperSub) helperSub.classList.add('hidden');
+  if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+    window.renderRefereeHelperBar();
+  }
+}
+
+export function dismissOneMinuteBanner() {
+  oneMinuteBannerDismissed = true;
+  hapticFeedback('tap');
+  const alertEl = document.getElementById('refHelperOneMinuteAlert');
+  if (alertEl) alertEl.classList.add('hidden');
+  if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+    window.renderRefereeHelperBar();
+  }
 }
 
 export function dismissPausedGoalToast() {
   const toast = document.getElementById('pausedGoalToast');
   if (toast) toast.classList.add('hidden');
+  const refToast = document.getElementById('refHelperPausedGoalAlert');
+  if (refToast) refToast.classList.add('hidden');
 }
 
 // Immediate wake-up clock resynchronization (ensures clock never stops or drifts when phone sleeps)
@@ -776,6 +889,11 @@ export function syncWallClock() {
     const ghostClockElapsed = document.getElementById('ghostClockElapsed');
     if (stoppageDisplay) stoppageDisplay.innerText = `Stoppage: +${formatTime(stoppageSeconds)}`;
     if (ghostClockElapsed) ghostClockElapsed.innerText = `+${formatTime(stoppageSeconds)} lost`;
+    const refBadge = document.getElementById('refHelperLostTimeBadge');
+    if (refBadge) refBadge.innerText = `+${formatTime(stoppageSeconds)} lost`;
+    if (typeof window !== 'undefined' && typeof window.renderRefereeHelperBar === 'function') {
+      window.renderRefereeHelperBar();
+    }
   }
 }
 
