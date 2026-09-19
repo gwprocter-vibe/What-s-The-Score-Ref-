@@ -53,6 +53,20 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* iOS Standalone (Saved to Home Screen) Notch & Status Bar Protection */
+@supports (-webkit-touch-callout: none) {
+  @media (display-mode: standalone) {
+    body {
+      padding-top: max(47px, calc(env(safe-area-inset-top, 0px) + 4px)) !important;
+    }
+  }
+}
+
+html.is-ios-standalone body,
+html.is-standalone body {
+  padding-top: max(47px, calc(env(safe-area-inset-top, 0px) + 4px)) !important;
+}
+
 /* Fluid Adaptive Typography */
 #mainTimer {
   font-size: clamp(2.2rem, 6.5dvh, 4rem);

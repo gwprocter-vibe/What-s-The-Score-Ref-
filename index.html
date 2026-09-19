@@ -13,6 +13,33 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="RefScore">
 
+  <!-- Immediate iOS Standalone & Notch Safe Area Protection -->
+  <script>
+    (function() {
+      var isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+      var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isStandalone) {
+        document.documentElement.classList.add('is-standalone');
+        if (isIOS) {
+          document.documentElement.classList.add('is-ios-standalone');
+        }
+      }
+    })();
+  </script>
+  <style>
+    /* Prevent content from ever getting lost under iPhone status bar / Dynamic Island */
+    @supports (-webkit-touch-callout: none) {
+      @media (display-mode: standalone) {
+        body {
+          padding-top: max(47px, calc(env(safe-area-inset-top, 0px) + 4px)) !important;
+        }
+      }
+    }
+    html.is-ios-standalone body {
+      padding-top: max(47px, calc(env(safe-area-inset-top, 0px) + 4px)) !important;
+    }
+  </style>
+
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/logo-192.png">
@@ -23,7 +50,7 @@
 
   <!-- 100% Offline Local Assets (Zero External CDN Dependency) -->
   <script src="js/tailwind.min.js"></script>
-  <link rel="stylesheet" href="css/style.css?v=112">
+  <link rel="stylesheet" href="css/style.css?v=113">
   <link rel="stylesheet" href="css/high-contrast.css">
   <script>
     window.openModal = function(id) {
@@ -98,6 +125,14 @@
                 }
               });
             }
+          });
+        }
+      });
+
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+          navigator.serviceWorker.getRegistration().then(function(reg) {
+            if (reg) reg.update().catch(function() {});
           });
         }
       });
@@ -2865,6 +2900,6 @@
   </div>
 
   <!-- Master Application Script -->
-  <script type="module" src="js/app.js?v=112"></script>
+  <script type="module" src="js/app.js?v=113"></script>
 </body>
 </html>
