@@ -71,6 +71,7 @@ let pausedTimeTracker = 0;
 let startTimestamp = 0;
 let stoppageStartTimestamp = 0;
 let forgotResumeDismissed = false;
+let lastStoppageNudgeSecond = 0;
 
 let halvesData = {
   '1st Half': {
@@ -243,6 +244,11 @@ export function startTimer() {
   requestWakeLock();
   enableAudioKeepAlive();
 
+  // Blur any active text fields so iOS detaches virtual keyboard and shake-to-undo buffer during play
+  if (typeof document !== 'undefined' && document.activeElement && typeof document.activeElement.blur === 'function') {
+    document.activeElement.blur();
+  }
+
   // Activate Pitch-Side Zen Focus Mode (dims secondary chrome during play)
   document.body?.classList.add('zen-mode');
   updateEditPencilsUI();
@@ -342,8 +348,9 @@ export function pauseTimer() {
         }
       }
 
-      // Periodic gentle nudge if paused for > 45s while clock was running
-      if (stoppageSeconds > 0 && stoppageSeconds % 45 === 0) {
+      // Periodic gentle nudge if paused for > 45s while clock was running (debounced to once per 45s boundary)
+      if (stoppageSeconds > 0 && stoppageSeconds % 45 === 0 && lastStoppageNudgeSecond !== stoppageSeconds) {
+        lastStoppageNudgeSecond = stoppageSeconds;
         hapticFeedback('alert');
       }
 
@@ -429,6 +436,7 @@ export function resetMatchTimer() {
   startTimestamp = 0;
   stoppageStartTimestamp = 0;
   forgotResumeDismissed = false;
+  lastStoppageNudgeSecond = 0;
   subReminderTriggered = false;
   subBannerDismissed = false;
   oneMinuteAlertTriggered = false;
@@ -488,6 +496,7 @@ export function resetHalf() {
   stoppageStartTimestamp = 0;
   hasHalfStarted = false;
   forgotResumeDismissed = false;
+  lastStoppageNudgeSecond = 0;
   subReminderTriggered = false;
   subBannerDismissed = false;
   oneMinuteAlertTriggered = false;

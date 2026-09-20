@@ -315,6 +315,14 @@ window.openModal = function(id) {
 };
 
 window.closeModal = function(id) {
+  if (typeof document !== 'undefined') {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+    if (window.getSelection) {
+      window.getSelection()?.removeAllRanges();
+    }
+  }
   const modal = document.getElementById(id);
   if (modal) modal.classList.add('hidden');
 };
@@ -674,6 +682,7 @@ window.cancelInlineTag = score.cancelInlineTag;
 window.recordInlineMomentForPlayer = score.recordInlineMomentForPlayer;
 window.openCoachMomentsModal = score.openCoachMomentsModal;
 window.renderCoachMomentsModal = score.renderCoachMomentsModal;
+window.copyCoachMoments = score.copyCoachMoments;
 window.openCoachNotesModal = score.openCoachNotesModal;
 window.saveCoachNotesModal = score.saveCoachNotesModal;
 window.insertCoachNotesPrompt = score.insertCoachNotesPrompt;
@@ -718,6 +727,34 @@ window.switchRuleTab = rules.switchRulesTab;
 window.switchRulesTab = rules.switchRulesTab;
 window.filterRulesTopic = rules.filterRulesTopic;
 window.scrollToRuleSection = rules.scrollToRuleSection;
+
+export function switchInstructionsTab(tab) {
+  const refBtn = document.getElementById('tabRefInstructions');
+  const coachBtn = document.getElementById('tabCoachInstructions');
+  const refContent = document.getElementById('instructionsRefContent');
+  const coachContent = document.getElementById('instructionsCoachContent');
+
+  if (tab === 'ref') {
+    if (refBtn) {
+      refBtn.className = 'flex-1 py-2 rounded-lg bg-emerald-500 text-slate-950 font-black transition shadow flex items-center justify-center gap-1.5 cursor-pointer';
+    }
+    if (coachBtn) {
+      coachBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 font-bold cursor-pointer';
+    }
+    if (refContent) refContent.classList.remove('hidden');
+    if (coachContent) coachContent.classList.add('hidden');
+  } else {
+    if (coachBtn) {
+      coachBtn.className = 'flex-1 py-2 rounded-lg bg-amber-500 text-slate-950 font-black transition shadow flex items-center justify-center gap-1.5 cursor-pointer';
+    }
+    if (refBtn) {
+      refBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 font-bold cursor-pointer';
+    }
+    if (coachContent) coachContent.classList.remove('hidden');
+    if (refContent) refContent.classList.add('hidden');
+  }
+}
+window.switchInstructionsTab = switchInstructionsTab;
 
 window.openReportModal = report.openReportModal;
 window.updateReportUI = report.updateReportUI;

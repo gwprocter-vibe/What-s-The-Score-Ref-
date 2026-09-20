@@ -188,6 +188,32 @@ export function generateReportText(scope = activeReportScope) {
       text += `\n`;
     }
 
+    const isCoach = typeof getAppMode === 'function' && getAppMode() === 'coach';
+    const m1Moments = m1.coachNotes?.moments || [];
+    const m2Moments = m2.coachNotes?.moments || [];
+    if (isCoach && (m1Moments.length > 0 || m2Moments.length > 0)) {
+      text += `⭐ KEY MATCH MOMENTS:\n`;
+      if (m1Moments.length > 0) {
+        text += `• Match 1:\n`;
+        m1Moments.forEach(m => {
+          let pLabel = (m.players && m.players.length > 0)
+            ? m.players.map(p => p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`).join(', ')
+            : (m.player ? (m.player.initials ? `#${m.player.number} ${m.player.initials}` : `#${m.player.number}`) : 'Entire Team');
+          text += `  - [${m.time}] ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
+        });
+      }
+      if (m2Moments.length > 0) {
+        text += `• Match 2:\n`;
+        m2Moments.forEach(m => {
+          let pLabel = (m.players && m.players.length > 0)
+            ? m.players.map(p => p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`).join(', ')
+            : (m.player ? (m.player.initials ? `#${m.player.number} ${m.player.initials}` : `#${m.player.number}`) : 'Entire Team');
+          text += `  - [${m.time}] ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
+        });
+      }
+      text += `\n`;
+    }
+
     if (ref) text += `Referee: ${ref}\n`;
     text += `Recorded with "What's The Score Ref?"`;
     return text;
@@ -244,6 +270,25 @@ export function generateReportText(scope = activeReportScope) {
   if (data.coachNotes && data.coachNotes.potm) {
     const potm = data.coachNotes.potm;
     text += `⭐ Player of the Match: #${potm.number}${potm.initials ? ' ' + potm.initials : ''}\n\n`;
+  }
+
+  const isCoach = typeof getAppMode === 'function' && getAppMode() === 'coach';
+  const moments = data.coachNotes?.moments || [];
+  if (isCoach && moments.length > 0) {
+    text += `⭐ KEY MATCH MOMENTS (${moments.length}):\n`;
+    moments.forEach(m => {
+      let pLabel = 'Entire Team';
+      if (m.players && Array.isArray(m.players) && m.players.length > 0) {
+        pLabel = m.players.map(p => {
+          if (!p || p === 'team') return 'Entire Team';
+          return p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
+        }).join(', ');
+      } else if (m.player) {
+        pLabel = m.player.initials ? `#${m.player.number} ${m.player.initials}` : `#${m.player.number}`;
+      }
+      text += `• [${m.time}] (${m.period}) ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
+    });
+    text += `\n`;
   }
 
   if (ref) text += `Referee: ${ref}\n`;

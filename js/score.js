@@ -2299,6 +2299,60 @@ export function renderCoachMomentsModal() {
   }).join('');
 }
 
+export function copyCoachMoments() {
+  const moments = coachNotes.moments || [];
+  if (moments.length === 0) {
+    showTouchlineToast('No moments to copy yet');
+    return;
+  }
+  const matchId = (window.getActiveMatchId && typeof window.getActiveMatchId === 'function') ? window.getActiveMatchId() : 1;
+  let text = `⭐ MATCH ${matchId} MOMENTS (${moments.length}):\n`;
+  moments.forEach(m => {
+    let pLabel = 'Entire Team';
+    if (m.players && Array.isArray(m.players) && m.players.length > 0) {
+      pLabel = m.players.map(p => {
+        if (!p || p === 'team') return 'Entire Team';
+        return p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
+      }).join(', ');
+    } else if (m.player) {
+      pLabel = m.player.initials ? `#${m.player.number} ${m.player.initials}` : `#${m.player.number}`;
+    }
+    text += `• [${m.time}] (${m.period}) ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
+  });
+  if (coachNotes.potm) {
+    const potm = coachNotes.potm;
+    text += `\n⭐ Player of the Match: #${potm.number}${potm.initials ? ' ' + potm.initials : ''}\n`;
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showTouchlineToast('📋 Moments copied to clipboard!');
+      hapticFeedback('success');
+    }).catch(() => {
+      fallbackCopyText(text);
+    });
+  } else {
+    fallbackCopyText(text);
+  }
+}
+
+function fallbackCopyText(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showTouchlineToast('📋 Moments copied to clipboard!');
+    hapticFeedback('success');
+  } catch (e) {
+    showTouchlineToast('Failed to copy moments');
+  }
+  document.body.removeChild(ta);
+}
+
 export function openCoachNotesModal() {
   const modal = document.getElementById('coachNotesModal');
   const textarea = document.getElementById('coachNotesModalTextarea');
