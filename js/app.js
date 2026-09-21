@@ -311,6 +311,24 @@ window.openModal = function(id) {
   if (modal) {
     modal.classList.remove('hidden');
     hardware.hapticFeedback('tap');
+    if (id === 'rulesModal') {
+      if (typeof window.switchRulesTab === 'function') {
+        window.switchRulesTab('quick');
+      }
+      const openCards = modal.querySelectorAll('details[open]');
+      openCards.forEach(c => { c.open = false; });
+    }
+    if (id === 'instructionsModal') {
+      const mode = (typeof score !== 'undefined' && score.getAppMode) ? score.getAppMode() : (window.getAppMode ? window.getAppMode() : 'referee');
+      if (typeof window.switchInstructionsTab === 'function') {
+        window.switchInstructionsTab(mode === 'coach' ? 'coach' : 'ref');
+      }
+    }
+    if (id === 'roleSelectModal') {
+      if (typeof window.updateRoleSelectModalUI === 'function') {
+        window.updateRoleSelectModalUI();
+      }
+    }
   }
 };
 
@@ -820,6 +838,18 @@ export function selectAppRole(mode) {
   if (typeof window.closeModal === 'function') {
     window.closeModal('roleSelectModal');
   }
+
+  if (mode === 'referee') {
+    if (typeof window.closeModal === 'function') {
+      window.closeModal('squadInitialsModal');
+    }
+  } else if (mode === 'coach') {
+    if (typeof score !== 'undefined' && score.checkCoachSquadPrompt) {
+      score.checkCoachSquadPrompt();
+    } else if (typeof window.checkCoachSquadPrompt === 'function') {
+      window.checkCoachSquadPrompt();
+    }
+  }
 }
 window.selectAppRole = selectAppRole;
 
@@ -828,6 +858,11 @@ export function checkOpenRoleModalOnLaunch() {
   if (typeof timer !== 'undefined' && timer.getTimerState) {
     const timerState = timer.getTimerState();
     if (timerState && timerState.isTimerRunning) return;
+  }
+
+  // Ensure squadInitialsModal is never open when role selection is presented
+  if (typeof window.closeModal === 'function') {
+    window.closeModal('squadInitialsModal');
   }
   
   updateRoleSelectModalUI();

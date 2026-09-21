@@ -101,7 +101,6 @@ export function setCoachTeam(team, showToast = true) {
   if (showToast && prev !== coachTeam) {
     showAppModeToast(`⭐ Coach's Team: ${teams[coachTeam]?.name || (coachTeam === 'home' ? 'Home' : 'Away')}`, 'coach');
   }
-  checkCoachSquadPrompt();
 }
 
 export function toggleCoachTeam() {
@@ -149,6 +148,11 @@ export function updateCoachTeamUI() {
 
 export function checkCoachSquadPrompt() {
   if (appMode !== 'coach') return;
+  // If role selection modal is currently open, do not open squad initials
+  const roleModal = document.getElementById('roleSelectModal');
+  if (roleModal && !roleModal.classList.contains('hidden')) {
+    return;
+  }
   const roster = teams[coachTeam]?.roster || [];
   const hasAnyInitials = roster.some(p => p.initials && p.initials.trim().length > 0);
   if (!hasAnyInitials) {
@@ -185,6 +189,10 @@ export function selectSquadModalTeam(team) {
 }
 
 export function openSquadInitialsModal(team = coachTeam) {
+  if (appMode !== 'coach') return;
+  const roleModal = document.getElementById('roleSelectModal');
+  if (roleModal && !roleModal.classList.contains('hidden')) return;
+
   const container = document.getElementById('squadInitialsInputsContainer');
   const subtitle = document.getElementById('squadInitialsSubtitle');
   const homeBtn = document.getElementById('squadInitialsHomeBtn');
@@ -267,6 +275,11 @@ export function setAppMode(mode, showToast = false) {
   try {
     localStorage.setItem('whatsthescoreref_app_mode', appMode);
   } catch (e) {}
+  if (appMode === 'referee') {
+    if (typeof window !== 'undefined' && typeof window.closeModal === 'function') {
+      window.closeModal('squadInitialsModal');
+    }
+  }
   updateAppModeUI();
   notifyScoreChange();
   if (appMode === 'coach') {
@@ -390,9 +403,6 @@ export function updateAppModeUI() {
   updateCoachTeamUI();
   renderTouchlineBarUI();
   renderRefereeHelperBar();
-  if (appMode === 'coach') {
-    checkCoachSquadPrompt();
-  }
   if (typeof window !== 'undefined' && typeof window.updateRoleSelectModalUI === 'function') {
     window.updateRoleSelectModalUI();
   }
