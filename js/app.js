@@ -756,6 +756,87 @@ export function switchInstructionsTab(tab) {
 }
 window.switchInstructionsTab = switchInstructionsTab;
 
+// Touchline Role Selection Modal Handlers (Prompted on App Open)
+export function updateRoleSelectModalUI() {
+  const currentMode = (typeof score !== 'undefined' && score.getAppMode) ? score.getAppMode() : (window.getAppMode ? window.getAppMode() : 'referee');
+  const refBtn = document.getElementById('roleSelectModalRefBtn');
+  const coachBtn = document.getElementById('roleSelectModalCoachBtn');
+  const refBadge = document.getElementById('roleModalRefBadge');
+  const coachBadge = document.getElementById('roleModalCoachBadge');
+
+  if (currentMode === 'coach') {
+    if (coachBtn) {
+      coachBtn.classList.add('ring-2', 'ring-amber-400', 'bg-amber-950/40');
+      coachBtn.classList.remove('border-amber-500/50');
+      coachBtn.classList.add('border-amber-400');
+    }
+    if (coachBadge) {
+      coachBadge.textContent = 'CURRENT';
+      coachBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 shadow-sm';
+    }
+    if (refBtn) {
+      refBtn.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-950/40', 'border-emerald-400');
+      refBtn.classList.add('border-emerald-500/50');
+    }
+    if (refBadge) {
+      refBadge.textContent = 'OFFICIAL';
+      refBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+    }
+  } else {
+    if (refBtn) {
+      refBtn.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-950/40');
+      refBtn.classList.remove('border-emerald-500/50');
+      refBtn.classList.add('border-emerald-400');
+    }
+    if (refBadge) {
+      refBadge.textContent = 'CURRENT';
+      refBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-400 text-slate-950 shadow-sm';
+    }
+    if (coachBtn) {
+      coachBtn.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-950/40', 'border-amber-400');
+      coachBtn.classList.add('border-amber-500/50');
+    }
+    if (coachBadge) {
+      coachBadge.textContent = 'TOUCHLINE';
+      coachBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40';
+    }
+  }
+}
+window.updateRoleSelectModalUI = updateRoleSelectModalUI;
+
+export function selectAppRole(mode) {
+  if (typeof score !== 'undefined' && score.setAppMode) {
+    score.setAppMode(mode);
+  } else if (typeof window.setAppMode === 'function') {
+    window.setAppMode(mode);
+  }
+  
+  if (typeof hardware !== 'undefined' && hardware.hapticFeedback) {
+    hardware.hapticFeedback('success');
+  } else if (typeof window.hapticFeedback === 'function') {
+    window.hapticFeedback('success');
+  }
+
+  if (typeof window.closeModal === 'function') {
+    window.closeModal('roleSelectModal');
+  }
+}
+window.selectAppRole = selectAppRole;
+
+export function checkOpenRoleModalOnLaunch() {
+  // If timer is running or interval is active, do not block the active match
+  if (typeof timer !== 'undefined' && timer.getTimerState) {
+    const timerState = timer.getTimerState();
+    if (timerState && timerState.isTimerRunning) return;
+  }
+  
+  updateRoleSelectModalUI();
+  if (typeof window.openModal === 'function') {
+    window.openModal('roleSelectModal');
+  }
+}
+window.checkOpenRoleModalOnLaunch = checkOpenRoleModalOnLaunch;
+
 window.openReportModal = report.openReportModal;
 window.updateReportUI = report.updateReportUI;
 window.updateReportText = report.updateReportText;
@@ -1125,7 +1206,14 @@ window.installPwaApp = installPwaApp;
 // Pitch-Side Splash Screen Coordinator
 function initSplashScreen() {
   const splash = document.getElementById('splashScreen');
-  if (!splash) return;
+  if (!splash) {
+    setTimeout(() => {
+      if (typeof window.checkOpenRoleModalOnLaunch === 'function') {
+        window.checkOpenRoleModalOnLaunch();
+      }
+    }, 200);
+    return;
+  }
 
   const bar = document.getElementById('splashProgressBar');
   if (bar) {
@@ -1140,18 +1228,28 @@ function initSplashScreen() {
     splash.classList.add('opacity-0', 'pointer-events-none');
     setTimeout(() => {
       splash.style.display = 'none';
-    }, 700);
+      if (typeof window.checkOpenRoleModalOnLaunch === 'function') {
+        window.checkOpenRoleModalOnLaunch();
+      }
+    }, 400);
   };
 
-  // Smooth auto-dismiss after 2.25 seconds (50% longer duration)
+  // Smooth auto-dismiss after 1.8 seconds
   setTimeout(() => {
     window.dismissSplash();
-  }, 2250);
+  }, 1800);
 }
 window.dismissSplash = function() {
   const splash = document.getElementById('splashScreen');
   if (splash) {
+    if (splash.dataset.dismissed) return;
+    splash.dataset.dismissed = 'true';
     splash.classList.add('opacity-0', 'pointer-events-none');
-    setTimeout(() => { splash.style.display = 'none'; }, 700);
+    setTimeout(() => { 
+      splash.style.display = 'none';
+      if (typeof window.checkOpenRoleModalOnLaunch === 'function') {
+        window.checkOpenRoleModalOnLaunch();
+      }
+    }, 400);
   }
 };

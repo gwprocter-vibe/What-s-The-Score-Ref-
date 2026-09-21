@@ -70,6 +70,11 @@
             window.switchInstructionsTab(mode === 'coach' ? 'coach' : 'ref');
           }
         }
+        if (id === 'roleSelectModal') {
+          if (typeof window.updateRoleSelectModalUI === 'function') {
+            window.updateRoleSelectModalUI();
+          }
+        }
       }
     };
     window.closeModal = function(id) {
@@ -95,12 +100,16 @@
     window.dismissSplash = function() {
       var s = document.getElementById('splashScreen');
       if (s) {
+        if (s.dataset.dismissed) return;
         s.dataset.dismissed = 'true';
         s.style.pointerEvents = 'none';
         s.classList.add('opacity-0', 'pointer-events-none');
         setTimeout(function() { 
           s.style.display = 'none'; 
           if (s.parentNode) s.parentNode.removeChild(s);
+          if (typeof window.checkOpenRoleModalOnLaunch === 'function') {
+            window.checkOpenRoleModalOnLaunch();
+          }
         }, 400);
       }
     };
@@ -362,6 +371,9 @@
           setTimeout(function() { 
             s.style.display = 'none'; 
             if (s.parentNode) s.parentNode.removeChild(s);
+            if (typeof window.checkOpenRoleModalOnLaunch === 'function') {
+              window.checkOpenRoleModalOnLaunch();
+            }
           }, 400);
         };
         setTimeout(function() { window.dismissSplash(); }, 1600);
@@ -2651,7 +2663,7 @@
         </button>
         <button id="tabCoachInstructions" type="button" onclick="switchInstructionsTab('coach')" class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 font-bold cursor-pointer">
           <span>📋</span>
-          <span>Coach Mode</span>
+          <span>Coach / Spectator</span>
         </button>
       </div>
 
@@ -2943,6 +2955,74 @@
     </div>
   </div>
 
+  <!-- 8E. TOUCHLINE ROLE SELECTION MODAL (PROMPTED ON APP OPEN) -->
+  <div id="roleSelectModal" class="hidden fixed inset-0 z-[70] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border-2 border-amber-500/70 rounded-3xl max-w-sm w-full p-5 shadow-2xl flex flex-col items-center text-center relative overflow-hidden animate-fade-in">
+      
+      <!-- Top Decorative Aura & Icon -->
+      <div class="relative mb-3">
+        <div class="absolute -inset-2 bg-gradient-to-r from-emerald-500/30 to-amber-500/30 rounded-2xl blur-lg opacity-70"></div>
+        <div class="relative w-14 h-14 rounded-2xl bg-slate-950 border border-slate-700/80 flex items-center justify-center text-2xl shadow-xl">
+          ⚽
+        </div>
+      </div>
+
+      <!-- Header Title -->
+      <h2 class="text-base sm:text-lg font-black text-white tracking-tight">Select Touchline Role</h2>
+      <p class="text-xs text-slate-300 mt-1 mb-4 leading-snug">Choose how you're using the app today:</p>
+
+      <!-- Role Options Grid (Stacked 2 Big Touch Targets) -->
+      <div class="w-full space-y-2.5">
+        
+        <!-- Option 1: Referee Mode -->
+        <button type="button" 
+                id="roleSelectModalRefBtn"
+                onclick="selectAppRole('referee')" 
+                class="w-full p-3.5 rounded-2xl bg-slate-950 hover:bg-emerald-950/40 border-2 border-emerald-500/50 hover:border-emerald-400 flex items-center gap-3 transition-all active:scale-[0.98] cursor-pointer text-left shadow-lg group">
+          <div class="w-11 h-11 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0 group-hover:bg-emerald-500 group-hover:text-slate-950 transition">
+            ⏱️
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between">
+              <span class="font-black text-sm text-white group-hover:text-emerald-300 transition">Referee Mode</span>
+              <span id="roleModalRefBadge" class="text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">OFFICIAL</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5 leading-tight">Whistle alerts, match clock, stoppages &amp; FA power play</p>
+          </div>
+        </button>
+
+        <!-- Option 2: Coach / Spectator Mode -->
+        <button type="button" 
+                id="roleSelectModalCoachBtn"
+                onclick="selectAppRole('coach')" 
+                class="w-full p-3.5 rounded-2xl bg-slate-950 hover:bg-amber-950/40 border-2 border-amber-500/50 hover:border-amber-400 flex items-center gap-3 transition-all active:scale-[0.98] cursor-pointer text-left shadow-lg group">
+          <div class="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center text-xl shrink-0 group-hover:bg-amber-500 group-hover:text-slate-950 transition">
+            📋
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between">
+              <span class="font-black text-sm text-white group-hover:text-amber-300 transition">Coach / Spectator</span>
+              <span id="roleModalCoachBadge" class="text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">TOUCHLINE</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5 leading-tight">8 match moments, player highlights, POTM &amp; WhatsApp</p>
+          </div>
+        </button>
+
+      </div>
+
+      <!-- Footer Info & Skip -->
+      <div class="w-full mt-3.5 pt-3 border-t border-slate-800/80 flex flex-col items-center">
+        <p class="text-[10.5px] text-slate-400 text-center leading-tight">
+          Switch anytime via the top header toggle <span class="px-1 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 border border-slate-700 font-mono">REF / COACH</span> or Quick Tools.
+        </p>
+        <button type="button" onclick="closeModal('roleSelectModal')" class="mt-2 text-xs font-bold text-slate-400 hover:text-slate-200 transition cursor-pointer py-1 px-3 rounded-lg hover:bg-slate-800/60">
+          Continue with current role ›
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- 9. QUICK MATCHDAY TOOLS DRAWER -->
   <div id="quickToolsDrawer" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
@@ -2996,7 +3076,7 @@
               <button type="button" id="appModeCoachBtn" onclick="setAppMode('coach')" class="p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition cursor-pointer text-slate-400 hover:text-white bg-slate-900 border border-slate-800">
                 <span class="text-lg">📋</span>
                 <div class="text-left min-w-0">
-                  <div class="font-black text-xs leading-tight">Coach</div>
+                  <div class="font-black text-xs leading-tight">Coach / Spectator</div>
                   <div class="text-[10px] font-normal opacity-80 leading-tight">Moments &amp; POTM</div>
                 </div>
               </button>

@@ -353,7 +353,7 @@ export function updateAppModeUI() {
     }
     if (indicator) {
       indicator.className = 'h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1 transition cursor-pointer active:scale-95 shadow-sm bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:border-amber-400';
-      indicator.title = 'Current Role: Coach (Tap to toggle)';
+      indicator.title = 'Current Role: Coach / Spectator (Tap to toggle)';
       indicator.innerHTML = '<span>📋</span><span id="appModeIndicatorText">COACH</span>';
     }
     if (drawerBadge) {
@@ -392,6 +392,9 @@ export function updateAppModeUI() {
   renderRefereeHelperBar();
   if (appMode === 'coach') {
     checkCoachSquadPrompt();
+  }
+  if (typeof window !== 'undefined' && typeof window.updateRoleSelectModalUI === 'function') {
+    window.updateRoleSelectModalUI();
   }
 }
 
