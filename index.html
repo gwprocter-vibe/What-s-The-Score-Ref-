@@ -2211,65 +2211,53 @@
 
   <!-- 5B. GOAL ATTRIBUTION MODAL (Scorer & Assist - Safeguarding Initials Only) -->
   <div id="goalAttributionModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-    <div id="goalAttributionCard" class="bg-slate-900 border-2 border-emerald-500/80 rounded-2xl max-w-md w-full p-3.5 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in">
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">
-        <div class="flex items-center gap-2">
-          <span id="attributionTeamDot" class="w-4 h-4 rounded-full inline-block border border-white/40 shrink-0 bg-rose-500 shadow"></span>
-          <div>
-            <h3 id="attributionModalTitle" class="font-black text-base sm:text-lg text-white leading-tight">Goal Logged!</h3>
-            <span id="attributionStepIndicator" class="text-[10px] font-black uppercase tracking-wider text-emerald-400 font-mono-sport">STEP 1 OF 2 • SCORER</span>
-          </div>
+    <div id="goalAttributionCard" class="bg-slate-900 border-2 border-emerald-500/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in">
+      <!-- Modal Header: Ultra-clean, bold title -->
+      <div class="flex items-center justify-between pb-3 mb-2 border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span id="attributionTeamDot" class="w-3.5 h-3.5 rounded-full inline-block border border-white/40 shrink-0 bg-rose-500 shadow"></span>
+          <h3 id="attributionModalTitle" class="font-black text-2xl sm:text-3xl text-white tracking-tight leading-none">Who scored?</h3>
         </div>
-        <button type="button" onclick="cancelGoalAttribution()" class="text-slate-400 hover:text-white p-1 cursor-pointer" title="Cancel">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button type="button" onclick="cancelGoalAttribution()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer" title="Cancel">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
       </div>
 
-      <!-- Stage Instructions, Safeguarding Notice & Fast Mode Toggle -->
-      <div class="my-2 text-left shrink-0">
-        <div class="flex items-center justify-between gap-1 flex-wrap mb-1">
-          <div id="attributionStageDesc" class="text-xs sm:text-sm font-extrabold text-white">Who scored the goal?</div>
-          <label id="attributionFastModeLabel" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-[10px] font-bold text-slate-300 hover:text-white cursor-pointer select-none" title="When enabled, tapping a player immediately logs the goal without asking for an assist">
-            <input type="checkbox" id="attributionFastModeCheckbox" onchange="window.setSkipAssistStep(this.checked)" class="accent-emerald-500 w-3 h-3 rounded cursor-pointer">
-            <span>⚡ 1-Tap (Skip Assist)</span>
-          </label>
-        </div>
-        <div class="text-[10px] text-amber-400/90 flex items-center gap-1 font-medium">
-          <svg class="w-3 h-3 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-          <span>Tap player initials to credit</span>
-        </div>
-      </div>
-
       <!-- Dedicated Top Action for Step 2 (Assist): Huge Unmissable Button -->
-      <div id="attributionTopActionContainer" class="hidden mb-2 shrink-0">
+      <div id="attributionTopActionContainer" class="hidden mb-2.5 shrink-0">
         <!-- Rendered dynamically -->
       </div>
 
       <!-- Player Chips Grid -->
-      <div id="attributionChipContainer" class="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-2.5 my-1 overflow-y-auto max-h-[50vh] pr-0.5">
+      <div id="attributionChipContainer" class="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-2.5 my-1 overflow-y-auto max-h-[52vh] pr-0.5">
         <!-- Rendered dynamically -->
       </div>
 
       <!-- Quick Action Buttons -->
-      <div class="pt-2.5 border-t border-slate-800 flex flex-col gap-1.5 shrink-0 mt-1">
-        <div id="attributionBottomButtonsRow" class="grid grid-cols-2 gap-1.5">
-          <button id="attributionBackBtn" type="button" onclick="attributionBackToScorer()" class="hidden py-2.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-black rounded-xl text-xs transition active:scale-95 cursor-pointer flex items-center justify-center gap-1">
-            <span>←</span><span>Back to Scorer</span>
+      <div class="pt-3 border-t border-slate-800 flex flex-col gap-2 shrink-0 mt-1">
+        <div id="attributionBottomButtonsRow" class="grid grid-cols-2 gap-2">
+          <button id="attributionBackBtn" type="button" onclick="attributionBackToScorer()" class="hidden py-2.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1">
+            <span>←</span><span>Back</span>
           </button>
-          <button id="attributionOwnGoalBtn" type="button" onclick="setGoalOwnGoal()" class="py-2.5 px-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-black rounded-xl text-xs transition active:scale-95 cursor-pointer flex items-center justify-center gap-1">
+          <button id="attributionOwnGoalBtn" type="button" onclick="setGoalOwnGoal()" class="py-2.5 px-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1">
             <span>⚠️</span><span>Own Goal</span>
           </button>
-          <button id="attributionQuickSkipBtn" type="button" onclick="skipGoalAttribution()" class="py-2.5 px-2 bg-slate-800 hover:bg-slate-750 text-slate-200 font-black rounded-xl text-xs transition active:scale-95 cursor-pointer flex items-center justify-center gap-1">
+          <button id="attributionQuickSkipBtn" type="button" onclick="skipGoalAttribution()" class="py-2.5 px-2 bg-slate-800 hover:bg-slate-750 text-slate-200 font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1">
             <span>⚡</span><span>Uncredited Goal</span>
           </button>
         </div>
-        <button type="button" onclick="cancelGoalAttribution()" class="w-full py-1 text-slate-400 hover:text-white text-xs font-semibold cursor-pointer">
-          Cancel (Don't Add Goal)
-        </button>
+        <div class="flex items-center justify-between pt-0.5">
+          <button type="button" onclick="cancelGoalAttribution()" class="text-slate-400 hover:text-white text-xs font-semibold cursor-pointer">
+            Cancel
+          </button>
+          <label id="attributionFastModeLabel" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none" title="When enabled, tapping a player immediately logs the goal without asking for an assist">
+            <input type="checkbox" id="attributionFastModeCheckbox" onchange="window.setSkipAssistStep(this.checked)" class="accent-emerald-500 w-3.5 h-3.5 rounded cursor-pointer">
+            <span>⚡ 1-Tap (Skip Assist)</span>
+          </label>
+        </div>
       </div>
     </div>
   </div>

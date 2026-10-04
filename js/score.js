@@ -1158,22 +1158,13 @@ export function renderAttributionModal() {
 
   if (pendingAttributionStage === 1) {
     if (cardEl) {
-      cardEl.className = 'bg-slate-900 border-2 border-emerald-500/80 rounded-2xl max-w-md w-full p-3.5 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-emerald-500/30';
-    }
-    if (stepIndicator) {
-      stepIndicator.className = 'text-[10px] font-black uppercase tracking-wider text-emerald-400 font-mono-sport';
-      stepIndicator.innerText = 'STEP 1 OF 2 • SCORER';
+      cardEl.className = 'bg-slate-900 border-2 border-emerald-500/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-emerald-500/30';
     }
     if (titleEl) {
-      if (pendingAttributionExistingIndex !== null) {
-        titleEl.innerText = `Edit Scorer (${goals[pendingAttributionExistingIndex]?.time || ''})`;
-      } else {
-        titleEl.innerText = `Goal for ${teamName}!`;
-      }
+      titleEl.innerText = 'Who scored?';
     }
-    if (stageDescEl) {
-      stageDescEl.innerHTML = `<span>Who scored? <span class="text-slate-400 text-xs font-semibold">(Tap jersey tile)</span></span>`;
-    }
+    if (stepIndicator) stepIndicator.innerText = '';
+    if (stageDescEl) stageDescEl.innerHTML = '';
     if (fastModeLabel) fastModeLabel.classList.remove('hidden');
     if (fastModeCheckbox) fastModeCheckbox.checked = skipAssistStep;
     if (topActionContainer) topActionContainer.classList.add('hidden');
@@ -1213,30 +1204,21 @@ export function renderAttributionModal() {
   } else {
     // Stage 2: Assist
     if (cardEl) {
-      cardEl.className = 'bg-slate-900 border-2 border-sky-500/80 rounded-2xl max-w-md w-full p-3.5 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-sky-500/30';
+      cardEl.className = 'bg-slate-900 border-2 border-sky-500/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-sky-500/30';
     }
-    if (stepIndicator) {
-      stepIndicator.className = 'text-[10px] font-black uppercase tracking-wider text-sky-400 font-mono-sport';
-      stepIndicator.innerText = 'STEP 2 OF 2 • ASSIST (OPTIONAL)';
-    }
-    const scorerNum = pendingAttributionScorer?.number || '';
-    const scorerInit = pendingAttributionScorer?.initials ? ` ${pendingAttributionScorer.initials}` : '';
-    const scorerLabel = `#${scorerNum}${scorerInit}`;
-
     if (titleEl) {
-      titleEl.innerText = `Who Assisted the Goal?`;
+      titleEl.innerText = 'Who assisted?';
     }
-    if (stageDescEl) {
-      stageDescEl.innerHTML = `<span>Goal by <strong class="text-emerald-400 font-mono-sport font-black text-xs sm:text-sm bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/40">${scorerLabel}</strong>. Tap assister:</span>`;
-    }
+    if (stepIndicator) stepIndicator.innerText = '';
+    if (stageDescEl) stageDescEl.innerHTML = '';
     if (fastModeLabel) fastModeLabel.classList.add('hidden');
 
     if (topActionContainer) {
       topActionContainer.classList.remove('hidden');
       topActionContainer.innerHTML = `
-        <button type="button" onclick="window.skipGoalAssist()" class="w-full py-2.5 sm:py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition cursor-pointer border-2 border-emerald-300">
+        <button type="button" onclick="window.skipGoalAssist()" class="w-full py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition cursor-pointer border-2 border-emerald-300">
           <span class="text-sm">⚡</span>
-          <span class="tracking-wide uppercase">SOLO GOAL — NO ASSIST (TAP TO FINISH) ✓</span>
+          <span class="tracking-wide uppercase font-black">SOLO GOAL — NO ASSIST (TAP TO FINISH) ✓</span>
         </button>
       `;
     }
