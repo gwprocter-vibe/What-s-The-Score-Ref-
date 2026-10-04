@@ -1031,6 +1031,24 @@ let pendingAttributionScorer = null;
 let pendingAttributionAssist = null;
 let pendingAttributionStage = 1; // 1: Scorer, 2: Assist
 
+let skipAssistStep = false;
+try {
+  skipAssistStep = localStorage.getItem('whatsthescoreref_skip_assist') === 'true';
+} catch (e) {}
+
+export function setSkipAssistStep(val) {
+  skipAssistStep = Boolean(val);
+  try {
+    localStorage.setItem('whatsthescoreref_skip_assist', skipAssistStep ? 'true' : 'false');
+  } catch (e) {}
+  hapticFeedback('tap');
+  renderAttributionModal();
+}
+
+export function getSkipAssistStep() {
+  return skipAssistStep;
+}
+
 export function executeDirectGoal(team, attribution = null) {
   const timerState = getTimerState();
   if (team === 'home') {
@@ -1123,65 +1141,136 @@ export function renderAttributionModal() {
   const teamName = t.name || (team === 'home' ? 'Home Team' : 'Away Team');
   const roster = (t.roster && t.roster.length > 0) ? t.roster : createDefaultRoster();
   
+  const cardEl = document.getElementById('goalAttributionCard');
   const titleEl = document.getElementById('attributionModalTitle');
   const teamDot = document.getElementById('attributionTeamDot');
-  const teamNameEl = document.getElementById('attributionTeamName');
   const stageDescEl = document.getElementById('attributionStageDesc');
+  const fastModeLabel = document.getElementById('attributionFastModeLabel');
+  const fastModeCheckbox = document.getElementById('attributionFastModeCheckbox');
+  const topActionContainer = document.getElementById('attributionTopActionContainer');
   const chipContainer = document.getElementById('attributionChipContainer');
   const stepIndicator = document.getElementById('attributionStepIndicator');
   const backBtn = document.getElementById('attributionBackBtn');
+  const ownGoalBtn = document.getElementById('attributionOwnGoalBtn');
   const quickSkipBtn = document.getElementById('attributionQuickSkipBtn');
 
   if (teamDot) teamDot.style.backgroundColor = t.color;
-  if (teamNameEl) teamNameEl.innerText = teamName;
-
-  if (titleEl) {
-    if (pendingAttributionExistingIndex !== null) {
-      titleEl.innerText = `Edit Goal (${goals[pendingAttributionExistingIndex]?.time || ''})`;
-    } else {
-      titleEl.innerText = `Goal for ${teamName}!`;
-    }
-  }
 
   if (pendingAttributionStage === 1) {
-    if (stepIndicator) stepIndicator.innerText = 'STEP 1 OF 2';
-    if (stageDescEl) stageDescEl.innerText = 'Who scored the goal? (Tap initials/number)';
+    if (cardEl) {
+      cardEl.className = 'bg-slate-900 border-2 border-emerald-500/80 rounded-2xl max-w-md w-full p-3.5 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-emerald-500/30';
+    }
+    if (stepIndicator) {
+      stepIndicator.className = 'text-[10px] font-black uppercase tracking-wider text-emerald-400 font-mono-sport';
+      stepIndicator.innerText = 'STEP 1 OF 2 • SCORER';
+    }
+    if (titleEl) {
+      if (pendingAttributionExistingIndex !== null) {
+        titleEl.innerText = `Edit Scorer (${goals[pendingAttributionExistingIndex]?.time || ''})`;
+      } else {
+        titleEl.innerText = `Goal for ${teamName}!`;
+      }
+    }
+    if (stageDescEl) {
+      stageDescEl.innerHTML = `<span>Who scored? <span class="text-slate-400 text-xs font-semibold">(Tap jersey tile)</span></span>`;
+    }
+    if (fastModeLabel) fastModeLabel.classList.remove('hidden');
+    if (fastModeCheckbox) fastModeCheckbox.checked = skipAssistStep;
+    if (topActionContainer) topActionContainer.classList.add('hidden');
     if (backBtn) backBtn.classList.add('hidden');
+    if (ownGoalBtn) ownGoalBtn.classList.remove('hidden');
     if (quickSkipBtn) {
-      quickSkipBtn.innerText = pendingAttributionExistingIndex !== null ? 'Clear Player Credit' : 'Skip (Uncredited Goal)';
+      quickSkipBtn.innerHTML = `<span>⚡</span><span>${pendingAttributionExistingIndex !== null ? 'Clear Player Credit' : 'Uncredited Goal'}</span>`;
     }
 
     if (chipContainer) {
       chipContainer.innerHTML = roster.map(player => {
-        const displayLabel = player.initials ? `#${player.number} ${player.initials}` : `#${player.number}`;
+        const hasInitials = Boolean(player.initials && player.initials.trim().length > 0);
         const isSelected = pendingAttributionScorer && pendingAttributionScorer.number === player.number;
-        const selClass = isSelected ? 'bg-emerald-500 text-slate-950 border-emerald-300 font-black scale-105 shadow-md' : 'bg-slate-900 hover:bg-slate-850 text-slate-200 border-slate-700 font-bold';
+        const badgeText = hasInitials ? `#${player.number}` : 'PLAYER';
+        const initialsText = hasInitials ? player.initials : `#${player.number}`;
+
+        const btnClass = isSelected
+          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-200 text-slate-950 shadow-xl shadow-emerald-500/30 scale-[1.03] ring-2 ring-emerald-300'
+          : 'bg-slate-800/90 hover:bg-slate-750 border-slate-700/80 hover:border-emerald-400/80 text-white shadow-md hover:scale-[1.02]';
 
         return `
-          <button type="button" onclick="window.selectAttributionScorer(${player.number})" class="p-2.5 rounded-xl border flex items-center justify-center text-xs transition active:scale-95 cursor-pointer ${selClass}">
-            <span>${displayLabel}</span>
+          <button type="button" onclick="window.selectAttributionScorer(${player.number})"
+            class="relative p-2.5 sm:p-3 rounded-2xl border-2 flex flex-col items-center justify-between min-h-[72px] sm:min-h-[82px] active:scale-95 transition cursor-pointer group ${btnClass}">
+            <div class="flex items-center justify-between w-full">
+              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/30 text-slate-950 font-black' : 'bg-slate-950/90 text-amber-300 border border-amber-400/40'}">
+                ${badgeText}
+              </span>
+              ${isSelected ? '<span class="text-sm font-black text-slate-950">✓</span>' : '<span class="text-[10px] text-emerald-400/60 font-black opacity-0 group-hover:opacity-100 transition">GOAL</span>'}
+            </div>
+            <span class="font-mono-sport font-black text-lg sm:text-2xl tracking-wider uppercase leading-none py-1 ${isSelected ? 'text-slate-950 font-extrabold' : 'text-white'}">
+              ${initialsText}
+            </span>
           </button>
         `;
       }).join('');
     }
   } else {
     // Stage 2: Assist
-    if (stepIndicator) stepIndicator.innerText = 'STEP 2 OF 2';
-    const scorerLabel = pendingAttributionScorer.initials ? `#${pendingAttributionScorer.number} ${pendingAttributionScorer.initials}` : `#${pendingAttributionScorer.number}`;
-    if (stageDescEl) stageDescEl.innerHTML = `Goal by <strong class="text-emerald-400">${scorerLabel}</strong>. Who assisted?`;
+    if (cardEl) {
+      cardEl.className = 'bg-slate-900 border-2 border-sky-500/80 rounded-2xl max-w-md w-full p-3.5 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-sky-500/30';
+    }
+    if (stepIndicator) {
+      stepIndicator.className = 'text-[10px] font-black uppercase tracking-wider text-sky-400 font-mono-sport';
+      stepIndicator.innerText = 'STEP 2 OF 2 • ASSIST (OPTIONAL)';
+    }
+    const scorerNum = pendingAttributionScorer?.number || '';
+    const scorerInit = pendingAttributionScorer?.initials ? ` ${pendingAttributionScorer.initials}` : '';
+    const scorerLabel = `#${scorerNum}${scorerInit}`;
+
+    if (titleEl) {
+      titleEl.innerText = `Who Assisted the Goal?`;
+    }
+    if (stageDescEl) {
+      stageDescEl.innerHTML = `<span>Goal by <strong class="text-emerald-400 font-mono-sport font-black text-xs sm:text-sm bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/40">${scorerLabel}</strong>. Tap assister:</span>`;
+    }
+    if (fastModeLabel) fastModeLabel.classList.add('hidden');
+
+    if (topActionContainer) {
+      topActionContainer.classList.remove('hidden');
+      topActionContainer.innerHTML = `
+        <button type="button" onclick="window.skipGoalAssist()" class="w-full py-2.5 sm:py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition cursor-pointer border-2 border-emerald-300">
+          <span class="text-sm">⚡</span>
+          <span class="tracking-wide uppercase">SOLO GOAL — NO ASSIST (TAP TO FINISH) ✓</span>
+        </button>
+      `;
+    }
+
     if (backBtn) backBtn.classList.remove('hidden');
-    if (quickSkipBtn) quickSkipBtn.innerText = 'Solo Goal / No Assist';
+    if (ownGoalBtn) ownGoalBtn.classList.add('hidden');
+    if (quickSkipBtn) {
+      quickSkipBtn.innerHTML = `<span>⚡</span><span>No Assist (Solo)</span>`;
+    }
 
     if (chipContainer) {
       const candidates = roster.filter(p => !pendingAttributionScorer || p.number !== pendingAttributionScorer.number);
       chipContainer.innerHTML = candidates.map(player => {
-        const displayLabel = player.initials ? `#${player.number} ${player.initials}` : `#${player.number}`;
+        const hasInitials = Boolean(player.initials && player.initials.trim().length > 0);
         const isSelected = pendingAttributionAssist && pendingAttributionAssist.number === player.number;
-        const selClass = isSelected ? 'bg-sky-500 text-slate-950 border-sky-300 font-black scale-105 shadow-md' : 'bg-slate-900 hover:bg-slate-850 text-slate-200 border-slate-700 font-bold';
+        const badgeText = hasInitials ? `#${player.number}` : 'PLAYER';
+        const initialsText = hasInitials ? player.initials : `#${player.number}`;
+
+        const btnClass = isSelected
+          ? 'bg-gradient-to-br from-sky-500 to-sky-600 border-sky-200 text-slate-950 shadow-xl shadow-sky-500/30 scale-[1.03] ring-2 ring-sky-300'
+          : 'bg-slate-800/90 hover:bg-slate-750 border-slate-700/80 hover:border-sky-400/80 text-white shadow-md hover:scale-[1.02]';
 
         return `
-          <button type="button" onclick="window.selectAttributionAssist(${player.number})" class="p-2.5 rounded-xl border flex items-center justify-center text-xs transition active:scale-95 cursor-pointer ${selClass}">
-            <span>${displayLabel}</span>
+          <button type="button" onclick="window.selectAttributionAssist(${player.number})"
+            class="relative p-2.5 sm:p-3 rounded-2xl border-2 flex flex-col items-center justify-between min-h-[72px] sm:min-h-[82px] active:scale-95 transition cursor-pointer group ${btnClass}">
+            <div class="flex items-center justify-between w-full">
+              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/30 text-slate-950 font-black' : 'bg-slate-950/90 text-amber-300 border border-amber-400/40'}">
+                ${badgeText}
+              </span>
+              ${isSelected ? '<span class="text-sm font-black text-slate-950">✓</span>' : '<span class="text-[10px] text-sky-400/60 font-black opacity-0 group-hover:opacity-100 transition">ASSIST</span>'}
+            </div>
+            <span class="font-mono-sport font-black text-lg sm:text-2xl tracking-wider uppercase leading-none py-1 ${isSelected ? 'text-slate-950 font-extrabold' : 'text-white'}">
+              ${initialsText}
+            </span>
           </button>
         `;
       }).join('');
@@ -1194,6 +1283,14 @@ export function selectAttributionScorer(playerNumber) {
   const roster = t.roster || [];
   const player = roster.find(p => p.number === playerNumber) || { number: playerNumber, initials: '' };
   pendingAttributionScorer = player;
+
+  if (skipAssistStep) {
+    pendingAttributionAssist = null;
+    hapticFeedback('success');
+    completeAttribution();
+    return;
+  }
+
   pendingAttributionStage = 2;
   hapticFeedback('tap');
   renderAttributionModal();
@@ -1210,12 +1307,13 @@ export function selectAttributionAssist(playerNumber) {
 
 export function skipGoalAssist() {
   pendingAttributionAssist = null;
-  hapticFeedback('tap');
+  hapticFeedback('success');
   completeAttribution();
 }
 
 export function attributionBackToScorer() {
   pendingAttributionStage = 1;
+  hapticFeedback('tap');
   renderAttributionModal();
 }
 

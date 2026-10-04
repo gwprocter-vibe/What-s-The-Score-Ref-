@@ -683,6 +683,8 @@ window.attributionBackToScorer = score.attributionBackToScorer;
 window.skipGoalAttribution = score.skipGoalAttribution;
 window.setGoalOwnGoal = score.setGoalOwnGoal;
 window.cancelGoalAttribution = score.cancelGoalAttribution;
+window.setSkipAssistStep = score.setSkipAssistStep;
+window.getSkipAssistStep = score.getSkipAssistStep;
 
 window.openMatchNotesModal = score.openMatchNotesModal;
 window.selectMomentTag = score.selectMomentTag;
@@ -718,6 +720,7 @@ window.openSquadInitialsModal = score.openSquadInitialsModal;
 window.selectSquadModalTeam = score.selectSquadModalTeam;
 window.saveSquadInitials = score.saveSquadInitials;
 window.createDefaultRoster = score.createDefaultRoster;
+window.teams = score.teams;
 window.toggleEditTeamCoachRole = score.toggleEditTeamCoachRole;
 
 window.renderTeamRosterEditor = score.renderTeamRosterEditor;
