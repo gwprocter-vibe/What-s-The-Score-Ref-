@@ -1225,6 +1225,23 @@
           </div>
         </div>
 
+        <!-- Touchline Moments Section (Coach Mode - Recorded in match reports & match cards) -->
+        <div id="reportMomentsSection" class="hidden p-3 bg-slate-950/90 border-2 border-amber-500/60 rounded-xl text-left animate-fadeIn">
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm">⭐</span>
+              <span class="text-xs font-black uppercase tracking-wider text-amber-300">Touchline Moments</span>
+              <span id="reportMomentsCountBadge" class="text-[9px] font-mono-sport font-black px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">0 Moments</span>
+            </div>
+            <button type="button" onclick="closeModal('reportModal'); openCoachMomentsModal();" class="text-[10px] text-amber-400 hover:text-amber-300 font-bold hover:underline cursor-pointer flex items-center gap-1">
+              <span>Edit Feed ›</span>
+            </button>
+          </div>
+          <div id="reportMomentsListContainer" class="space-y-1.5 max-h-[140px] overflow-y-auto pr-0.5 text-xs">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
         <!-- Pitch & Notes (Optional) -->
         <div class="grid grid-cols-2 gap-2">
           <div>

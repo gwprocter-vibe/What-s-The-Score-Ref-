@@ -36,6 +36,7 @@ export function getMatchDataForScope(scopeNum) {
       awayScore: sState.awayScore,
       goals: sState.goals || [],
       coachNotes: sState.coachNotes || null,
+      coachTeam: sState.coachTeam || 'home',
       period: formatPeriod(tState.currentPeriod, isFT, tState.timerSeconds, tState.hasHalfStarted),
       isFT: isFT
     };
@@ -54,6 +55,7 @@ export function getMatchDataForScope(scopeNum) {
       awayScore: m.score.awayScore ?? 0,
       goals: m.score.goals || [],
       coachNotes: m.score.coachNotes || null,
+      coachTeam: m.score.coachTeam || 'home',
       period: formatPeriod(m.timer?.currentPeriod, isFT, m.timer?.timerSeconds || 0, m.timer?.hasHalfStarted),
       isFT: isFT
     };
@@ -69,9 +71,26 @@ export function getMatchDataForScope(scopeNum) {
     awayScore: 0,
     goals: [],
     coachNotes: null,
+    coachTeam: 'home',
     period: 'Full Time',
     isFT: true
   };
+}
+
+export function formatMomentPlayers(m) {
+  if (!m) return 'Entire Team';
+  if (m.players && Array.isArray(m.players) && m.players.length > 0) {
+    const names = m.players.map(p => {
+      if (!p || p === 'team') return 'Entire Team';
+      return p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
+    });
+    return names.join(', ');
+  }
+  if (m.player) {
+    if (m.player === 'team') return 'Entire Team';
+    return m.player.initials ? `#${m.player.number} ${m.player.initials}` : `#${m.player.number}`;
+  }
+  return 'Entire Team';
 }
 
 export function formatGoalAttribution(g) {
@@ -188,29 +207,37 @@ export function generateReportText(scope = activeReportScope) {
       text += `\n`;
     }
 
-    const isCoach = typeof getAppMode === 'function' && getAppMode() === 'coach';
     const m1Moments = m1.coachNotes?.moments || [];
     const m2Moments = m2.coachNotes?.moments || [];
+    const isCoach = (typeof getAppMode === 'function' && getAppMode() === 'coach') || (m1Moments.length > 0 || m2Moments.length > 0);
     if (isCoach && (m1Moments.length > 0 || m2Moments.length > 0)) {
-      text += `⭐ KEY MATCH MOMENTS:\n`;
+      text += `⭐ TOUCHLINE MATCH MOMENTS:\n`;
       if (m1Moments.length > 0) {
-        text += `• Match 1:\n`;
+        text += `• Match 1 (${m1Moments.length}):\n`;
         m1Moments.forEach(m => {
-          let pLabel = (m.players && m.players.length > 0)
-            ? m.players.map(p => p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`).join(', ')
-            : (m.player ? (m.player.initials ? `#${m.player.number} ${m.player.initials}` : `#${m.player.number}`) : 'Entire Team');
-          text += `  - [${m.time}] ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
+          const pLabel = formatMomentPlayers(m);
+          const period = m.period === '1st Half' ? '1H' : (m.period === '2nd Half' ? '2H' : (m.period || '1H'));
+          text += `  - [${m.time}] (${period}) ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
         });
       }
       if (m2Moments.length > 0) {
-        text += `• Match 2:\n`;
+        text += `• Match 2 (${m2Moments.length}):\n`;
         m2Moments.forEach(m => {
-          let pLabel = (m.players && m.players.length > 0)
-            ? m.players.map(p => p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`).join(', ')
-            : (m.player ? (m.player.initials ? `#${m.player.number} ${m.player.initials}` : `#${m.player.number}`) : 'Entire Team');
-          text += `  - [${m.time}] ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
+          const pLabel = formatMomentPlayers(m);
+          const period = m.period === '1st Half' ? '1H' : (m.period === '2nd Half' ? '2H' : (m.period || '1H'));
+          text += `  - [${m.time}] (${period}) ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
         });
       }
+      text += `\n`;
+    }
+
+    if (m1.coachNotes?.notes && m1.coachNotes.notes.trim()) {
+      text += `📝 Match 1 Coach Notes: ${m1.coachNotes.notes.trim()}\n`;
+    }
+    if (m2.coachNotes?.notes && m2.coachNotes.notes.trim()) {
+      text += `📝 Match 2 Coach Notes: ${m2.coachNotes.notes.trim()}\n`;
+    }
+    if ((m1.coachNotes?.notes && m1.coachNotes.notes.trim()) || (m2.coachNotes?.notes && m2.coachNotes.notes.trim())) {
       text += `\n`;
     }
 
@@ -272,23 +299,20 @@ export function generateReportText(scope = activeReportScope) {
     text += `⭐ Player of the Match: #${potm.number}${potm.initials ? ' ' + potm.initials : ''}\n\n`;
   }
 
-  const isCoach = typeof getAppMode === 'function' && getAppMode() === 'coach';
   const moments = data.coachNotes?.moments || [];
+  const isCoach = (typeof getAppMode === 'function' && getAppMode() === 'coach') || (moments.length > 0);
   if (isCoach && moments.length > 0) {
-    text += `⭐ KEY MATCH MOMENTS (${moments.length}):\n`;
+    text += `⭐ TOUCHLINE MATCH MOMENTS (${moments.length}):\n`;
     moments.forEach(m => {
-      let pLabel = 'Entire Team';
-      if (m.players && Array.isArray(m.players) && m.players.length > 0) {
-        pLabel = m.players.map(p => {
-          if (!p || p === 'team') return 'Entire Team';
-          return p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
-        }).join(', ');
-      } else if (m.player) {
-        pLabel = m.player.initials ? `#${m.player.number} ${m.player.initials}` : `#${m.player.number}`;
-      }
-      text += `• [${m.time}] (${m.period}) ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
+      const pLabel = formatMomentPlayers(m);
+      const period = m.period === '1st Half' ? '1H' : (m.period === '2nd Half' ? '2H' : (m.period || '1H'));
+      text += `• [${m.time}] (${period}) ${m.icon || '⭐'} ${m.tag}: ${pLabel}\n`;
     });
     text += `\n`;
+  }
+
+  if (data.coachNotes?.notes && data.coachNotes.notes.trim()) {
+    text += `📝 COACH'S NOTES:\n${data.coachNotes.notes.trim()}\n\n`;
   }
 
   if (ref) text += `Referee: ${ref}\n`;
@@ -395,6 +419,7 @@ export function updateReportUI() {
   }
 
   renderReportPotmUI();
+  renderReportMomentsUI();
 
   const handoverBtn = document.getElementById('saveMatch1PrepareMatch2ReportBtn');
   if (handoverBtn) {
@@ -405,6 +430,84 @@ export function updateReportUI() {
       handoverBtn.classList.add('hidden');
     }
   }
+}
+
+export function renderReportMomentsUI() {
+  const section = document.getElementById('reportMomentsSection');
+  const listContainer = document.getElementById('reportMomentsListContainer');
+  const badge = document.getElementById('reportMomentsCountBadge');
+  if (!section || !listContainer) return;
+
+  const isCoach = typeof getAppMode === 'function' && getAppMode() === 'coach';
+
+  if (activeReportScope === 'combined') {
+    const m1 = getMatchDataForScope(1);
+    const m2 = getMatchDataForScope(2);
+    const m1Moments = m1.coachNotes?.moments || [];
+    const m2Moments = m2.coachNotes?.moments || [];
+    const totalCount = m1Moments.length + m2Moments.length;
+
+    if (!isCoach && totalCount === 0) {
+      section.classList.add('hidden');
+      return;
+    }
+    section.classList.remove('hidden');
+    if (badge) badge.innerText = `${totalCount} Moment${totalCount === 1 ? '' : 's'}`;
+
+    if (totalCount === 0) {
+      listContainer.innerHTML = '<div class="text-slate-500 text-[11px] italic py-2 text-center">No touchline moments logged yet for Match 1 or 2.</div>';
+      return;
+    }
+
+    let html = '';
+    if (m1Moments.length > 0) {
+      html += `<div class="text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1 mt-0.5">Match 1 (${m1Moments.length}):</div>`;
+      html += m1Moments.map(m => renderMomentRowHtml(m)).join('');
+    }
+    if (m2Moments.length > 0) {
+      html += `<div class="text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1 ${m1Moments.length > 0 ? 'mt-2' : 'mt-0.5'}">Match 2 (${m2Moments.length}):</div>`;
+      html += m2Moments.map(m => renderMomentRowHtml(m)).join('');
+    }
+    listContainer.innerHTML = html;
+  } else {
+    const matchNum = activeReportScope === 'm2' ? 2 : 1;
+    const data = getMatchDataForScope(matchNum);
+    const moments = data.coachNotes?.moments || [];
+
+    if (!isCoach && moments.length === 0) {
+      section.classList.add('hidden');
+      return;
+    }
+    section.classList.remove('hidden');
+    if (badge) badge.innerText = `${moments.length} Moment${moments.length === 1 ? '' : 's'}`;
+
+    if (moments.length === 0) {
+      listContainer.innerHTML = `<div class="text-slate-500 text-[11px] italic py-2 text-center">No touchline moments logged for Match ${matchNum}. You can tag moments pitch-side during play.</div>`;
+      return;
+    }
+
+    listContainer.innerHTML = moments.slice().reverse().map(m => renderMomentRowHtml(m)).join('');
+  }
+}
+
+function renderMomentRowHtml(m) {
+  const pLabel = formatMomentPlayers(m);
+  const periodTag = m.period === '1st Half' ? '1H' : (m.period === '2nd Half' ? '2H' : (m.period || '1H'));
+  return `
+    <div class="p-2 rounded-lg bg-slate-900/90 border border-slate-800/80 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-base shrink-0">${m.icon || '⭐'}</span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-amber-400 font-mono-sport font-black text-[11px]">${m.time}</span>
+            <span class="text-slate-400 text-[10px]">(${periodTag})</span>
+            <span class="font-bold text-white text-[11px]">${m.tag}</span>
+          </div>
+          <div class="text-[10px] text-amber-300 font-mono-sport font-semibold truncate" title="${pLabel}">${pLabel}</div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 export function renderReportPotmUI() {
@@ -802,9 +905,13 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
 
     // Home Team Name
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(truncateText(ctx, home, 300), 220, 195);
+    const isCoach = (typeof getAppMode === 'function' && getAppMode() === 'coach') || (matchData.coachNotes?.moments?.length > 0) || (matchData.coachNotes?.potm != null);
+    const homeIsCoach = isCoach && matchData.coachTeam === 'home';
+    const awayIsCoach = isCoach && matchData.coachTeam === 'away';
+    const homeDisplayName = homeIsCoach ? `⭐ ${home}` : home;
+    ctx.fillText(truncateText(ctx, homeDisplayName, 300), 220, 195);
 
     // Home Kit Tag
     ctx.fillStyle = 'rgba(255,255,255,0.08)';
@@ -814,9 +921,9 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
     ctx.beginPath();
     ctx.arc(182, 223, 5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#cbd5e1';
+    ctx.fillStyle = homeIsCoach ? '#fbbf24' : '#cbd5e1';
     ctx.font = '800 10px monospace';
-    ctx.fillText("HOME", 230, 227);
+    ctx.fillText(homeIsCoach ? "⭐ COACH" : "HOME", 230, 227);
 
     // Home Big Score Digit
     ctx.fillStyle = '#ffffff';
@@ -830,8 +937,9 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
 
     // Away Team Name
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(truncateText(ctx, away, 300), 580, 195);
+    ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+    const awayDisplayName = awayIsCoach ? `⭐ ${away}` : away;
+    ctx.fillText(truncateText(ctx, awayDisplayName, 300), 580, 195);
 
     // Away Kit Tag
     ctx.fillStyle = 'rgba(255,255,255,0.08)';
@@ -841,9 +949,9 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
     ctx.beginPath();
     ctx.arc(542, 223, 5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#cbd5e1';
+    ctx.fillStyle = awayIsCoach ? '#fbbf24' : '#cbd5e1';
     ctx.font = '800 10px monospace';
-    ctx.fillText("AWAY", 590, 227);
+    ctx.fillText(awayIsCoach ? "⭐ COACH" : "AWAY", 590, 227);
 
     // Away Big Score Digit
     ctx.fillStyle = '#ffffff';
@@ -859,105 +967,453 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
     const htSummary = `HALF TIME: ${h1Home} - ${h1Away}    •    2ND HALF: ${h2Home} - ${h2Away}`;
     ctx.fillText(htSummary, 400, 381);
 
-    // 4. Goal Timeline Container
+    // 4. Match Timeline & Touchline Moments Container
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#0d1424';
-    roundRect(ctx, 40, 425, 720, 420, 20);
-    ctx.fill();
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    const moments = matchData.coachNotes?.moments || [];
 
-    // Goal Timeline Header
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText("⚽ MATCH TIMELINE & GOAL LOG", 65, 462);
-
-    ctx.strokeStyle = '#1e293b';
-    ctx.beginPath();
-    ctx.moveTo(40, 480);
-    ctx.lineTo(760, 480);
-    ctx.stroke();
-
-    // Render Goals
-    if (goals.length === 0) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '600 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText("No goals recorded during this match (0 - 0)", 400, 640);
-    } else {
-      const maxGoalsToShow = 7;
-      const displayGoals = goals.slice(0, maxGoalsToShow);
-      let rowY = 518;
-
-      displayGoals.forEach((g, idx) => {
-        // Goal number badge
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
-        roundRect(ctx, 65, rowY - 18, 30, 26, 6);
+    if (isCoach && moments.length > 0) {
+      if (goals.length > 0) {
+        // --- 4A. GOALS CARD (Top) ---
+        ctx.fillStyle = '#0d1424';
+        roundRect(ctx, 40, 415, 720, 185, 16);
         ctx.fill();
-        ctx.fillStyle = '#34d399';
-        ctx.font = '900 12px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(String(idx + 1), 80, rowY);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
-        // Time pill
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        roundRect(ctx, 105, rowY - 18, 70, 26, 6);
+        // Cyan top accent
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(40, 415, 720, 3);
+
+        // Header
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+        ctx.fillText("⚽ MATCH GOALS & TIMELINE", 65, 442);
+
+        // Goal Count Pill
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+        roundRect(ctx, 640, 427, 95, 20, 6);
         ctx.fill();
-        ctx.fillStyle = '#f59e0b';
-        ctx.font = '800 12px monospace';
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '900 10.5px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(g.time, 140, rowY);
-
-        // Period tag
-        ctx.fillStyle = '#64748b';
-        ctx.font = '700 11px monospace';
+        ctx.fillText(`${goals.length} GOAL${goals.length === 1 ? '' : 'S'}`, 687, 441);
         ctx.textAlign = 'left';
-        ctx.fillText(g.period === '1st Half' ? '1H' : '2H', 185, rowY);
 
-        // Team name & kit indicator
-        const isHome = g.team === 'home';
-        ctx.fillStyle = isHome ? homeColor : awayColor;
+        // Divider
+        ctx.strokeStyle = '#1e293b';
         ctx.beginPath();
-        ctx.arc(220, rowY - 5, 5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(40, 456);
+        ctx.lineTo(760, 456);
+        ctx.stroke();
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '800 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        let scorerText = '';
-        if (g.isOwnGoal) {
-          scorerText = ' • ⚠️ Own Goal';
-        } else if (g.scorer) {
-          const sInit = g.scorer.initials ? `#${g.scorer.number} ${g.scorer.initials}` : `#${g.scorer.number}`;
-          const aInit = g.assist ? ` (🅰️ #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
-          scorerText = ` • ⚽ ${sInit}${aInit}`;
-        }
-        const fullGoalLabel = `${g.teamName}${scorerText}`;
-        ctx.fillText(truncateText(ctx, fullGoalLabel, 360), 235, rowY);
+        // Goals Rows (up to 3 rows)
+        const maxGoalsToShow = 3;
+        const displayGoals = goals.slice(0, maxGoalsToShow);
+        let goalRowY = 488;
 
-        // Score at that goal
-        ctx.fillStyle = '#cbd5e1';
-        ctx.font = '900 15px monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText(`[ ${g.scoreHome} - ${g.scoreAway} ]`, 735, rowY);
+        displayGoals.forEach((g, idx) => {
+          // Number badge
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+          roundRect(ctx, 65, goalRowY - 15, 24, 20, 5);
+          ctx.fill();
+          ctx.fillStyle = '#34d399';
+          ctx.font = '900 11px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(String(idx + 1), 77, goalRowY);
 
-        // Divider line between goals
-        if (idx < displayGoals.length - 1) {
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+          // Time pill
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+          roundRect(ctx, 95, goalRowY - 15, 54, 20, 5);
+          ctx.fill();
+          ctx.fillStyle = '#f59e0b';
+          ctx.font = '800 11px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(g.time, 122, goalRowY);
+
+          // Period tag
+          ctx.fillStyle = '#64748b';
+          ctx.font = '700 10.5px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(g.period === '1st Half' ? '1H' : '2H', 156, goalRowY);
+
+          // Team indicator dot
+          const isHomeTeam = g.team === 'home';
+          ctx.fillStyle = isHomeTeam ? homeColor : awayColor;
           ctx.beginPath();
-          ctx.moveTo(65, rowY + 18);
-          ctx.lineTo(735, rowY + 18);
-          ctx.stroke();
+          ctx.arc(184, goalRowY - 4, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Scorer text
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 13px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+          let scorerText = '';
+          if (g.isOwnGoal) {
+            scorerText = ' • ⚠️ Own Goal';
+          } else if (g.scorer) {
+            const sInit = g.scorer.initials ? `#${g.scorer.number} ${g.scorer.initials}` : `#${g.scorer.number}`;
+            const aInit = g.assist ? ` (🅰️ #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
+            scorerText = ` • ⚽ ${sInit}${aInit}`;
+          }
+          ctx.fillText(truncateText(ctx, `${g.teamName}${scorerText}`, 360), 196, goalRowY);
+
+          // Score
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = '900 13px monospace';
+          ctx.textAlign = 'right';
+          ctx.fillText(`[ ${g.scoreHome} - ${g.scoreAway} ]`, 735, goalRowY);
+          ctx.textAlign = 'left';
+
+          if (idx < displayGoals.length - 1) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            ctx.beginPath();
+            ctx.moveTo(65, goalRowY + 12);
+            ctx.lineTo(735, goalRowY + 12);
+            ctx.stroke();
+          }
+
+          goalRowY += 34;
+        });
+
+        if (goals.length > maxGoalsToShow) {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '700 11px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`+ ${goals.length - maxGoalsToShow} more goals in match report`, 400, 584);
+          ctx.textAlign = 'left';
         }
 
-        rowY += 46;
-      });
+        // --- 4B. TOUCHLINE MOMENTS CARD (Bottom) ---
+        ctx.fillStyle = '#0d1424';
+        roundRect(ctx, 40, 612, 720, 242, 16);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
-      if (goals.length > maxGoalsToShow) {
+        // Gold top accent
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(40, 612, 720, 3);
+
+        // Header
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+        ctx.fillText("⭐ TOUCHLINE MATCH MOMENTS", 65, 638);
+
+        // Count badge
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
+        roundRect(ctx, 625, 623, 110, 20, 6);
+        ctx.fill();
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '900 10.5px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${moments.length} MOMENT${moments.length === 1 ? '' : 'S'}`, 680, 637);
+        ctx.textAlign = 'left';
+
+        // Divider
+        ctx.strokeStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.moveTo(40, 652);
+        ctx.lineTo(760, 652);
+        ctx.stroke();
+
+        // Render Moments (2-column grid or full rows)
+        if (moments.length <= 3) {
+          let rowY = 666;
+          moments.forEach((m, idx) => {
+            const pLabel = formatMomentPlayers(m);
+            const periodTag = m.period === '1st Half' ? '1H' : (m.period === '2nd Half' ? '2H' : (m.period || '1H'));
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            roundRect(ctx, 55, rowY, 690, 46, 10);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(245, 158, 11, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Icon circle
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
+            ctx.beginPath();
+            ctx.arc(80, rowY + 23, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Emoji Icon
+            ctx.font = '16px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(m.icon || '⭐', 80, rowY + 29);
+
+            // Time & Period
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = '800 11px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText(`[${m.time}] ${periodTag}`, 105, rowY + 28);
+
+            // Tag name
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 13px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+            ctx.fillText(m.tag, 195, rowY + 28);
+
+            // Player pill
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '800 12px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(truncateText(ctx, pLabel, 260), 730, rowY + 28);
+            ctx.textAlign = 'left';
+
+            rowY += 56;
+          });
+        } else {
+          // 2-Column Grid (up to 6 moments)
+          const maxMoments = 6;
+          const displayMoments = moments.slice(0, maxMoments);
+
+          displayMoments.forEach((m, idx) => {
+            const isCol2 = idx % 2 === 1;
+            const rowIdx = Math.floor(idx / 2);
+            const boxX = isCol2 ? 408 : 56;
+            const boxY = 662 + (rowIdx * 45);
+            const boxW = 336;
+            const boxH = 40;
+            const pLabel = formatMomentPlayers(m);
+            const periodTag = m.period === '1st Half' ? '1H' : (m.period === '2nd Half' ? '2H' : (m.period || '1H'));
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+            roundRect(ctx, boxX, boxY, boxW, boxH, 8);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(245, 158, 11, 0.22)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Emoji icon
+            ctx.font = '15px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(m.icon || '⭐', boxX + 20, boxY + 25);
+
+            // Tag name
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 11.5px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(truncateText(ctx, m.tag, 190), boxX + 38, boxY + 17);
+
+            // Subtitle
+            ctx.fillStyle = '#fcd34d';
+            ctx.font = '700 10.5px monospace';
+            const subStr = `[${m.time}] ${periodTag} • ${pLabel}`;
+            ctx.fillText(truncateText(ctx, subStr, 280), boxX + 38, boxY + 31);
+          });
+
+          if (moments.length > maxMoments) {
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '700 10.5px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(`+ ${moments.length - maxMoments} more moments in match report`, 400, 843);
+            ctx.textAlign = 'left';
+          }
+        }
+      } else {
+        // --- 4C. MOMENTS EXIST, BUT 0 GOALS ---
+        // Compact 0-0 bar
+        ctx.fillStyle = '#0d1424';
+        roundRect(ctx, 40, 415, 720, 44, 12);
+        ctx.fill();
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
         ctx.fillStyle = '#94a3b8';
         ctx.font = '700 12px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`+ ${goals.length - maxGoalsToShow} more goals recorded in match log`, 400, rowY);
+        ctx.fillText(`⚽ Match Result: ${home} ${homeScore} - ${awayScore} ${away} • Clean sheet / No goals recorded`, 400, 442);
+        ctx.textAlign = 'left';
+
+        // Full Prominence Touchline Moments Card
+        ctx.fillStyle = '#0d1424';
+        roundRect(ctx, 40, 468, 720, 386, 16);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Gold top accent
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(40, 468, 720, 3);
+
+        // Header
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '900 14px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+        ctx.fillText("⭐ TOUCHLINE MATCH MOMENTS", 65, 497);
+
+        // Count badge
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
+        roundRect(ctx, 620, 482, 115, 22, 6);
+        ctx.fill();
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '900 11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${moments.length} MOMENT${moments.length === 1 ? '' : 'S'}`, 677, 497);
+        ctx.textAlign = 'left';
+
+        // Divider
+        ctx.strokeStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.moveTo(40, 513);
+        ctx.lineTo(760, 513);
+        ctx.stroke();
+
+        // Spacious 2-Column Grid (up to 8 moments)
+        const maxMoments = 8;
+        const displayMoments = moments.slice(0, maxMoments);
+
+        displayMoments.forEach((m, idx) => {
+          const isCol2 = idx % 2 === 1;
+          const rowIdx = Math.floor(idx / 2);
+          const boxX = isCol2 ? 408 : 56;
+          const boxY = 525 + (rowIdx * 64);
+          const boxW = 336;
+          const boxH = 54;
+          const pLabel = formatMomentPlayers(m);
+          const periodTag = m.period === '1st Half' ? '1H' : (m.period === '2nd Half' ? '2H' : (m.period || '1H'));
+
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+          roundRect(ctx, boxX, boxY, boxW, boxH, 10);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(245, 158, 11, 0.25)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Icon circle
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
+          ctx.beginPath();
+          ctx.arc(boxX + 24, boxY + 27, 14, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.font = '16px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(m.icon || '⭐', boxX + 24, boxY + 33);
+
+          // Tag name
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 12.5px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(truncateText(ctx, m.tag, 270), boxX + 46, boxY + 22);
+
+          // Subtitle with time, period, player
+          ctx.fillStyle = '#fcd34d';
+          ctx.font = '700 11px monospace';
+          const subStr = `[${m.time}] (${periodTag}) • ${pLabel}`;
+          ctx.fillText(truncateText(ctx, subStr, 275), boxX + 46, boxY + 41);
+        });
+
+        if (moments.length > maxMoments) {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '700 11px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`+ ${moments.length - maxMoments} more moments in match report`, 400, 842);
+          ctx.textAlign = 'left';
+        }
+      }
+    } else {
+      // --- 4D. ORIGINAL GOAL TIMELINE (No moments or Referee Mode) ---
+      roundRect(ctx, 40, 425, 720, 420, 20);
+      ctx.fill();
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Goal Timeline Header
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+      ctx.fillText("⚽ MATCH TIMELINE & GOAL LOG", 65, 462);
+
+      ctx.strokeStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.moveTo(40, 480);
+      ctx.lineTo(760, 480);
+      ctx.stroke();
+
+      // Render Goals
+      if (goals.length === 0) {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '600 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText("No goals recorded during this match (0 - 0)", 400, 640);
+        ctx.textAlign = 'left';
+      } else {
+        const maxGoalsToShow = 7;
+        const displayGoals = goals.slice(0, maxGoalsToShow);
+        let rowY = 518;
+
+        displayGoals.forEach((g, idx) => {
+          // Goal number badge
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+          roundRect(ctx, 65, rowY - 18, 30, 26, 6);
+          ctx.fill();
+          ctx.fillStyle = '#34d399';
+          ctx.font = '900 12px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(String(idx + 1), 80, rowY);
+
+          // Time pill
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+          roundRect(ctx, 105, rowY - 18, 70, 26, 6);
+          ctx.fill();
+          ctx.fillStyle = '#f59e0b';
+          ctx.font = '800 12px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(g.time, 140, rowY);
+
+          // Period tag
+          ctx.fillStyle = '#64748b';
+          ctx.font = '700 11px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(g.period === '1st Half' ? '1H' : '2H', 185, rowY);
+
+          // Team name & kit indicator
+          const isHome = g.team === 'home';
+          ctx.fillStyle = isHome ? homeColor : awayColor;
+          ctx.beginPath();
+          ctx.arc(220, rowY - 5, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          let scorerText = '';
+          if (g.isOwnGoal) {
+            scorerText = ' • ⚠️ Own Goal';
+          } else if (g.scorer) {
+            const sInit = g.scorer.initials ? `#${g.scorer.number} ${g.scorer.initials}` : `#${g.scorer.number}`;
+            const aInit = g.assist ? ` (🅰️ #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
+            scorerText = ` • ⚽ ${sInit}${aInit}`;
+          }
+          const fullGoalLabel = `${g.teamName}${scorerText}`;
+          ctx.fillText(truncateText(ctx, fullGoalLabel, 360), 235, rowY);
+
+          // Score at that goal
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = '900 15px monospace';
+          ctx.textAlign = 'right';
+          ctx.fillText(`[ ${g.scoreHome} - ${g.scoreAway} ]`, 735, rowY);
+          ctx.textAlign = 'left';
+
+          // Divider line between goals
+          if (idx < displayGoals.length - 1) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            ctx.beginPath();
+            ctx.moveTo(65, rowY + 18);
+            ctx.lineTo(735, rowY + 18);
+            ctx.stroke();
+          }
+
+          rowY += 46;
+        });
+
+        if (goals.length > maxGoalsToShow) {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '700 12px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`+ ${goals.length - maxGoalsToShow} more goals recorded in match log`, 400, rowY);
+          ctx.textAlign = 'left';
+        }
       }
     }
 
@@ -983,9 +1439,15 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
     if (matchData.coachNotes && matchData.coachNotes.potm) {
       const potm = matchData.coachNotes.potm;
       const potmStr = `#${potm.number}${potm.initials ? ' ' + potm.initials : ''}`;
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
+      roundRect(ctx, 65, 930, 270, 22, 6);
+      ctx.fill();
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1;
+      ctx.stroke();
       ctx.fillStyle = '#fbbf24';
-      ctx.font = '900 12px monospace';
-      ctx.fillText(`⭐ POTM: ${potmStr}`, 65, 944);
+      ctx.font = '900 11px monospace';
+      ctx.fillText(`⭐ PLAYER OF THE MATCH: ${potmStr}`, 75, 945);
     }
 
     ctx.fillStyle = '#64748b';
