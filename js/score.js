@@ -1171,6 +1171,7 @@ export function renderAttributionModal() {
     if (backBtn) backBtn.classList.add('hidden');
     if (ownGoalBtn) ownGoalBtn.classList.remove('hidden');
     if (quickSkipBtn) {
+      quickSkipBtn.className = 'py-2.5 px-2 bg-slate-800 hover:bg-slate-750 text-slate-200 font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1';
       quickSkipBtn.innerHTML = `<span>⚡</span><span>${pendingAttributionExistingIndex !== null ? 'Clear Player Credit' : 'Uncredited Goal'}</span>`;
     }
 
@@ -1214,19 +1215,18 @@ export function renderAttributionModal() {
     if (fastModeLabel) fastModeLabel.classList.add('hidden');
 
     if (topActionContainer) {
-      topActionContainer.classList.remove('hidden');
-      topActionContainer.innerHTML = `
-        <button type="button" onclick="window.skipGoalAssist()" class="w-full py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition cursor-pointer border-2 border-emerald-300">
-          <span class="text-sm">⚡</span>
-          <span class="tracking-wide uppercase font-black">SOLO GOAL — NO ASSIST (TAP TO FINISH) ✓</span>
-        </button>
-      `;
+      topActionContainer.classList.add('hidden');
+      topActionContainer.innerHTML = '';
     }
 
-    if (backBtn) backBtn.classList.remove('hidden');
+    if (backBtn) {
+      backBtn.classList.remove('hidden');
+      backBtn.innerHTML = '<span>←</span><span>Back</span>';
+    }
     if (ownGoalBtn) ownGoalBtn.classList.add('hidden');
     if (quickSkipBtn) {
-      quickSkipBtn.innerHTML = `<span>⚡</span><span>No Assist (Solo)</span>`;
+      quickSkipBtn.className = 'py-3 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1 shadow-md';
+      quickSkipBtn.innerHTML = '<span>No Assist</span>';
     }
 
     if (chipContainer) {
