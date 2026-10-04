@@ -65,6 +65,14 @@ try {
   }
 } catch (e) {}
 
+let showFullTimeMomentTags = false;
+
+export function toggleFullTimeMomentTags() {
+  showFullTimeMomentTags = !showFullTimeMomentTags;
+  hapticFeedback('tap');
+  renderTouchlineBarUI();
+}
+
 export function getCoachTeam() {
   return coachTeam;
 }
@@ -2476,6 +2484,8 @@ export function renderTouchlineBarUI() {
     if (appMode === 'coach' && isFT) {
       ftPotmCard.classList.remove('hidden');
       const roster = teams[coachTeam]?.roster || [];
+      const hasPotm = Boolean(coachNotes.potm);
+
       ftPotmChips.innerHTML = roster.map(p => {
         const isSelected = coachNotes.potm && coachNotes.potm.number === p.number;
         const label = p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
@@ -2488,6 +2498,34 @@ export function renderTouchlineBarUI() {
           </button>
         `;
       }).join('');
+
+      const actionsContainer = document.getElementById('coachTouchlinePotmActions');
+      if (actionsContainer) {
+        if (hasPotm) {
+          actionsContainer.innerHTML = `
+            <div class="mt-2 pt-2 border-t border-amber-500/30 flex flex-col gap-1.5 animate-fadeIn">
+              <button type="button" onclick="openModal('reportModal')" class="w-full py-2 px-3 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
+                <span>📋</span><span>Open Match Report & Share Card ›</span>
+              </button>
+              <div class="flex items-center justify-between text-[10px] text-amber-300/80 px-0.5">
+                <span>⭐ POTM: #${coachNotes.potm.number}${coachNotes.potm.initials ? ' ' + coachNotes.potm.initials : ''}</span>
+                <button type="button" onclick="toggleFullTimeMomentTags()" class="text-amber-400 hover:text-white font-bold underline cursor-pointer">
+                  ${showFullTimeMomentTags ? 'Hide Quick Tags ▴' : 'Show Quick Tags ▾'}
+                </button>
+              </div>
+            </div>
+          `;
+        } else {
+          actionsContainer.innerHTML = `
+            <div class="mt-1.5 flex items-center justify-between text-[10px] text-slate-400 px-0.5">
+              <span>Tap player to award POTM</span>
+              <button type="button" onclick="toggleFullTimeMomentTags()" class="text-amber-400 hover:text-white font-bold underline cursor-pointer">
+                ${showFullTimeMomentTags ? 'Hide Quick Tags ▴' : 'Show Quick Tags ▾'}
+              </button>
+            </div>
+          `;
+        }
+      }
     } else {
       ftPotmCard.classList.add('hidden');
     }
@@ -2559,8 +2597,12 @@ export function renderTouchlineBarUI() {
         }
       }
     } else {
-      defaultRow.classList.remove('hidden');
       activeRow.classList.add('hidden');
+      if (appMode === 'coach' && isFT && !showFullTimeMomentTags) {
+        defaultRow.classList.add('hidden');
+      } else {
+        defaultRow.classList.remove('hidden');
+      }
     }
   }
 

@@ -707,6 +707,7 @@ window.insertCoachNotesPrompt = score.insertCoachNotesPrompt;
 window.clearCoachNotesModalText = score.clearCoachNotesModalText;
 window.toggleInlineNotesDrawer = score.toggleInlineNotesDrawer;
 window.renderTouchlineBarUI = score.renderTouchlineBarUI;
+window.toggleFullTimeMomentTags = score.toggleFullTimeMomentTags;
 
 window.getCoachTeam = score.getCoachTeam;
 window.setCoachTeam = score.setCoachTeam;

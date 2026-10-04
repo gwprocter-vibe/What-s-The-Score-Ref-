@@ -445,7 +445,7 @@
 
 
   <!-- ================= MAIN MATCH CLOCK HERO SECTION ================= -->
-  <main class="flex-1 min-h-0 my-1 sm:my-1.5 flex flex-col justify-between gap-1 sm:gap-2 overflow-hidden">
+  <main class="flex-1 min-h-0 my-1 sm:my-1.5 flex flex-col justify-between gap-1 sm:gap-2 overflow-y-auto no-scrollbar">
     
     <!-- 2-MATCH SESSION TABS (Match 1 vs Match 2) -->
     <div id="matchSessionTabs" class="shrink-0 grid grid-cols-2 gap-1.5 sm:gap-2" role="tablist" aria-label="Session Matches">
@@ -862,7 +862,7 @@
       </div>
 
       <!-- Full Time POTM Prompt Card (Visible at Full Time in Coach Mode) -->
-      <div id="coachTouchlinePotmPrompt" class="hidden mb-2 p-2.5 bg-gradient-to-r from-amber-950/40 to-yellow-950/20 border-2 border-amber-400/80 rounded-xl animate-fadeIn">
+      <div id="coachTouchlinePotmPrompt" class="hidden mb-2 p-2 sm:p-2.5 bg-gradient-to-r from-amber-950/40 to-yellow-950/20 border-2 border-amber-400/80 rounded-xl animate-fadeIn">
         <div class="flex items-center justify-between mb-1.5">
           <div class="flex items-center gap-1.5">
             <span class="text-sm">⭐</span>
@@ -873,39 +873,42 @@
         <div id="coachTouchlinePotmChips" class="flex flex-wrap gap-1.5">
           <!-- Rendered dynamically -->
         </div>
+        <div id="coachTouchlinePotmActions">
+          <!-- Rendered dynamically (Report button + quick tags toggle) -->
+        </div>
       </div>
 
       <!-- State 1: Default Tag Buttons Row (4x2 grid, perfectly balanced on mobile touchline) -->
       <div id="coachTouchlineDefaultRow" class="grid grid-cols-4 gap-1.5 sm:gap-2">
-        <button type="button" onclick="selectInlineTag('Great Pressing', '⚡')" class="py-2 sm:py-2.5 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
+        <button type="button" onclick="selectInlineTag('Great Pressing', '⚡')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
           <span class="text-base sm:text-lg mb-0.5 leading-none">⚡</span>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Pressing</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Passing Vision', '🎯')" class="py-2 sm:py-2.5 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
+        <button type="button" onclick="selectInlineTag('Passing Vision', '🎯')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
           <span class="text-base sm:text-lg mb-0.5 leading-none">🎯</span>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Passing</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Dribbling', '👟')" class="py-2 sm:py-2.5 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Dribbling">
+        <button type="button" onclick="selectInlineTag('Dribbling', '👟')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Dribbling">
           <span class="text-base sm:text-lg mb-0.5 leading-none">👟</span>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Dribble</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Great Shot', '🚀')" class="py-2 sm:py-2.5 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Great Shot">
+        <button type="button" onclick="selectInlineTag('Great Shot', '🚀')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Great Shot">
           <span class="text-base sm:text-lg mb-0.5 leading-none">🚀</span>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Shot</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Great Tackle', '💥')" class="py-2 sm:py-2.5 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Great Tackle">
+        <button type="button" onclick="selectInlineTag('Great Tackle', '💥')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Great Tackle">
           <span class="text-base sm:text-lg mb-0.5 leading-none">💥</span>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Tackle</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Tracking Back', '🔄')" class="py-2 sm:py-2.5 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Tracking Back">
+        <button type="button" onclick="selectInlineTag('Tracking Back', '🔄')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Tracking Back">
           <span class="text-base sm:text-lg mb-0.5 leading-none">🔄</span>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Track Back</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Great Save', '🧤')" class="py-2 sm:py-2.5 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
+        <button type="button" onclick="selectInlineTag('Great Save', '🧤')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
           <span class="text-base sm:text-lg mb-0.5 leading-none">🧤</span>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Save</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Positioning', '📍')" class="py-2 sm:py-2.5 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
+        <button type="button" onclick="selectInlineTag('Positioning', '📍')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
           <span class="text-base sm:text-lg mb-0.5 leading-none">📍</span>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Position</span>
         </button>
