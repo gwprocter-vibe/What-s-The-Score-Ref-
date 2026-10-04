@@ -1144,9 +1144,9 @@
 
   <!-- 1B. MATCH REPORT MODAL (1-Tap Share / WhatsApp / FA Full-Time Copy) -->
   <div id="reportModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-    <div class="bg-slate-900 border-2 border-emerald-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[90vh] flex flex-col shadow-2xl">
+    <div class="bg-slate-900 border-2 border-emerald-500/70 rounded-2xl max-w-sm w-full p-3.5 sm:p-4 max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
       <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">
         <div>
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
@@ -1163,7 +1163,7 @@
       </div>
 
       <!-- Modal Body (Scrollable) -->
-      <div class="my-3 space-y-3 max-h-[90vh] pr-1 flex-1 text-xs">
+      <div class="my-2.5 space-y-2.5 pr-1 flex-1 min-h-0 overflow-y-auto text-xs overscroll-contain">
         <!-- 3-Way Segmented Scope Pill: Match 1 | Match 2 | Combined -->
         <div class="grid grid-cols-3 gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-black">
           <button id="reportScopeM1Btn" type="button" onclick="setReportScope('m1')" class="py-1.5 px-1 rounded-lg bg-emerald-600 text-white font-black text-xs shadow text-center transition">
@@ -1212,6 +1212,15 @@
             <span id="reportCombM2Score" class="text-slate-400">M2: 0 - 0</span>
           </div>
         </div>
+
+        <!-- Quick Match Card Graphic Access Button (Prominently placed right under score) -->
+        <button type="button" onclick="closeModal('reportModal'); openMatchCardModal();" class="w-full py-2.5 px-3 bg-gradient-to-r from-amber-500/20 via-amber-400/25 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border-2 border-amber-400/80 hover:border-amber-400 rounded-xl text-amber-300 hover:text-white font-extrabold text-xs flex items-center justify-between transition active:scale-[0.99] cursor-pointer shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="text-sm">📸</span>
+            <span class="tracking-wide">Create Match Card Image</span>
+          </div>
+          <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-lg bg-amber-400 text-slate-950 font-mono-sport">GRAPHIC ›</span>
+        </button>
 
         <!-- POTM Selector (Coach Mode - Prompted at end of match) -->
         <div id="reportPotmSection" class="hidden p-3 bg-gradient-to-r from-amber-950/40 to-yellow-950/20 border-2 border-amber-400/80 rounded-xl text-left animate-fadeIn">
@@ -1280,40 +1289,40 @@
         </div>
       </div>
 
-      <!-- Action Buttons Footer -->
-      <div class="pt-2.5 border-t border-slate-800 flex flex-col gap-2 shrink-0">
-        <!-- Dedicated Match 1 -> Match 2 Handover Action Button -->
-        <button id="saveMatch1PrepareMatch2ReportBtn" type="button" onclick="saveMatch1AndPrepareMatch2()" class="w-full py-2.5 px-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-98 cursor-pointer border border-emerald-300">
-          <svg class="w-4 h-4 text-slate-950 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          <span class="tracking-wide uppercase">SAVE MATCH 1 &amp; PREPARE MATCH 2</span>
-        </button>
-
+      <!-- Action Buttons Footer (Always Pinned at Bottom) -->
+      <div class="pt-2 border-t border-slate-800 flex flex-col gap-1.5 shrink-0">
         <!-- 1. Primary Action: Direct WhatsApp Button -->
         <button onclick="shareToWhatsApp()" class="w-full py-2.5 bg-[#25D366] hover:bg-[#20bd5a] active:bg-[#1da850] text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-98 cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c4.55 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.213 8.213 0 0 1-5.82 2.41h-.01c-1.48 0-2.93-.39-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24zm4.52 11.64c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.07-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.2 3.7.59.25 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.29z"/>
           </svg>
-          <span>SEND DIRECT TO WHATSAPP</span>
+          <span class="tracking-wide uppercase font-black">SEND DIRECT TO WHATSAPP</span>
         </button>
 
         <!-- 2. High-Res Match Card Image (Social & WhatsApp Graphic) -->
-        <button type="button" onclick="closeModal('reportModal'); openMatchCardModal();" class="w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-750 text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow transition active:scale-98 cursor-pointer border border-slate-700/80">
-          <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <button type="button" onclick="closeModal('reportModal'); openMatchCardModal();" class="w-full py-2.5 px-3 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-98 cursor-pointer border border-amber-300">
+          <svg class="w-4 h-4 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <circle cx="8.5" cy="8.5" r="1.5"></circle>
             <polyline points="21 15 16 10 5 21"></polyline>
           </svg>
-          <span class="tracking-wide">MATCH CARD IMAGE (DOWNLOAD / SHARE)</span>
+          <span class="tracking-wide uppercase">CREATE MATCH CARD IMAGE (HD)</span>
+        </button>
+
+        <!-- Dedicated Match 1 -> Match 2 Handover Action Button -->
+        <button id="saveMatch1PrepareMatch2ReportBtn" type="button" onclick="saveMatch1AndPrepareMatch2()" class="w-full py-2 px-3 bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow transition active:scale-98 cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span class="tracking-wide uppercase text-emerald-400">SAVE MATCH 1 &amp; PREPARE MATCH 2</span>
         </button>
 
         <!-- 3. Tertiary Row: Balanced 50/50 Copy Text & Close Buttons -->
         <div class="grid grid-cols-2 gap-2">
           <!-- Copy to Clipboard -->
-          <button id="copyReportBtn" onclick="copyReportToClipboard()" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-650 text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-98 cursor-pointer border border-slate-700/80 shadow-sm">
+          <button id="copyReportBtn" onclick="copyReportToClipboard()" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-650 text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-98 cursor-pointer border border-slate-700/80 shadow-sm">
             <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -1322,7 +1331,7 @@
           </button>
 
           <!-- Close Modal -->
-          <button onclick="closeModal('reportModal')" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-650 text-slate-300 font-bold rounded-xl text-xs flex items-center justify-center transition active:scale-98 cursor-pointer border border-slate-700/80 shadow-sm">
+          <button onclick="closeModal('reportModal')" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-650 text-slate-300 font-bold rounded-xl text-xs flex items-center justify-center transition active:scale-98 cursor-pointer border border-slate-700/80 shadow-sm">
             Close
           </button>
         </div>
@@ -3155,10 +3164,26 @@
               </div>
               <div class="min-w-0">
                 <div class="font-black text-white text-xs">Match Report</div>
-                <div class="text-[11px] text-slate-400 truncate">FA Full-Time copy, summary & score sharing</div>
+                <div class="text-[11px] text-slate-400 truncate">FA Full-Time copy, summary &amp; score sharing</div>
               </div>
             </div>
             <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">OPEN</span>
+          </button>
+          <button onclick="closeModal('quickToolsDrawer'); openMatchCardModal();" class="w-full mt-2 flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-amber-500/50 hover:border-amber-400 active:scale-[0.98] transition cursor-pointer text-left shadow-sm">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+                <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <div class="font-black text-white text-xs">Match Card Graphic</div>
+                <div class="text-[11px] text-slate-400 truncate">High-res score graphic for WhatsApp &amp; social</div>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">CREATE</span>
           </button>
         </div>
 
