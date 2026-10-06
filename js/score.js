@@ -38,11 +38,14 @@ export const KIT_PALETTE = {
 const DEBOUNCE_MS = 200;
 let lastDebounceTime = { home: 0, away: 0 };
 
-export const MAX_SQUAD_SIZE = 8;
+export const MIN_SQUAD_SIZE = 3;
+export const MAX_SQUAD_SIZE = 15;
+export const DEFAULT_SQUAD_SIZE = 8;
 
-export function createDefaultRoster() {
+export function createDefaultRoster(size = DEFAULT_SQUAD_SIZE) {
   const list = [];
-  for (let i = 1; i <= MAX_SQUAD_SIZE; i++) {
+  const count = Math.min(Math.max(size, MIN_SQUAD_SIZE), MAX_SQUAD_SIZE);
+  for (let i = 1; i <= count; i++) {
     list.push({ number: i, initials: '' });
   }
   return list;
@@ -190,6 +193,114 @@ export function saveSquadInitialsFromModalInputs() {
   t.roster.sort((a, b) => a.number - b.number);
 }
 
+export function renderSquadInitialsInputsOnly() {
+  const container = document.getElementById('squadInitialsInputsContainer');
+  if (!container) return;
+  const t = teams[coachTeam] || teams.home;
+  const roster = (t.roster && t.roster.length > 0) ? t.roster : createDefaultRoster();
+
+  container.innerHTML = roster.map((p, idx) => {
+    return `
+      <div class="p-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-2">
+        <span class="w-7 h-7 rounded-lg bg-slate-800 text-amber-300 font-mono-sport font-black text-xs flex items-center justify-center border border-slate-700 shrink-0">#${p.number}</span>
+        <input type="text" id="squadInitInput_${p.number}" data-number="${p.number}" maxlength="3" placeholder="e.g. JD" value="${p.initials || ''}"
+          oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '')"
+          class="squad-init-input w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-2.5 py-1.5 text-white font-mono-sport font-bold text-xs uppercase focus:outline-none"
+          onkeydown="if(event.key==='Enter'){ const inputs = document.querySelectorAll('.squad-init-input'); if(inputs[${idx + 1}]) inputs[${idx + 1}].focus(); else saveSquadInitials(); }">
+      </div>
+    `;
+  }).join('');
+}
+
+export function updateSquadSizeUI(size) {
+  const countEl = document.getElementById('squadSizeDisplayCount');
+  const formatEl = document.getElementById('squadSizeDisplayFormat');
+  const decBtn = document.getElementById('squadSizeDecBtn');
+  const incBtn = document.getElementById('squadSizeIncBtn');
+
+  if (countEl) {
+    countEl.innerText = `${size} Players`;
+  }
+
+  if (formatEl) {
+    let formatLabel = `${size} Players`;
+    if (size === 5) formatLabel = '5v5 Format';
+    else if (size === 7) formatLabel = '7v7 Format';
+    else if (size === 8) formatLabel = 'Standard Youth (8)';
+    else if (size === 9) formatLabel = '9v9 Format';
+    else if (size === 11) formatLabel = '11v11 Matchday';
+    else if (size === 15) formatLabel = 'Full Squad (15 Max)';
+    else if (size < 7) formatLabel = 'Small-Sided Format';
+    else if (size > 11) formatLabel = 'Extended Squad';
+    else formatLabel = 'Youth Matchday';
+    formatEl.innerText = formatLabel;
+  }
+
+  if (decBtn) {
+    decBtn.disabled = size <= MIN_SQUAD_SIZE;
+  }
+  if (incBtn) {
+    incBtn.disabled = size >= MAX_SQUAD_SIZE;
+  }
+
+  document.querySelectorAll('.squad-size-preset-btn').forEach(btn => {
+    const btnSize = parseInt(btn.getAttribute('data-size'), 10);
+    if (btnSize === size) {
+      btn.className = 'squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-black border transition cursor-pointer bg-amber-400 text-slate-950 border-amber-300 shadow-sm';
+    } else {
+      btn.className = 'squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-bold border transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border-slate-700/80 hover:bg-slate-800';
+    }
+  });
+}
+
+export function getSquadSize() {
+  const t = teams[coachTeam] || teams.home;
+  return (t.roster && t.roster.length > 0) ? t.roster.length : DEFAULT_SQUAD_SIZE;
+}
+
+export function adjustSquadModalSize(delta) {
+  saveSquadInitialsFromModalInputs();
+  const t = teams[coachTeam] || teams.home;
+  if (!t.roster) t.roster = createDefaultRoster();
+
+  const currentSize = t.roster.length;
+  const targetSize = Math.max(MIN_SQUAD_SIZE, Math.min(MAX_SQUAD_SIZE, currentSize + delta));
+  if (targetSize === currentSize) return;
+
+  setSquadModalSize(targetSize);
+}
+
+export function setSquadModalSize(targetSize) {
+  saveSquadInitialsFromModalInputs();
+  const t = teams[coachTeam] || teams.home;
+  if (!t.roster) t.roster = createDefaultRoster();
+
+  const clampedSize = Math.max(MIN_SQUAD_SIZE, Math.min(MAX_SQUAD_SIZE, targetSize));
+  const currentSize = t.roster.length;
+
+  if (clampedSize > currentSize) {
+    for (let i = currentSize; i < clampedSize; i++) {
+      let nextNum = 1;
+      while (t.roster.some(p => p.number === nextNum)) {
+        nextNum++;
+      }
+      t.roster.push({ number: nextNum, initials: '' });
+    }
+    t.roster.sort((a, b) => a.number - b.number);
+  } else if (clampedSize < currentSize) {
+    t.roster = t.roster.slice(0, clampedSize);
+  }
+
+  updateSquadSizeUI(t.roster.length);
+  renderSquadInitialsInputsOnly();
+
+  if (typeof hardware !== 'undefined' && hardware.hapticFeedback) {
+    hardware.hapticFeedback('selection');
+  } else if (typeof window.hapticFeedback === 'function') {
+    window.hapticFeedback('selection');
+  }
+}
+
 export function selectSquadModalTeam(team) {
   saveSquadInitialsFromModalInputs();
   setCoachTeam(team, false);
@@ -230,29 +341,23 @@ export function openSquadInitialsModal(team = coachTeam) {
     }
   }
 
-  if (!container) return;
+  if (!t.roster || t.roster.length === 0) {
+    t.roster = createDefaultRoster();
+  }
 
-  const roster = (t.roster && t.roster.length > 0) ? t.roster : createDefaultRoster();
-  container.innerHTML = roster.map((p, idx) => {
-    return `
-      <div class="p-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-2">
-        <span class="w-7 h-7 rounded-lg bg-slate-800 text-amber-300 font-mono-sport font-black text-xs flex items-center justify-center border border-slate-700 shrink-0">#${p.number}</span>
-        <input type="text" id="squadInitInput_${p.number}" data-number="${p.number}" maxlength="3" placeholder="e.g. JD" value="${p.initials || ''}"
-          oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '')"
-          class="squad-init-input w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-2.5 py-1.5 text-white font-mono-sport font-bold text-xs uppercase focus:outline-none"
-          onkeydown="if(event.key==='Enter'){ const inputs = document.querySelectorAll('.squad-init-input'); if(inputs[${idx + 1}]) inputs[${idx + 1}].focus(); else saveSquadInitials(); }">
-      </div>
-    `;
-  }).join('');
+  updateSquadSizeUI(t.roster.length);
+  renderSquadInitialsInputsOnly();
 
   if (window.openModal) {
     window.openModal('squadInitialsModal');
   }
   setTimeout(() => {
-    const firstInput = container.querySelector('input');
-    if (firstInput) {
-      firstInput.focus();
-      firstInput.select();
+    if (container) {
+      const firstInput = container.querySelector('input');
+      if (firstInput) {
+        firstInput.focus();
+        firstInput.select();
+      }
     }
   }, 150);
 }
@@ -1922,15 +2027,8 @@ export function renderTeamRosterEditor() {
   if (!listEl) return;
 
   const roster = (t.roster && t.roster.length > 0) ? t.roster : createDefaultRoster();
-  
-  // Ensure we display 8 slots (#1 to #8) in 2 columns
-  const slots = [];
-  for (let i = 1; i <= 8; i++) {
-    const existing = roster.find(p => p.number === i);
-    slots.push(existing ? { ...existing } : { number: i, initials: '' });
-  }
 
-  listEl.innerHTML = slots.map((p, idx) => {
+  listEl.innerHTML = roster.map((p, idx) => {
     return `
       <div class="p-1 rounded-lg bg-slate-950 border border-slate-800 flex items-center gap-1.5 focus-within:border-amber-400 transition">
         <span class="w-6 h-6 rounded bg-slate-800 text-amber-300 font-mono-sport font-black text-[11px] flex items-center justify-center border border-slate-700 shrink-0">#${p.number}</span>
@@ -2022,7 +2120,8 @@ export function removeRosterPlayer(playerNumber) {
 
 export function resetRosterToDefault() {
   const t = teams[currentEditingTeam];
-  t.roster = createDefaultRoster();
+  const currentCount = (t.roster && t.roster.length > 0) ? t.roster.length : DEFAULT_SQUAD_SIZE;
+  t.roster = createDefaultRoster(currentCount);
   renderTeamRosterEditor();
 }
 
