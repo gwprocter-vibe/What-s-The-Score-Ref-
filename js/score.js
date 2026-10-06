@@ -242,15 +242,6 @@ export function updateSquadSizeUI(size) {
   if (incBtn) {
     incBtn.disabled = size >= MAX_SQUAD_SIZE;
   }
-
-  document.querySelectorAll('.squad-size-preset-btn').forEach(btn => {
-    const btnSize = parseInt(btn.getAttribute('data-size'), 10);
-    if (btnSize === size) {
-      btn.className = 'squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-black border transition cursor-pointer bg-amber-400 text-slate-950 border-amber-300 shadow-sm';
-    } else {
-      btn.className = 'squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-bold border transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border-slate-700/80 hover:bg-slate-800';
-    }
-  });
 }
 
 export function getSquadSize() {

@@ -2344,32 +2344,19 @@
         </div>
         
         <!-- Stepper Controls -->
-        <div class="flex items-center justify-between bg-slate-900/90 rounded-xl p-1 border border-slate-800">
+        <div class="flex items-center justify-between bg-slate-900/90 rounded-xl p-1.5 border border-slate-800">
           <button type="button" id="squadSizeDecBtn" onclick="adjustSquadModalSize(-1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-black text-base flex items-center justify-center transition border border-slate-700 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title="Decrease squad size">
             −
           </button>
           
           <div class="flex flex-col items-center leading-tight">
             <span id="squadSizeDisplayCount" class="font-mono-sport font-black text-sm text-amber-400">8 Players</span>
-            <span id="squadSizeDisplayFormat" class="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Standard Youth (8)</span>
+            <span id="squadSizeDisplayFormat" class="text-[9.5px] text-slate-400 font-bold uppercase tracking-wide">Standard Youth (8)</span>
           </div>
 
           <button type="button" id="squadSizeIncBtn" onclick="adjustSquadModalSize(1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-black text-base flex items-center justify-center transition border border-slate-700 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title="Increase squad size">
             +
           </button>
-        </div>
-
-        <!-- Quick Format Presets -->
-        <div class="flex items-center justify-between gap-1 pt-1 border-t border-slate-800/80">
-          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Presets:</span>
-          <div class="flex items-center gap-1">
-            <button type="button" onclick="setSquadModalSize(5)" class="squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-black border transition cursor-pointer" data-size="5" title="5v5 Format">5</button>
-            <button type="button" onclick="setSquadModalSize(7)" class="squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-black border transition cursor-pointer" data-size="7" title="7v7 Format">7</button>
-            <button type="button" onclick="setSquadModalSize(8)" class="squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-black border transition cursor-pointer" data-size="8" title="Standard Youth (8)">8</button>
-            <button type="button" onclick="setSquadModalSize(9)" class="squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-black border transition cursor-pointer" data-size="9" title="9v9 Format">9</button>
-            <button type="button" onclick="setSquadModalSize(11)" class="squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-black border transition cursor-pointer" data-size="11" title="11v11 Matchday">11</button>
-            <button type="button" onclick="setSquadModalSize(15)" class="squad-size-preset-btn px-2 py-0.5 rounded-md text-[10px] font-mono-sport font-black border transition cursor-pointer" data-size="15" title="15 Max Squad">15</button>
-          </div>
         </div>
       </div>
 
@@ -2380,7 +2367,7 @@
       </div>
 
       <!-- Roster Grid (#1 to #15) -->
-      <div id="squadInitialsInputsContainer" class="grid grid-cols-2 gap-2 my-2 overflow-y-auto max-h-[38vh] pr-0.5">
+      <div id="squadInitialsInputsContainer" class="grid grid-cols-2 gap-2 my-2 overflow-y-auto max-h-[42vh] pr-0.5">
         <!-- Rendered dynamically -->
       </div>
 
