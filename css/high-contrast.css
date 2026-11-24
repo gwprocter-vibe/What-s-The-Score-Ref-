@@ -24,6 +24,7 @@ body.sunlight-mode #topFixturesBtn {
   color: #FFE600 !important;
 }
 body.sunlight-mode #appModeIndicatorBadge span,
+body.sunlight-mode #appModeIndicatorBadge svg,
 body.sunlight-mode #quickToolsBtn span,
 body.sunlight-mode #quickToolsBtn svg {
   color: #FFE600 !important;
@@ -96,9 +97,9 @@ body.sunlight-mode #awayTeamNameDisplay {
   color: #ffffff !important;
   font-weight: 900 !important;
 }
-body.sunlight-mode #homeBadgeDot,
-body.sunlight-mode #awayBadgeDot {
-  border: 2px solid #FFE600 !important;
+body.sunlight-mode .kit-shirt-svg {
+  border: none !important;
+  filter: drop-shadow(0 0 2px #FFE600) !important;
 }
 body.sunlight-mode #homeScoreDisplay,
 body.sunlight-mode #awayScoreDisplay {
@@ -165,6 +166,9 @@ body.sunlight-mode #coachTouchlineDefaultRow button {
 }
 body.sunlight-mode #coachTouchlineDefaultRow button span {
   color: #ffffff !important;
+}
+body.sunlight-mode #coachTouchlineDefaultRow button svg {
+  color: #FFE600 !important;
 }
 body.sunlight-mode #coachSquadRotationBtn,
 body.sunlight-mode #coachSquadInitialsBtn,

@@ -657,9 +657,9 @@ export function updateAppModeUI() {
       refBtn.className = 'p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition cursor-pointer text-slate-400 hover:text-white bg-slate-900 border border-slate-800';
     }
     if (indicator) {
-      indicator.className = 'h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1 transition cursor-pointer active:scale-95 shadow-sm bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:border-amber-400';
+      indicator.className = 'h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:border-amber-400';
       indicator.title = 'Current Role: Coach / Spectator (Tap to toggle)';
-      indicator.innerHTML = '<span>📋</span><span id="appModeIndicatorText">COACH</span>';
+      indicator.innerHTML = `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><circle cx="12" cy="12" r="3"></circle><line x1="4" y1="12" x2="20" y2="12"></line></svg><span id="appModeIndicatorText">COACH</span>`;
     }
     if (drawerBadge) {
       drawerBadge.textContent = 'COACH';
@@ -677,9 +677,9 @@ export function updateAppModeUI() {
       coachBtn.className = 'p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition cursor-pointer text-slate-400 hover:text-white bg-slate-900 border border-slate-800';
     }
     if (indicator) {
-      indicator.className = 'h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1 transition cursor-pointer active:scale-95 shadow-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400';
+      indicator.className = 'h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400';
       indicator.title = 'Current Role: Referee (Tap to toggle)';
-      indicator.innerHTML = '<span>⏱️</span><span id="appModeIndicatorText">REF</span>';
+      indicator.innerHTML = `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="14" r="6"></circle><path d="M9 8h11a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-5"></path></svg><span id="appModeIndicatorText">REF</span>`;
     }
     if (drawerBadge) {
       drawerBadge.textContent = 'REFEREE';
@@ -2053,8 +2053,18 @@ export function applyTeamVisuals(side) {
 
   const dotEl = document.getElementById(side + 'BadgeDot');
   if (dotEl) {
-    dotEl.style.backgroundColor = palette.hex;
-    dotEl.style.borderColor = palette.hex === '#f8fafc' ? '#94a3b8' : 'rgba(255,255,255,0.6)';
+    const shirtBody = dotEl.querySelector ? dotEl.querySelector('.kit-shirt-body') : null;
+    const shirtTrim = dotEl.querySelector ? dotEl.querySelector('.kit-shirt-trim') : null;
+    if (shirtBody) {
+      const isLightKit = palette.hex === '#f8fafc' || palette.hex === '#eab308';
+      const trimStroke = isLightKit ? '#0f172a' : 'rgba(255,255,255,0.88)';
+      shirtBody.setAttribute('fill', palette.hex);
+      shirtBody.setAttribute('stroke', palette.hex === '#f8fafc' ? '#64748b' : trimStroke);
+      if (shirtTrim) shirtTrim.setAttribute('stroke', trimStroke);
+    } else {
+      dotEl.style.backgroundColor = palette.hex;
+      dotEl.style.borderColor = palette.hex === '#f8fafc' ? '#94a3b8' : 'rgba(255,255,255,0.6)';
+    }
   }
 
   const labelEl = document.getElementById(side + 'Label');
@@ -2700,10 +2710,10 @@ export function renderTouchlineBarUI() {
     const hasNotes = Boolean(coachNotes.notes && coachNotes.notes.trim().length > 0);
     if (hasNotes) {
       notesToggleBtn.className = 'px-1.5 sm:px-2 py-1 bg-amber-500/20 border border-amber-400/80 text-amber-300 rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer shadow-sm';
-      notesToggleBtn.innerHTML = `<span>📝</span><span>Notes</span><span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse"></span>`;
+      notesToggleBtn.innerHTML = `<svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span>Notes</span><span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse"></span>`;
     } else {
       notesToggleBtn.className = 'px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer';
-      notesToggleBtn.innerHTML = `<span>📝</span><span>Notes</span>`;
+      notesToggleBtn.innerHTML = `<svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span>Notes</span>`;
     }
   }
 }

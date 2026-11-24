@@ -11,7 +11,20 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="RefScore">
+  <meta name="apple-mobile-web-app-title" content="Score Ref">
+
+  <!-- OpenGraph & WhatsApp / Social Link Preview Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://whatsthescoreref.vercel.app/">
+  <meta property="og:title" content="What's The Score Ref? — U9 Matchday Referee &amp; Coach Companion">
+  <meta property="og:description" content="100% offline pitch-side stopwatch, whistle cues, FA Power Play alerts, fair-play sub rotation &amp; HD WhatsApp Match Cards.">
+  <meta property="og:image" content="https://whatsthescoreref.vercel.app/icons/og-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="What's The Score Ref? — U9 Matchday Companion">
+  <meta name="twitter:description" content="100% offline pitch-side stopwatch, whistle cues, FA Power Play alerts, fair-play sub rotation &amp; HD WhatsApp Match Cards.">
+  <meta name="twitter:image" content="https://whatsthescoreref.vercel.app/icons/og-preview.png">
 
   <!-- Immediate iOS Standalone & Notch Safe Area Protection -->
   <script>
@@ -61,12 +74,12 @@
     <div class="relative flex flex-col items-center text-center z-10 animate-splash-pop">
       <div class="relative mb-7 sm:mb-8">
         <div class="absolute -inset-4 bg-gradient-to-r from-amber-500/35 to-emerald-500/35 rounded-full blur-2xl opacity-80 animate-pulse"></div>
-        <div class="relative w-52 h-52 sm:w-56 sm:h-56 rounded-full bg-slate-900 border-2 border-amber-400/70 p-2 flex items-center justify-center shadow-2xl shadow-amber-500/30 overflow-hidden ring-4 ring-amber-400/25">
+        <div class="relative w-52 h-52 sm:w-56 sm:h-56 rounded-full bg-slate-950 border-2 border-amber-400/80 flex items-center justify-center shadow-2xl shadow-amber-500/30 overflow-hidden ring-4 ring-amber-400/25">
           <img id="splashLogoImg"
                src="icons/logo-512.png"
                onerror="this.src='icons/logo-192.png'"
                alt="What's The Score Ref Mascot"
-               class="w-full h-full object-contain">
+               class="w-full h-full object-cover">
         </div>
       </div>
 
@@ -85,9 +98,9 @@
   <!-- ================= TOP APP BRANDING & MATCHDAY STATUS ================= -->
   <header class="shrink-0 flex items-center justify-between gap-2 py-1.5 px-1 border-b border-[#141b27]">
     <div id="headerTitleContainer" class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-      <!-- Confused Referee Mascot -->
-      <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center overflow-hidden">
-        <img id="headerLogoImg" src="icons/confused_ref.png" alt="Confused Ref" class="w-full h-full object-contain">
+      <!-- Enhanced Confused Referee Mascot Badge -->
+      <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl border border-amber-400/50 bg-slate-950 shadow-md flex items-center justify-center overflow-hidden">
+        <img id="headerLogoImg" src="icons/confused_ref.png" alt="What's The Score Ref" class="w-full h-full object-cover">
       </div>
       <h1 id="headerTitle" class="font-black text-white font-mono-sport select-none whitespace-nowrap leading-none tracking-tight">
         What's The Score Ref?
@@ -97,8 +110,11 @@
     <!-- Right Header Controls: Role Badge & Quick Tools -->
     <div class="flex items-center gap-1.5 shrink-0">
       <!-- Role Indicator Pill (Tap to toggle role directly) -->
-      <button id="appModeIndicatorBadge" type="button" onclick="toggleAppMode()" class="h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1 transition cursor-pointer active:scale-95 shadow-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400" title="Current Role: Referee (Tap to toggle)">
-        <span>⏱️</span>
+      <button id="appModeIndicatorBadge" type="button" onclick="toggleAppMode()" class="h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400" title="Current Role: Referee (Tap to toggle)">
+        <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="14" r="6"></circle>
+          <path d="M9 8h11a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-5"></path>
+        </svg>
         <span id="appModeIndicatorText">REF</span>
       </button>
 
@@ -163,17 +179,22 @@
         <div class="flex items-center justify-between border-b border-[#1b2230] pb-1 mb-1" onclick="event.stopPropagation()">
           <div class="flex items-center gap-1.5">
             <button id="homeHeaderEditBtn" type="button" onclick="editTeamModal('home')" class="team-edit-btn flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer" title="Tap to change team or kit colour">
-              <span id="homeBadgeDot" class="w-3.5 h-3.5 rounded-full bg-rose-500 border border-white/50"></span>
+              <svg id="homeBadgeDot" class="kit-shirt-svg w-[18px] h-[18px] shrink-0 drop-shadow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path class="kit-shirt-body" d="M8.5 3L4 5.5L2 9.5L5.5 11.5L7 9.5V20.5C7 21.05 7.45 21.5 8 21.5H16C16.55 21.5 17 21.05 17 20.5V9.5L18.5 11.5L22 9.5L20 5.5L15.5 3L14 5.2C13.3 6 10.7 6 10 5.2L8.5 3Z" fill="#f43f5e" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linejoin="round"></path>
+                <path class="kit-shirt-trim" d="M9.2 3.4C10.2 5 13.8 5 14.8 3.4" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round"></path>
+              </svg>
               <span id="homeLabel" class="text-xs font-black uppercase text-rose-400 tracking-wider">HOME</span>
             </button>
             <button id="homeKickoffBadge" type="button" class="kickoff-badge hidden px-1.5 py-0.5 rounded-md bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/50 text-rose-300 font-mono-sport font-black text-[10px] items-center gap-0.5 cursor-pointer active:scale-95 transition select-none shadow-sm" title="Home has Kick-Off (Hold to switch)">
-              <span>⚽</span>
               <span>KO</span>
             </button>
           </div>
           <!-- Log / Timeline Trigger Badge -->
           <button id="homeTimelineBtn" type="button" onclick="openModal('timelineModal')" class="text-[10px] font-mono-sport font-black text-slate-400 hover:text-white px-1.5 py-0.5 rounded-md bg-slate-900/80 border border-slate-700/60 hover:border-slate-500 flex items-center gap-1 transition cursor-pointer shadow-sm shrink-0" title="View Full Goal Timeline">
-            <span>📋</span>
+            <svg class="w-3 h-3 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <polyline points="12 7 12 12 15 15"></polyline>
+            </svg>
             <span class="hidden sm:inline">LOG</span>
             <span id="homeGoalCountBadge" class="text-amber-400 font-bold">0</span>
           </button>
@@ -181,7 +202,7 @@
 
         <!-- Interactive Team Name with Edit Icon -->
         <button id="homeTeamEditBtn" type="button" onclick="editTeamModal('home'); event.stopPropagation();" class="team-edit-btn w-full min-h-[26px] group flex items-center justify-center gap-1 py-0.5 px-1 rounded-lg hover:bg-slate-800/50 transition cursor-pointer mb-0.5 text-center" title="Tap to name team">
-          <span id="homeCoachStar" class="coach-star text-amber-400 text-xs sm:text-sm font-bold shrink-0 hidden" title="Coach's Team">⭐</span>
+          <span id="homeCoachStar" class="coach-star text-amber-400 text-xs sm:text-sm font-bold shrink-0 hidden" title="Coach's Team">★</span>
           <span id="homeTeamNameDisplay" class="text-xs sm:text-sm font-extrabold text-white leading-tight text-center line-clamp-1">Home Team</span>
           <svg id="homeEditPencil" class="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 shrink-0 team-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
@@ -218,17 +239,22 @@
         <div class="flex items-center justify-between border-b border-[#1b2230] pb-1 mb-1" onclick="event.stopPropagation()">
           <div class="flex items-center gap-1.5">
             <button id="awayHeaderEditBtn" type="button" onclick="editTeamModal('away')" class="team-edit-btn flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer" title="Tap to change team or kit colour">
-              <span id="awayBadgeDot" class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-white/50"></span>
+              <svg id="awayBadgeDot" class="kit-shirt-svg w-[18px] h-[18px] shrink-0 drop-shadow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path class="kit-shirt-body" d="M8.5 3L4 5.5L2 9.5L5.5 11.5L7 9.5V20.5C7 21.05 7.45 21.5 8 21.5H16C16.55 21.5 17 21.05 17 20.5V9.5L18.5 11.5L22 9.5L20 5.5L15.5 3L14 5.2C13.3 6 10.7 6 10 5.2L8.5 3Z" fill="#2563eb" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linejoin="round"></path>
+                <path class="kit-shirt-trim" d="M9.2 3.4C10.2 5 13.8 5 14.8 3.4" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round"></path>
+              </svg>
               <span id="awayLabel" class="text-xs font-black uppercase text-blue-400 tracking-wider">AWAY</span>
             </button>
             <button id="awayKickoffBadge" type="button" class="kickoff-badge hidden px-1.5 py-0.5 rounded-md bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/50 text-blue-300 font-mono-sport font-black text-[10px] items-center gap-0.5 cursor-pointer active:scale-95 transition select-none shadow-sm" title="Away has Kick-Off (Hold to switch)">
-              <span>⚽</span>
               <span>KO</span>
             </button>
           </div>
           <!-- Log / Timeline Trigger Badge -->
           <button id="awayTimelineBtn" type="button" onclick="openModal('timelineModal')" class="text-[10px] font-mono-sport font-black text-slate-400 hover:text-white px-1.5 py-0.5 rounded-md bg-slate-900/80 border border-slate-700/60 hover:border-slate-500 flex items-center gap-1 transition cursor-pointer shadow-sm shrink-0" title="View Full Goal Timeline">
-            <span>📋</span>
+            <svg class="w-3 h-3 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <polyline points="12 7 12 12 15 15"></polyline>
+            </svg>
             <span class="hidden sm:inline">LOG</span>
             <span id="awayGoalCountBadge" class="text-amber-400 font-bold">0</span>
           </button>
@@ -236,7 +262,7 @@
 
         <!-- Interactive Team Name with Edit Icon -->
         <button id="awayTeamEditBtn" type="button" onclick="editTeamModal('away'); event.stopPropagation();" class="team-edit-btn w-full min-h-[26px] group flex items-center justify-center gap-1 py-0.5 px-1 rounded-lg hover:bg-slate-800/50 transition cursor-pointer mb-0.5 text-center" title="Tap to name team">
-          <span id="awayCoachStar" class="coach-star text-amber-400 text-xs sm:text-sm font-bold shrink-0 hidden" title="Coach's Team">⭐</span>
+          <span id="awayCoachStar" class="coach-star text-amber-400 text-xs sm:text-sm font-bold shrink-0 hidden" title="Coach's Team">★</span>
           <span id="awayTeamNameDisplay" class="text-xs sm:text-sm font-extrabold text-white leading-tight text-center line-clamp-1">Away Team</span>
           <svg id="awayEditPencil" class="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 shrink-0 team-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
@@ -559,31 +585,31 @@
         <div class="flex items-center gap-1.5 min-w-0 overflow-hidden">
           <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
           <span class="font-black text-amber-300 text-[11px] sm:text-xs tracking-wider uppercase shrink-0 hidden sm:inline">Touchline</span>
-          <!-- POTM Touchline Badge (Wired directly to inline POTM picker!) -->
-          <button id="coachTouchlinePotmBadge" type="button" onclick="selectInlinePotmMode()" class="hidden px-1.5 py-0.5 rounded-full bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/70 text-amber-300 font-extrabold text-[10px] items-center gap-0.5 transition cursor-pointer active:scale-95 shadow-sm truncate shrink-0" title="Pick or edit Player of the Match">
-            <span class="text-[10px]">⭐</span>
+          <!-- POTM Touchline Badge -->
+          <button id="coachTouchlinePotmBadge" type="button" onclick="selectInlinePotmMode()" class="hidden px-1.5 py-0.5 rounded-full bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/70 text-amber-300 font-extrabold text-[10px] items-center gap-1 transition cursor-pointer active:scale-95 shadow-sm truncate shrink-0" title="Pick or edit Player of the Match">
+            <svg class="w-2.5 h-2.5 fill-amber-400 text-amber-400 shrink-0" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
             <span id="coachTouchlinePotmText" class="font-black">POTM</span>
           </button>
         </div>
         <div class="flex items-center gap-1 shrink-0">
           <!-- Fair-Play Subs & GK Rotation Button -->
           <button id="coachSquadRotationBtn" type="button" onclick="openSquadRotationModal()" class="px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-emerald-500/50 text-emerald-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer active:scale-95" title="Track On-Pitch 5v5, Rolling Subs &amp; Goalkeeper">
-            <span>🔄</span>
+            <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg>
             <span>Subs</span>
           </button>
           <!-- Squad Initials Button -->
           <button id="coachSquadInitialsBtn" type="button" onclick="openSquadInitialsModal()" class="px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer active:scale-95" title="Set or edit squad player initials">
-            <span>👥</span>
+            <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             <span>Squad</span>
           </button>
           <!-- Moments Feed Modal Button -->
           <button id="coachMomentsToggleBtn" type="button" onclick="openCoachMomentsModal()" class="px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer" title="View Logged Match Moments">
-            <span>📋</span>
+            <svg class="w-3 h-3 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             <span id="coachMomentsCountBadge" class="bg-amber-400 text-slate-950 px-1 py-0.5 rounded-full font-mono-sport font-black text-[9px]">0</span>
           </button>
           <!-- Notes Modal Button -->
           <button id="coachNotesToggleBtn" type="button" onclick="openCoachNotesModal()" class="px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer" title="Open Coach Private Notes &amp; POTM">
-            <span>📝</span>
+            <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
             <span>Notes</span>
           </button>
         </div>
@@ -593,7 +619,7 @@
       <div id="coachTouchlinePotmPrompt" class="hidden mb-2 p-2 sm:p-2.5 bg-gradient-to-r from-amber-950/40 to-yellow-950/20 border-2 border-amber-400/80 rounded-xl animate-fadeIn">
         <div class="flex items-center justify-between mb-1.5">
           <div class="flex items-center gap-1.5">
-            <span class="text-sm">⭐</span>
+            <svg class="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
             <span class="font-black text-amber-300 text-xs uppercase tracking-wide">Full Time: Pick Player of the Match</span>
           </div>
           <span class="text-[9px] text-emerald-400 font-bold">Shared in Report</span>
@@ -602,38 +628,38 @@
         <div id="coachTouchlinePotmActions"></div>
       </div>
 
-      <!-- State 1: Default Tag Buttons Row (4x2 grid) -->
+      <!-- State 1: Default Tag Buttons Row (4x2 grid with bespoke 2px Football SVGs) -->
       <div id="coachTouchlineDefaultRow" class="grid grid-cols-4 gap-1.5 sm:gap-2">
         <button type="button" onclick="selectInlineTag('Great Pressing', '⚡')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
-          <span class="text-base sm:text-lg mb-0.5 leading-none">⚡</span>
+          <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] mb-0.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Pressing</span>
         </button>
         <button type="button" onclick="selectInlineTag('Passing Vision', '🎯')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
-          <span class="text-base sm:text-lg mb-0.5 leading-none">🎯</span>
+          <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] mb-0.5 text-sky-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="19" r="2.5"></circle><circle cx="19" cy="5" r="2.5"></circle><path d="M7.5 16.5L16.5 7.5"></path><polyline points="11 5 19 5 19 13"></polyline></svg>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Passing</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Dribbling', '👟')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Dribbling">
-          <span class="text-base sm:text-lg mb-0.5 leading-none">👟</span>
+        <button type="button" onclick="selectInlineTag('Dribbling', '⚡')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Dribbling">
+          <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] mb-0.5 text-purple-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c4-4 4-8 8-8s4-4 8-8"></path><circle cx="20" cy="4" r="2.2" fill="currentColor"></circle><circle cx="8" cy="16" r="1.5"></circle><circle cx="16" cy="8" r="1.5"></circle></svg>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Dribble</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Great Shot', '🚀')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Great Shot">
-          <span class="text-base sm:text-lg mb-0.5 leading-none">🚀</span>
+        <button type="button" onclick="selectInlineTag('Great Shot', '⚽')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Great Shot">
+          <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] mb-0.5 text-rose-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19V6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v13"></path><circle cx="16" cy="10" r="2.8"></circle><path d="M7 17l6.5-5"></path></svg>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Shot</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Great Tackle', '💥')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Great Tackle">
-          <span class="text-base sm:text-lg mb-0.5 leading-none">💥</span>
+        <button type="button" onclick="selectInlineTag('Great Tackle', '🛡️')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Great Tackle">
+          <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] mb-0.5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Tackle</span>
         </button>
-        <button type="button" onclick="selectInlineTag('Tracking Back', '🔄')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Tracking Back">
-          <span class="text-base sm:text-lg mb-0.5 leading-none">🔄</span>
+        <button type="button" onclick="selectInlineTag('Tracking Back', '↩️')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm" title="Tracking Back">
+          <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] mb-0.5 text-yellow-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"></path></svg>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Track Back</span>
         </button>
         <button type="button" onclick="selectInlineTag('Great Save', '🧤')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
-          <span class="text-base sm:text-lg mb-0.5 leading-none">🧤</span>
+          <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] mb-0.5 text-cyan-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path></svg>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Save</span>
         </button>
         <button type="button" onclick="selectInlineTag('Positioning', '📍')" class="py-1.5 sm:py-2 px-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-400/60 rounded-xl flex flex-col items-center justify-center text-center transition active:scale-95 cursor-pointer shadow-sm">
-          <span class="text-base sm:text-lg mb-0.5 leading-none">📍</span>
+          <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] mb-0.5 text-teal-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.2"></circle><circle cx="5" cy="12" r="2.2"></circle><circle cx="19" cy="12" r="2.2"></circle><circle cx="12" cy="19" r="2.2"></circle><path d="M12 7.2v9.6M7.2 12h9.6" stroke-dasharray="2 2"></path></svg>
           <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-tight">Position</span>
         </button>
       </div>

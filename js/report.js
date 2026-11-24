@@ -854,65 +854,133 @@ function withLogoImage(cb) {
   setTimeout(() => done(null), 200);
 }
 
-function drawCardBaseAndHeader(ctx, logoImg, subtitleRight, statusBadgeText, isFT = true) {
-  const bgGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-  bgGrad.addColorStop(0, '#0a0f1d');
-  bgGrad.addColorStop(0.5, '#070a13');
-  bgGrad.addColorStop(1, '#05070d');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, 800, 1000);
+function drawCanvasKitJersey(ctx, cx, cy, scaleSize, fillHex) {
+  const isLight = fillHex === '#f8fafc' || fillHex === '#eab308';
+  const collarColor = isLight ? '#0f172a' : 'rgba(255, 255, 255, 0.9)';
+  const outerStroke = fillHex === '#f8fafc' ? '#94a3b8' : collarColor;
 
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-  ctx.lineWidth = 2;
-  roundRect(ctx, 24, 24, 752, 952, 28);
+  ctx.save();
+  ctx.translate(cx - scaleSize / 2, cy - scaleSize / 2);
+  const s = scaleSize / 24;
+  ctx.scale(s, s);
+
+  ctx.beginPath();
+  ctx.moveTo(8.5, 3);
+  ctx.lineTo(4, 5.5);
+  ctx.lineTo(2, 9.5);
+  ctx.lineTo(5.5, 11.5);
+  ctx.lineTo(7, 9.5);
+  ctx.lineTo(7, 20.5);
+  ctx.quadraticCurveTo(7, 21.5, 8, 21.5);
+  ctx.lineTo(16, 21.5);
+  ctx.quadraticCurveTo(17, 21.5, 17, 20.5);
+  ctx.lineTo(17, 9.5);
+  ctx.lineTo(18.5, 11.5);
+  ctx.lineTo(22, 9.5);
+  ctx.lineTo(20, 5.5);
+  ctx.lineTo(15.5, 3);
+  ctx.lineTo(14, 5.2);
+  ctx.bezierCurveTo(13.3, 6, 10.7, 6, 10, 5.2);
+  ctx.closePath();
+
+  ctx.fillStyle = fillHex || '#f43f5e';
+  ctx.fill();
+  ctx.strokeStyle = outerStroke;
+  ctx.lineWidth = 1.4;
+  ctx.lineJoin = 'round';
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(400, 500, 140, 0, Math.PI * 2);
+  ctx.moveTo(9.2, 3.4);
+  ctx.bezierCurveTo(10.2, 5, 13.8, 5, 14.8, 3.4);
+  ctx.strokeStyle = collarColor;
+  ctx.lineWidth = 1.4;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCardBaseAndHeader(ctx, logoImg, subtitleRight, statusBadgeText, isFT = true) {
+  // Deep Obsidian + Floodlight Stadium Radial Glow
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, 1000);
+  bgGrad.addColorStop(0, '#0a1220');
+  bgGrad.addColorStop(0.45, '#070b15');
+  bgGrad.addColorStop(1, '#04060c');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, 800, 1000);
+
+  const topGlow = ctx.createRadialGradient(400, 0, 20, 400, 0, 460);
+  topGlow.addColorStop(0, 'rgba(16, 185, 129, 0.12)');
+  topGlow.addColorStop(0.6, 'rgba(245, 158, 11, 0.04)');
+  topGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = topGlow;
+  ctx.fillRect(0, 0, 800, 500);
+
+  // Subtle Chalk Pitch Geometry Watermark (4.5% opacity)
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.048)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, 22, 22, 756, 956, 28);
+  ctx.stroke();
+
+  // Halfway line
+  ctx.beginPath();
+  ctx.moveTo(22, 500);
+  ctx.lineTo(778, 500);
+  ctx.stroke();
+
+  // Centre circle & spot
+  ctx.beginPath();
+  ctx.arc(400, 500, 128, 0, Math.PI * 2);
   ctx.stroke();
   ctx.beginPath();
   ctx.arc(400, 500, 4, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
   ctx.fill();
 
+  // Top & bottom penalty area outlines
+  ctx.strokeRect(240, 22, 320, 92);
+  ctx.strokeRect(240, 886, 320, 92);
+  ctx.restore();
+
+  // Unclipped Rounded-Square Gold Mascot Badge (Enhanced Original Confused Ref)
   if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(80, 78, 38, 0, Math.PI * 2);
+    roundRect(ctx, 42, 40, 74, 74, 18);
     ctx.clip();
-    ctx.drawImage(logoImg, 42, 40, 76, 76);
+    ctx.drawImage(logoImg, 42, 40, 74, 74);
     ctx.restore();
-    ctx.beginPath();
-    ctx.arc(80, 78, 38, 0, Math.PI * 2);
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 2.5;
+
+    roundRect(ctx, 42, 40, 74, 74, 18);
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 2.2;
     ctx.stroke();
   }
 
-  ctx.fillStyle = '#f59e0b';
-  ctx.font = '900 24px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = '900 25px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText("WHAT'S THE SCORE REF?", 134, 68);
+  ctx.fillText("WHAT'S THE SCORE REF?", 132, 68);
 
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillText('HARROGATE & WHARFEDALE JFL • UNDER-9', 134, 90);
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '800 12.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillText('HARROGATE & WHARFEDALE JFL • UNDER-9', 132, 90);
 
   ctx.fillStyle = '#64748b';
   ctx.font = '600 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillText(subtitleRight, 134, 110);
+  ctx.fillText(subtitleRight, 132, 110);
 
   ctx.font = '900 12px "Chakra Petch", monospace';
-  const badgeWidth = ctx.measureText(statusBadgeText).width + 24;
-  const badgeX = 752 - badgeWidth;
+  const badgeWidth = ctx.measureText(statusBadgeText).width + 26;
+  const badgeX = 758 - badgeWidth;
   ctx.fillStyle = isFT ? 'rgba(245, 158, 11, 0.18)' : 'rgba(16, 185, 129, 0.18)';
-  roundRect(ctx, badgeX, 58, badgeWidth, 32, 10);
+  roundRect(ctx, badgeX, 56, badgeWidth, 34, 11);
   ctx.fill();
-  ctx.strokeStyle = isFT ? '#f59e0b' : '#10b981';
+  ctx.strokeStyle = isFT ? '#fbbf24' : '#10b981';
   ctx.lineWidth = 1.5;
   ctx.stroke();
-  ctx.fillStyle = isFT ? '#fbbf24' : '#34d399';
-  ctx.fillText(statusBadgeText, badgeX + 12, 79);
+  ctx.fillStyle = isFT ? '#fde68a' : '#6ee7b7';
+  ctx.fillText(statusBadgeText, badgeX + 13, 78);
 }
 
 export function generateCombinedMatchCardCanvas(callback) {
@@ -939,53 +1007,76 @@ export function generateCombinedMatchCardCanvas(callback) {
     const today = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
     drawCardBaseAndHeader(ctx, logoImg, `Double-Header Aggregate • ${today}`, `AGGREGATE • 4x${halfMinutes}m`, true);
 
-    // Aggregate Scoreboard Card
-    const scoreCardGrad = ctx.createLinearGradient(40, 140, 760, 430);
-    scoreCardGrad.addColorStop(0, '#0d1424');
+    // Aggregate Broadcast Scoreboard Plate
+    const scoreCardGrad = ctx.createLinearGradient(40, 140, 760, 420);
+    scoreCardGrad.addColorStop(0, '#0f172a');
     scoreCardGrad.addColorStop(1, '#090d18');
     ctx.fillStyle = scoreCardGrad;
-    roundRect(ctx, 40, 140, 720, 275, 20);
+    roundRect(ctx, 40, 140, 720, 275, 22);
     ctx.fill();
-    ctx.strokeStyle = '#1e293b';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
     ctx.fillStyle = homeColor;
-    ctx.fillRect(40, 140, 360, 4);
+    ctx.fillRect(40, 140, 360, 5);
     ctx.fillStyle = awayColor;
-    ctx.fillRect(400, 140, 360, 4);
+    ctx.fillRect(400, 140, 360, 5);
+
+    // Home & Away Kit Jersey Shields
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+    roundRect(ctx, 162, 162, 56, 56, 16);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.stroke();
+    drawCanvasKitJersey(ctx, 190, 190, 36, homeColor);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+    roundRect(ctx, 582, 162, 56, 56, 16);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.stroke();
+    drawCanvasKitJersey(ctx, 610, 190, 36, awayColor);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+    ctx.font = '900 21px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(truncateText(ctx, home, 300), 220, 192);
-    ctx.fillText(truncateText(ctx, away, 300), 580, 192);
+    ctx.fillText(truncateText(ctx, home, 250), 190, 248);
+    ctx.fillText(truncateText(ctx, away, 250), 610, 248);
+
+    // Inset Broadcast Center Score Box
+    ctx.fillStyle = 'rgba(4, 7, 15, 0.8)';
+    roundRect(ctx, 302, 166, 196, 108, 18);
+    ctx.fill();
+    ctx.strokeStyle = '#24324a';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
 
     ctx.fillStyle = '#fbbf24';
-    ctx.font = '800 11px "Chakra Petch", monospace';
-    ctx.fillText('COMBINED DOUBLE-HEADER', 400, 224);
+    ctx.font = '800 10px "Chakra Petch", monospace';
+    ctx.fillText('AGGREGATE', 400, 184);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 84px "Chakra Petch", monospace';
-    ctx.fillText(String(aggHome), 220, 312);
-    ctx.fillText(String(aggAway), 580, 312);
+    ctx.font = '900 68px "Chakra Petch", monospace';
+    ctx.fillText(String(aggHome), 348, 252);
+    ctx.fillText(String(aggAway), 452, 252);
 
-    ctx.fillStyle = '#334155';
-    ctx.font = '800 36px monospace';
-    ctx.fillText('-', 400, 296);
+    ctx.fillStyle = '#475569';
+    ctx.font = '800 32px "Chakra Petch", monospace';
+    ctx.fillText(':', 400, 244);
 
     // M1 & M2 Split Summary Strip
     ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-    roundRect(ctx, 56, 348, 336, 52, 12);
+    roundRect(ctx, 56, 344, 336, 52, 12);
     ctx.fill();
-    roundRect(ctx, 408, 348, 336, 52, 12);
+    roundRect(ctx, 408, 344, 336, 52, 12);
     ctx.fill();
 
     ctx.fillStyle = '#34d399';
     ctx.font = '900 12px "Chakra Petch", monospace';
-    ctx.fillText(`MATCH 1:  ${m1.homeScore} - ${m1.awayScore}  (${m1.period.toUpperCase()})`, 224, 379);
+    ctx.fillText(`MATCH 1:  ${m1.homeScore} - ${m1.awayScore}  (${m1.period.toUpperCase()})`, 224, 375);
     ctx.fillStyle = '#fbbf24';
-    ctx.fillText(`MATCH 2:  ${m2.homeScore} - ${m2.awayScore}  (${m2.period.toUpperCase()})`, 576, 379);
+    ctx.fillText(`MATCH 2:  ${m2.homeScore} - ${m2.awayScore}  (${m2.period.toUpperCase()})`, 576, 375);
 
     // Combined Timeline Card
     ctx.textAlign = 'left';
@@ -1093,11 +1184,13 @@ export function generateCombinedMatchCardCanvas(callback) {
       ctx.fillText(`⭐ POTM: ${potmParts.join('  •  ')}`, 65, 944);
     }
 
-    ctx.fillStyle = '#64748b';
-    ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '700 11px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText("What's The Score Ref? • 100% Offline PWA", 735, 915);
-    ctx.fillText('HD 1600×2000 Match Card', 735, 934);
+    ctx.fillText('whatsthescoreref.vercel.app • 100% Offline PWA', 735, 912);
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '900 11px "Chakra Petch", monospace';
+    ctx.fillText('RESPECT • FAIR PLAY', 735, 934);
 
     if (typeof callback === 'function') callback(canvas);
   });
@@ -1154,74 +1247,83 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
     const today = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
     drawCardBaseAndHeader(ctx, logoImg, `Match ${matchNum} • ${today}`, `${periodText} • 2x${halfMinutes}m`, isFT);
 
-    // Scoreboard Main Card
+    // Broadcast Hero Scoreboard Plate (Single Match)
     const scoreCardGrad = ctx.createLinearGradient(40, 140, 760, 420);
-    scoreCardGrad.addColorStop(0, '#0d1424');
+    scoreCardGrad.addColorStop(0, '#0f172a');
     scoreCardGrad.addColorStop(1, '#090d18');
     ctx.fillStyle = scoreCardGrad;
-    roundRect(ctx, 40, 140, 720, 260, 20);
+    roundRect(ctx, 40, 140, 720, 260, 22);
     ctx.fill();
-    ctx.strokeStyle = '#1e293b';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
     ctx.fillStyle = homeColor;
-    ctx.fillRect(40, 140, 360, 4);
+    ctx.fillRect(40, 140, 360, 5);
     ctx.fillStyle = awayColor;
-    ctx.fillRect(400, 140, 360, 4);
+    ctx.fillRect(400, 140, 360, 5);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
-    ctx.textAlign = 'center';
     const isCoach = (typeof getAppMode === 'function' && getAppMode() === 'coach') || (matchData.coachNotes?.moments?.length > 0) || (matchData.coachNotes?.potm != null);
     const homeIsCoach = isCoach && matchData.coachTeam === 'home';
     const awayIsCoach = isCoach && matchData.coachTeam === 'away';
-    ctx.fillText(truncateText(ctx, homeIsCoach ? `⭐ ${home}` : home, 300), 220, 195);
 
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    roundRect(ctx, 170, 212, 100, 22, 6);
+    // Home & Away Kit Jersey Badges
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+    roundRect(ctx, 160, 164, 60, 60, 17);
     ctx.fill();
-    ctx.fillStyle = homeColor;
+    ctx.strokeStyle = homeIsCoach ? 'rgba(251, 191, 36, 0.55)' : 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    drawCanvasKitJersey(ctx, 190, 194, 38, homeColor);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+    roundRect(ctx, 580, 164, 60, 60, 17);
+    ctx.fill();
+    ctx.strokeStyle = awayIsCoach ? 'rgba(251, 191, 36, 0.55)' : 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    drawCanvasKitJersey(ctx, 610, 194, 38, awayColor);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 21px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(truncateText(ctx, homeIsCoach ? `★ ${home}` : home, 255), 190, 256);
+    ctx.fillText(truncateText(ctx, awayIsCoach ? `★ ${away}` : away, 255), 610, 256);
+
+    ctx.fillStyle = homeIsCoach ? '#fbbf24' : '#94a3b8';
+    ctx.font = '800 10.5px "Chakra Petch", monospace';
+    ctx.fillText(homeIsCoach ? 'COACH TEAM' : 'HOME', 190, 276);
+
+    ctx.fillStyle = awayIsCoach ? '#fbbf24' : '#94a3b8';
+    ctx.fillText(awayIsCoach ? 'COACH TEAM' : 'AWAY', 610, 276);
+
+    // Inset Broadcast Center Score Box
+    ctx.fillStyle = 'rgba(4, 7, 15, 0.82)';
+    roundRect(ctx, 298, 168, 204, 118, 20);
+    ctx.fill();
+    ctx.strokeStyle = '#24324a';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 76px "Chakra Petch", monospace';
+    ctx.fillText(String(homeScore), 348, 254);
+    ctx.fillText(String(awayScore), 452, 254);
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '800 36px "Chakra Petch", monospace';
+    ctx.fillText(':', 400, 244);
+
+    // Half Breakdown & Format Strip
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
     ctx.beginPath();
-    ctx.arc(182, 223, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = homeIsCoach ? '#fbbf24' : '#cbd5e1';
-    ctx.font = '800 10px monospace';
-    ctx.fillText(homeIsCoach ? '⭐ COACH' : 'HOME', 230, 227);
+    ctx.moveTo(64, 344);
+    ctx.lineTo(736, 344);
+    ctx.stroke();
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 84px "Chakra Petch", monospace';
-    ctx.fillText(String(homeScore), 220, 318);
-
-    ctx.fillStyle = '#334155';
-    ctx.font = '800 36px monospace';
-    ctx.fillText('-', 400, 300);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(truncateText(ctx, awayIsCoach ? `⭐ ${away}` : away, 300), 580, 195);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    roundRect(ctx, 530, 212, 100, 22, 6);
-    ctx.fill();
-    ctx.fillStyle = awayColor;
-    ctx.beginPath();
-    ctx.arc(542, 223, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = awayIsCoach ? '#fbbf24' : '#cbd5e1';
-    ctx.font = '800 10px monospace';
-    ctx.fillText(awayIsCoach ? '⭐ COACH' : 'AWAY', 590, 227);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 84px "Chakra Petch", monospace';
-    ctx.fillText(String(awayScore), 580, 318);
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-    roundRect(ctx, 40, 350, 720, 50, 0);
-    ctx.fill();
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '700 13px monospace';
-    ctx.fillText(`HALF TIME: ${h1Home} - ${h1Away}    •    2ND HALF: ${h2Home} - ${h2Away}`, 400, 381);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '700 12.5px "Chakra Petch", monospace';
+    ctx.fillText(`1ST HALF: ${h1Home} - ${h1Away}    •    2ND HALF: ${h2Home} - ${h2Away}    •    5v5 RESPECT FIXTURE`, 400, 375);
 
     ctx.textAlign = 'left';
     const moments = matchData.coachNotes?.moments || [];
@@ -1559,11 +1661,13 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
       ctx.fillText(`⭐ PLAYER OF THE MATCH: ${potmStr}`, 75, 945);
     }
 
-    ctx.fillStyle = '#64748b';
-    ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '700 11px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText("What's The Score Ref? • 100% Offline PWA", 735, 915);
-    ctx.fillText('HD 1600×2000 Match Card', 735, 934);
+    ctx.fillText('whatsthescoreref.vercel.app • 100% Offline PWA', 735, 912);
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '900 11px "Chakra Petch", monospace';
+    ctx.fillText('RESPECT • FAIR PLAY', 735, 934);
 
     if (typeof callback === 'function') callback(canvas);
   });

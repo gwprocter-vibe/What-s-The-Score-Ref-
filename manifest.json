@@ -1,6 +1,6 @@
 {
   "name": "What's The Score Ref?",
-  "short_name": "RefScore",
+  "short_name": "Score Ref",
   "description": "Offline-first junior football referee & coach companion for Harrogate & Wharfedale JFL Under-9 matches",
   "start_url": "./index.html",
   "display": "standalone",
@@ -37,6 +37,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "icons/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icons/favicon.svg",
