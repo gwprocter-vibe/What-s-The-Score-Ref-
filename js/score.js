@@ -1,6 +1,15 @@
-// What's The Score Ref - Score & Team Management Module
+// What's The Score Ref - Score, Teams, Attribution, Power Play & Coach Touchline Module
 import { playWhistleTone, hapticFeedback } from './hardware.js';
-import { formatTime, getTimerState, getTargetHalfSeconds } from './timer.js';
+import { formatTime, getTimerState, getTargetHalfSeconds, getCoolDownState } from './timer.js';
+
+export function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 let pendingConcludedGoalTeam = null;
 let pendingConcludedGoalPeriod = '2nd Half';
@@ -25,14 +34,14 @@ export const LEAGUE_TEAMS = [
 ];
 
 export const KIT_PALETTE = {
-  '#f43f5e': { name: 'Red', hex: '#f43f5e', border: '#f43f5e', btnBg: '#e11d48', btnBorder: '#fb7185', btnText: '#ffffff' },
-  '#0284c7': { name: 'Sky Blue', hex: '#0284c7', border: '#0284c7', btnBg: '#0284c7', btnBorder: '#38bdf8', btnText: '#ffffff' },
-  '#2563eb': { name: 'Royal Blue', hex: '#2563eb', border: '#2563eb', btnBg: '#2563eb', btnBorder: '#60a5fa', btnText: '#ffffff' },
-  '#eab308': { name: 'Yellow', hex: '#eab308', border: '#eab308', btnBg: '#eab308', btnBorder: '#fef08a', btnText: '#0f172a' },
-  '#16a34a': { name: 'Green', hex: '#16a34a', border: '#16a34a', btnBg: '#16a34a', btnBorder: '#4ade80', btnText: '#ffffff' },
-  '#ea580c': { name: 'Orange', hex: '#ea580c', border: '#ea580c', btnBg: '#ea580c', btnBorder: '#fb923c', btnText: '#ffffff' },
-  '#9333ea': { name: 'Purple', hex: '#9333ea', border: '#9333ea', btnBg: '#9333ea', btnBorder: '#c084fc', btnText: '#ffffff' },
-  '#f8fafc': { name: 'White', hex: '#f8fafc', border: '#cbd5e1', btnBg: '#f8fafc', btnBorder: '#e2e8f0', btnText: '#0f172a' }
+  '#f43f5e': { name: 'Red', hex: '#f43f5e', border: '#f43f5e' },
+  '#0284c7': { name: 'Sky Blue', hex: '#0284c7', border: '#0284c7' },
+  '#2563eb': { name: 'Royal Blue', hex: '#2563eb', border: '#2563eb' },
+  '#eab308': { name: 'Yellow', hex: '#eab308', border: '#eab308' },
+  '#16a34a': { name: 'Green', hex: '#16a34a', border: '#16a34a' },
+  '#ea580c': { name: 'Orange', hex: '#ea580c', border: '#ea580c' },
+  '#9333ea': { name: 'Purple', hex: '#9333ea', border: '#9333ea' },
+  '#f8fafc': { name: 'White', hex: '#f8fafc', border: '#cbd5e1' }
 };
 
 const DEBOUNCE_MS = 200;
@@ -51,6 +60,19 @@ export function createDefaultRoster(size = DEFAULT_SQUAD_SIZE) {
   return list;
 }
 
+export function createDefaultRotation(roster = []) {
+  const nums = (roster.length > 0 ? roster : createDefaultRoster()).map(p => p.number);
+  const starters = nums.slice(0, Math.min(5, nums.length));
+  const stints = {};
+  nums.forEach(n => { stints[n] = starters.includes(n) ? 1 : 0; });
+  return {
+    onPitch: starters,
+    gk: starters[0] || 1,
+    gkHistory: starters[0] ? [starters[0]] : [],
+    stints
+  };
+}
+
 let appMode = 'referee'; // 'referee' | 'coach'
 let isPausedGoalAlertActive = false;
 try {
@@ -58,7 +80,7 @@ try {
   if (savedMode === 'coach' || savedMode === 'referee') {
     appMode = savedMode;
   }
-} catch (e) {}
+} catch (_) {}
 
 let coachTeam = 'home'; // 'home' | 'away'
 try {
@@ -66,7 +88,7 @@ try {
   if (savedCoachTeam === 'home' || savedCoachTeam === 'away') {
     coachTeam = savedCoachTeam;
   }
-} catch (e) {}
+} catch (_) {}
 
 let showFullTimeMomentTags = false;
 
@@ -85,19 +107,17 @@ export function setCoachTeam(team, showToast = true) {
   const next = team === 'away' ? 'away' : 'home';
 
   if (prev !== next) {
-    // If player initials are already added on the current coach team, transfer them to the other team
     const prevRoster = teams[prev]?.roster || [];
     const prevHasInitials = prevRoster.some(p => p.initials && p.initials.trim().length > 0);
     const nextRoster = teams[next]?.roster || [];
     const nextHasInitials = nextRoster.some(p => p.initials && p.initials.trim().length > 0);
 
     if (prevHasInitials && !nextHasInitials) {
-      teams[next].roster = JSON.parse(JSON.stringify(prevRoster));
+      teams[next].roster = prevRoster.map(p => ({ ...p }));
       teams[prev].roster = createDefaultRoster();
     } else if (prevHasInitials && nextHasInitials) {
-      // If both had custom initials, swap them so initials move with the coach
-      const tempRoster = JSON.parse(JSON.stringify(teams[prev].roster));
-      teams[prev].roster = JSON.parse(JSON.stringify(teams[next].roster));
+      const tempRoster = prevRoster.map(p => ({ ...p }));
+      teams[prev].roster = nextRoster.map(p => ({ ...p }));
       teams[next].roster = tempRoster;
     }
   }
@@ -105,12 +125,13 @@ export function setCoachTeam(team, showToast = true) {
   coachTeam = next;
   try {
     localStorage.setItem('whatsthescoreref_coach_team', coachTeam);
-  } catch (e) {}
+  } catch (_) {}
+  ensureRotationSync();
   updateCoachTeamUI();
   renderTouchlineBarUI();
   notifyScoreChange();
   if (showToast && prev !== coachTeam) {
-    showAppModeToast(`⭐ Coach's Team: ${teams[coachTeam]?.name || (coachTeam === 'home' ? 'Home' : 'Away')}`, 'coach');
+    showMatchToast(`⭐ Coaching: ${teams[coachTeam]?.name || (coachTeam === 'home' ? 'Home' : 'Away')}`, '⭐', 2200);
   }
 }
 
@@ -123,27 +144,20 @@ export function toggleCoachTeam() {
 
 export function updateCoachTeamUI() {
   const isCoach = appMode === 'coach';
-
-  // 1. Score Card Star next to Team Name
   const homeStar = document.getElementById('homeCoachStar');
   const awayStar = document.getElementById('awayCoachStar');
 
-  if (homeStar) {
-    homeStar.classList.toggle('hidden', !(isCoach && coachTeam === 'home'));
-  }
-  if (awayStar) {
-    awayStar.classList.toggle('hidden', !(isCoach && coachTeam === 'away'));
-  }
+  if (homeStar) homeStar.classList.toggle('hidden', !(isCoach && coachTeam === 'home'));
+  if (awayStar) awayStar.classList.toggle('hidden', !(isCoach && coachTeam === 'away'));
 
-  // 2. Touchline Bar Team Switcher Button
-  const touchlineTeamBtn = document.getElementById('coachTouchlineTeamBtn');
-  if (touchlineTeamBtn) {
-    const coachTeamName = teams[coachTeam]?.name || (coachTeam === 'home' ? 'Home' : 'Away');
-    touchlineTeamBtn.innerHTML = `<span>⭐</span><span class="truncate max-w-[85px] sm:max-w-[130px] font-black">${coachTeamName}</span><span class="text-[9px] text-amber-400/70">⇄</span>`;
-    touchlineTeamBtn.title = `Currently coaching: ${coachTeamName}. Tap to switch to ${coachTeam === 'home' ? 'Away' : 'Home'}.`;
-  }
+  const drawerHomeName = document.getElementById('quickToolsCoachHomeName');
+  const drawerAwayName = document.getElementById('quickToolsCoachAwayName');
+  if (drawerHomeName) drawerHomeName.innerText = teams.home?.name || 'Home Team';
+  if (drawerAwayName) drawerAwayName.innerText = teams.away?.name || 'Away Team';
 
-  // 3. Quick Tools Drawer Coach Team Buttons
+  const coachSection = document.getElementById('quickToolsCoachTeamSection');
+  if (coachSection) coachSection.classList.toggle('hidden', !isCoach);
+
   const drawerHomeBtn = document.getElementById('quickToolsCoachHomeBtn');
   const drawerAwayBtn = document.getElementById('quickToolsCoachAwayBtn');
   if (drawerHomeBtn && drawerAwayBtn) {
@@ -159,11 +173,9 @@ export function updateCoachTeamUI() {
 
 export function checkCoachSquadPrompt() {
   if (appMode !== 'coach') return;
-  // If role selection modal is currently open, do not open squad initials
   const roleModal = document.getElementById('roleSelectModal');
-  if (roleModal && !roleModal.classList.contains('hidden')) {
-    return;
-  }
+  if (roleModal && !roleModal.classList.contains('hidden')) return;
+
   const roster = teams[coachTeam]?.roster || [];
   const hasAnyInitials = roster.some(p => p.initials && p.initials.trim().length > 0);
   if (!hasAnyInitials) {
@@ -191,6 +203,7 @@ export function saveSquadInitialsFromModalInputs() {
   });
 
   t.roster.sort((a, b) => a.number - b.number);
+  ensureRotationSync();
 }
 
 export function renderSquadInitialsInputsOnly() {
@@ -199,17 +212,15 @@ export function renderSquadInitialsInputsOnly() {
   const t = teams[coachTeam] || teams.home;
   const roster = (t.roster && t.roster.length > 0) ? t.roster : createDefaultRoster();
 
-  container.innerHTML = roster.map((p, idx) => {
-    return `
-      <div class="p-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-2">
-        <span class="w-7 h-7 rounded-lg bg-slate-800 text-amber-300 font-mono-sport font-black text-xs flex items-center justify-center border border-slate-700 shrink-0">#${p.number}</span>
-        <input type="text" id="squadInitInput_${p.number}" data-number="${p.number}" maxlength="3" placeholder="e.g. JD" value="${p.initials || ''}"
-          oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '')"
-          class="squad-init-input w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-2.5 py-1.5 text-white font-mono-sport font-bold text-xs uppercase focus:outline-none"
-          onkeydown="if(event.key==='Enter'){ const inputs = document.querySelectorAll('.squad-init-input'); if(inputs[${idx + 1}]) inputs[${idx + 1}].focus(); else saveSquadInitials(); }">
-      </div>
-    `;
-  }).join('');
+  container.innerHTML = roster.map((p, idx) => `
+    <div class="p-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-2">
+      <span class="w-7 h-7 rounded-lg bg-slate-800 text-amber-300 font-mono-sport font-black text-xs flex items-center justify-center border border-slate-700 shrink-0">#${p.number}</span>
+      <input type="text" id="squadInitInput_${p.number}" data-number="${p.number}" maxlength="3" placeholder="e.g. JD" value="${escapeHtml(p.initials || '')}"
+        oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '')"
+        class="squad-init-input w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg px-2.5 py-1.5 text-white font-mono-sport font-bold text-base sm:text-xs uppercase focus:outline-none"
+        onkeydown="if(event.key==='Enter'){ const inputs = document.querySelectorAll('.squad-init-input'); if(inputs[${idx + 1}]) inputs[${idx + 1}].focus(); else saveSquadInitials(); }">
+    </div>
+  `).join('');
 }
 
 export function updateSquadSizeUI(size) {
@@ -218,30 +229,23 @@ export function updateSquadSizeUI(size) {
   const decBtn = document.getElementById('squadSizeDecBtn');
   const incBtn = document.getElementById('squadSizeIncBtn');
 
-  if (countEl) {
-    countEl.innerText = `${size} Players`;
-  }
+  if (countEl) countEl.innerText = `${size} Players`;
 
   if (formatEl) {
     let formatLabel = `${size} Players`;
-    if (size === 5) formatLabel = '5v5 Format';
-    else if (size === 7) formatLabel = '7v7 Format';
-    else if (size === 8) formatLabel = 'Standard Youth (8)';
+    if (size === 5) formatLabel = '5v5 (No Subs)';
+    else if (size === 8) formatLabel = '5v5 + 3 Subs (U9 Standard)';
+    else if (size === 7) formatLabel = '7v7 / 5v5 + 2 Subs';
     else if (size === 9) formatLabel = '9v9 Format';
     else if (size === 11) formatLabel = '11v11 Matchday';
     else if (size === 15) formatLabel = 'Full Squad (15 Max)';
-    else if (size < 7) formatLabel = 'Small-Sided Format';
-    else if (size > 11) formatLabel = 'Extended Squad';
-    else formatLabel = 'Youth Matchday';
+    else if (size < 7) formatLabel = 'Small-Sided Squad';
+    else formatLabel = 'Youth Matchday Squad';
     formatEl.innerText = formatLabel;
   }
 
-  if (decBtn) {
-    decBtn.disabled = size <= MIN_SQUAD_SIZE;
-  }
-  if (incBtn) {
-    incBtn.disabled = size >= MAX_SQUAD_SIZE;
-  }
+  if (decBtn) decBtn.disabled = size <= MIN_SQUAD_SIZE;
+  if (incBtn) incBtn.disabled = size >= MAX_SQUAD_SIZE;
 }
 
 export function getSquadSize() {
@@ -272,9 +276,7 @@ export function setSquadModalSize(targetSize) {
   if (clampedSize > currentSize) {
     for (let i = currentSize; i < clampedSize; i++) {
       let nextNum = 1;
-      while (t.roster.some(p => p.number === nextNum)) {
-        nextNum++;
-      }
+      while (t.roster.some(p => p.number === nextNum)) nextNum++;
       t.roster.push({ number: nextNum, initials: '' });
     }
     t.roster.sort((a, b) => a.number - b.number);
@@ -282,14 +284,10 @@ export function setSquadModalSize(targetSize) {
     t.roster = t.roster.slice(0, clampedSize);
   }
 
+  ensureRotationSync();
   updateSquadSizeUI(t.roster.length);
   renderSquadInitialsInputsOnly();
-
-  if (typeof hardware !== 'undefined' && hardware.hapticFeedback) {
-    hardware.hapticFeedback('selection');
-  } else if (typeof window.hapticFeedback === 'function') {
-    window.hapticFeedback('selection');
-  }
+  hapticFeedback('selection');
 }
 
 export function selectSquadModalTeam(team) {
@@ -307,28 +305,24 @@ export function openSquadInitialsModal(team = coachTeam) {
   const subtitle = document.getElementById('squadInitialsSubtitle');
   const homeBtn = document.getElementById('squadInitialsHomeBtn');
   const awayBtn = document.getElementById('squadInitialsAwayBtn');
-  const homeLabel = document.getElementById('squadInitialsHomeLabel');
-  const awayLabel = document.getElementById('squadInitialsAwayLabel');
 
   const t = teams[team] || teams.home;
-  if (subtitle) {
-    subtitle.innerText = `${t.name} • Matchday Logging`;
-  }
+  if (subtitle) subtitle.innerText = `${t.name} • Matchday Logging`;
 
-  if (homeLabel) homeLabel.innerText = teams.home?.name || 'Home Team';
-  if (awayLabel) awayLabel.innerText = teams.away?.name || 'Away Team';
+  const safeHome = escapeHtml(teams.home?.name || 'Home Team');
+  const safeAway = escapeHtml(teams.away?.name || 'Away Team');
 
   if (homeBtn && awayBtn) {
     if (coachTeam === 'home') {
       homeBtn.className = 'py-2 px-2.5 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-amber-500 text-slate-950 shadow';
-      homeBtn.innerHTML = `<span>⭐</span><span class="truncate">${teams.home?.name || 'Home Team'}</span>`;
+      homeBtn.innerHTML = `<span>⭐</span><span class="truncate">${safeHome}</span>`;
       awayBtn.className = 'py-2 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700';
-      awayBtn.innerHTML = `<span class="truncate">${teams.away?.name || 'Away Team'}</span>`;
+      awayBtn.innerHTML = `<span class="truncate">${safeAway}</span>`;
     } else {
       homeBtn.className = 'py-2 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700';
-      homeBtn.innerHTML = `<span class="truncate">${teams.home?.name || 'Home Team'}</span>`;
+      homeBtn.innerHTML = `<span class="truncate">${safeHome}</span>`;
       awayBtn.className = 'py-2 px-2.5 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-amber-500 text-slate-950 shadow';
-      awayBtn.innerHTML = `<span>⭐</span><span class="truncate">${teams.away?.name || 'Away Team'}</span>`;
+      awayBtn.innerHTML = `<span>⭐</span><span class="truncate">${safeAway}</span>`;
     }
   }
 
@@ -339,16 +333,12 @@ export function openSquadInitialsModal(team = coachTeam) {
   updateSquadSizeUI(t.roster.length);
   renderSquadInitialsInputsOnly();
 
-  if (window.openModal) {
-    window.openModal('squadInitialsModal');
-  }
+  if (window.openModal) window.openModal('squadInitialsModal');
   setTimeout(() => {
-    if (container) {
-      const firstInput = container.querySelector('input');
-      if (firstInput) {
-        firstInput.focus();
-        firstInput.select();
-      }
+    const firstInput = container?.querySelector('input');
+    if (firstInput) {
+      firstInput.focus();
+      firstInput.select();
     }
   }, 150);
 }
@@ -359,9 +349,7 @@ export function saveSquadInitials() {
   renderTouchlineBarUI();
   notifyScoreChange();
   hapticFeedback('success');
-  if (window.closeModal) {
-    window.closeModal('squadInitialsModal');
-  }
+  if (window.closeModal) window.closeModal('squadInitialsModal');
   showTouchlineToast(`⭐ ${t.name} squad initials saved`);
 }
 
@@ -369,20 +357,13 @@ export function getAppMode() {
   return appMode;
 }
 
-export function showAppModeToast(message, mode = 'coach') {
-  // Mode switch toasts removed per user preference (mode is clearly indicated in header)
-}
-
-export function setAppMode(mode, showToast = false) {
-  const prevMode = appMode;
+export function setAppMode(mode) {
   appMode = mode === 'coach' ? 'coach' : 'referee';
   try {
     localStorage.setItem('whatsthescoreref_app_mode', appMode);
-  } catch (e) {}
-  if (appMode === 'referee') {
-    if (typeof window !== 'undefined' && typeof window.closeModal === 'function') {
-      window.closeModal('squadInitialsModal');
-    }
+  } catch (_) {}
+  if (appMode === 'referee' && typeof window !== 'undefined' && typeof window.closeModal === 'function') {
+    window.closeModal('squadInitialsModal');
   }
   updateAppModeUI();
   notifyScoreChange();
@@ -392,10 +373,217 @@ export function setAppMode(mode, showToast = false) {
 }
 
 export let coachNotes = {
-  potm: null,   // e.g. { number: 9, initials: 'JD' }
+  potm: null,
   notes: '',
-  moments: []   // [ { id, time, period, tag, icon, player } ]
+  moments: [],
+  rotation: createDefaultRotation()
 };
+
+function ensureRotationSync() {
+  const roster = teams[coachTeam]?.roster || createDefaultRoster();
+  const validNums = roster.map(p => p.number);
+  if (!coachNotes.rotation || !Array.isArray(coachNotes.rotation.onPitch)) {
+    coachNotes.rotation = createDefaultRotation(roster);
+    return;
+  }
+
+  const rot = coachNotes.rotation;
+  rot.onPitch = rot.onPitch.filter(n => validNums.includes(n));
+  if (rot.onPitch.length === 0 && validNums.length > 0) {
+    rot.onPitch = validNums.slice(0, Math.min(5, validNums.length));
+  }
+  if (!rot.stints || typeof rot.stints !== 'object') rot.stints = {};
+  validNums.forEach(n => {
+    if (typeof rot.stints[n] !== 'number') {
+      rot.stints[n] = rot.onPitch.includes(n) ? 1 : 0;
+    }
+  });
+  if (!validNums.includes(rot.gk)) {
+    rot.gk = rot.onPitch[0] || validNums[0] || 1;
+  }
+  if (!Array.isArray(rot.gkHistory)) {
+    rot.gkHistory = rot.gk ? [rot.gk] : [];
+  }
+}
+
+// ---------------- Coach Fair-Play Sub & GK Rotation Tracker ----------------
+export function openSquadRotationModal() {
+  ensureRotationSync();
+  renderSquadRotationModal();
+  if (window.openModal) window.openModal('squadRotationModal');
+}
+
+export function togglePlayerOnPitch(playerNumber) {
+  ensureRotationSync();
+  const rot = coachNotes.rotation;
+  const idx = rot.onPitch.indexOf(playerNumber);
+  hapticFeedback('tap');
+
+  if (idx >= 0) {
+    rot.onPitch.splice(idx, 1);
+    if (rot.gk === playerNumber) {
+      rot.gk = rot.onPitch[0] || null;
+    }
+  } else {
+    rot.onPitch.push(playerNumber);
+    rot.stints[playerNumber] = (rot.stints[playerNumber] || 0) + 1;
+    if (!rot.gk) {
+      rot.gk = playerNumber;
+      if (!rot.gkHistory.includes(playerNumber)) rot.gkHistory.push(playerNumber);
+    }
+  }
+
+  renderSquadRotationModal();
+  renderTouchlineBarUI();
+  notifyScoreChange();
+}
+
+export function setActiveGoalkeeper(playerNumber) {
+  ensureRotationSync();
+  const rot = coachNotes.rotation;
+  if (!rot.onPitch.includes(playerNumber)) {
+    rot.onPitch.push(playerNumber);
+    rot.stints[playerNumber] = (rot.stints[playerNumber] || 0) + 1;
+  }
+  rot.gk = playerNumber;
+  if (!rot.gkHistory.includes(playerNumber)) {
+    rot.gkHistory.push(playerNumber);
+  }
+  hapticFeedback('success');
+  renderSquadRotationModal();
+  renderTouchlineBarUI();
+  notifyScoreChange();
+}
+
+export function rotateBenchPlayersIn() {
+  ensureRotationSync();
+  const roster = teams[coachTeam]?.roster || [];
+  const rot = coachNotes.rotation;
+  const bench = roster.map(p => p.number).filter(n => !rot.onPitch.includes(n));
+
+  if (bench.length === 0) {
+    showTouchlineToast('All squad players are already on pitch!');
+    return;
+  }
+
+  // Sort bench by fewest stints first (fair play!)
+  bench.sort((a, b) => (rot.stints[a] || 0) - (rot.stints[b] || 0));
+
+  // Outfield players currently on pitch (protect GK unless everyone else rotated)
+  const outfieldOnPitch = rot.onPitch.filter(n => n !== rot.gk);
+  // Sub off outfield players with the MOST stints first
+  outfieldOnPitch.sort((a, b) => (rot.stints[b] || 0) - (rot.stints[a] || 0));
+
+  const swapCount = Math.min(bench.length, outfieldOnPitch.length);
+  if (swapCount === 0) return;
+
+  const comingOff = outfieldOnPitch.slice(0, swapCount);
+  const comingOn = bench.slice(0, swapCount);
+
+  rot.onPitch = rot.onPitch.filter(n => !comingOff.includes(n)).concat(comingOn);
+  comingOn.forEach(n => {
+    rot.stints[n] = (rot.stints[n] || 0) + 1;
+  });
+
+  hapticFeedback('success');
+  renderSquadRotationModal();
+  renderTouchlineBarUI();
+  notifyScoreChange();
+
+  const onLabels = comingOn.map(n => {
+    const p = roster.find(x => x.number === n);
+    return p?.initials ? `#${n} ${p.initials}` : `#${n}`;
+  }).join(', ');
+  showTouchlineToast(`🔄 Subbed ON: ${onLabels}`);
+}
+
+export function resetSquadRotation() {
+  const roster = teams[coachTeam]?.roster || createDefaultRoster();
+  coachNotes.rotation = createDefaultRotation(roster);
+  hapticFeedback('tap');
+  renderSquadRotationModal();
+  renderTouchlineBarUI();
+  notifyScoreChange();
+}
+
+export function renderSquadRotationModal() {
+  ensureRotationSync();
+  const roster = teams[coachTeam]?.roster || createDefaultRoster();
+  const rot = coachNotes.rotation;
+  const pitchContainer = document.getElementById('rotationOnPitchList');
+  const benchContainer = document.getElementById('rotationBenchList');
+  const pitchCountBadge = document.getElementById('rotationOnPitchBadge');
+  const subtitleEl = document.getElementById('rotationModalSubtitle');
+
+  if (subtitleEl) {
+    subtitleEl.innerText = `${teams[coachTeam]?.name || 'Coach Team'} • Equal Playing Time & GK Tracker`;
+  }
+
+  if (pitchCountBadge) {
+    const count = rot.onPitch.length;
+    pitchCountBadge.innerText = `${count}/5 On Pitch`;
+    pitchCountBadge.className = count === 5
+      ? 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono-sport font-black'
+      : (count === 6
+          ? 'text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono-sport font-black'
+          : 'text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono-sport font-black');
+  }
+
+  const onPitchPlayers = roster.filter(p => rot.onPitch.includes(p.number));
+  const benchPlayers = roster.filter(p => !rot.onPitch.includes(p.number));
+  const minStints = roster.length > 0 ? Math.min(...roster.map(p => rot.stints[p.number] || 0)) : 0;
+
+  if (pitchContainer) {
+    if (onPitchPlayers.length === 0) {
+      pitchContainer.innerHTML = `<div class="col-span-2 text-center py-3 text-slate-500 text-xs italic">Tap players from Bench below to put them on pitch</div>`;
+    } else {
+      pitchContainer.innerHTML = onPitchPlayers.map(p => {
+        const isGk = rot.gk === p.number;
+        const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
+        const stintCount = rot.stints[p.number] || 1;
+        return `
+          <div class="p-2 rounded-xl ${isGk ? 'bg-cyan-950/50 border-2 border-cyan-400/70' : 'bg-emerald-950/30 border border-emerald-500/40'} flex items-center justify-between gap-1.5">
+            <button type="button" onclick="togglePlayerOnPitch(${p.number})" class="flex-1 text-left min-w-0 cursor-pointer" title="Tap to sub off to bench">
+              <div class="font-mono-sport font-black text-xs text-white truncate flex items-center gap-1">
+                ${isGk ? '<span>🧤</span>' : '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>'}
+                <span>${label}</span>
+              </div>
+              <div class="text-[10px] text-slate-400">${stintCount} stint${stintCount === 1 ? '' : 's'} • Tap to sub off</div>
+            </button>
+            <button type="button" onclick="setActiveGoalkeeper(${p.number})" class="px-2 py-1 rounded-lg text-[10px] font-black cursor-pointer transition shrink-0 ${isGk ? 'bg-cyan-400 text-slate-950 shadow' : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700'}" title="Set as Goalkeeper">
+              🧤 GK
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  if (benchContainer) {
+    if (benchPlayers.length === 0) {
+      benchContainer.innerHTML = `<div class="col-span-2 text-center py-3 text-slate-500 text-xs italic">No players on bench (all on pitch)</div>`;
+    } else {
+      benchContainer.innerHTML = benchPlayers.map(p => {
+        const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
+        const stintCount = rot.stints[p.number] || 0;
+        const needsPitchTime = stintCount <= minStints;
+        const wasGk = rot.gkHistory.includes(p.number);
+        return `
+          <button type="button" onclick="togglePlayerOnPitch(${p.number})" class="p-2 rounded-xl bg-slate-950 hover:bg-slate-900 border ${needsPitchTime ? 'border-amber-400/70' : 'border-slate-800'} flex items-center justify-between gap-1.5 text-left transition active:scale-95 cursor-pointer">
+            <div class="min-w-0">
+              <div class="font-mono-sport font-black text-xs text-slate-200 truncate flex items-center gap-1">
+                <span>${label}</span>
+                ${wasGk ? '<span class="text-[10px]" title="Played GK earlier">🧤</span>' : ''}
+              </div>
+              <div class="text-[10px] ${needsPitchTime ? 'text-amber-400 font-bold' : 'text-slate-500'}">${stintCount === 0 ? '⚡ Needs pitch time!' : `${stintCount} stint${stintCount === 1 ? '' : 's'}`}</div>
+            </div>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-black shrink-0">+ ON</span>
+          </button>
+        `;
+      }).join('');
+    }
+  }
+}
 
 export function getCoachNotes() {
   return coachNotes;
@@ -413,7 +601,8 @@ export function setCoachPotm(player) {
     coachNotes.potm = player;
   }
   hapticFeedback('success');
-  renderMatchNotesUI();
+  renderTouchlineBarUI();
+  renderCoachNotesPotmPicker();
   notifyScoreChange();
 }
 
@@ -429,14 +618,14 @@ export function addCoachMoment(tag, icon, players = null) {
     id: Date.now() + Math.floor(Math.random() * 1000),
     time: formatTime(timerState.timerSeconds),
     period: timerState.currentPeriod || '1st Half',
-    tag: tag,
-    icon: icon,
-    player: playerList.length === 1 ? playerList[0] : (playerList.length === 0 ? null : playerList[0]),
-    players: playerList // [{ number, initials }] or [] for entire team
+    tag,
+    icon,
+    player: playerList.length > 0 ? playerList[0] : null,
+    players: playerList
   };
   coachNotes.moments.push(moment);
   hapticFeedback('success');
-  renderMatchNotesUI();
+  renderTouchlineBarUI();
   renderCoachMomentsModal();
   notifyScoreChange();
   return moment;
@@ -445,7 +634,7 @@ export function addCoachMoment(tag, icon, players = null) {
 export function removeCoachMoment(id) {
   coachNotes.moments = coachNotes.moments.filter(m => m.id !== id);
   hapticFeedback('tap');
-  renderMatchNotesUI();
+  renderTouchlineBarUI();
   renderCoachMomentsModal();
   notifyScoreChange();
 }
@@ -458,10 +647,9 @@ export function updateAppModeUI() {
   const touchlineBar = document.getElementById('coachTouchlineBar');
 
   if (appMode === 'coach') {
-    if (document.body) {
-      document.body.classList.add('mode-coach');
-      document.body.classList.remove('mode-referee');
-    }
+    document.body?.classList.add('mode-coach');
+    document.body?.classList.remove('mode-referee');
+
     if (coachBtn) {
       coachBtn.className = 'p-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition cursor-pointer shadow bg-amber-500 text-slate-950 border border-amber-300';
     }
@@ -477,14 +665,11 @@ export function updateAppModeUI() {
       drawerBadge.textContent = 'COACH';
       drawerBadge.className = 'px-2 py-0.5 rounded-lg font-black text-[10px] font-mono-sport uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40';
     }
-    if (touchlineBar) {
-      touchlineBar.classList.remove('hidden');
-    }
+    if (touchlineBar) touchlineBar.classList.remove('hidden');
   } else {
-    if (document.body) {
-      document.body.classList.add('mode-referee');
-      document.body.classList.remove('mode-coach');
-    }
+    document.body?.classList.add('mode-referee');
+    document.body?.classList.remove('mode-coach');
+
     if (refBtn) {
       refBtn.className = 'p-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition cursor-pointer shadow bg-emerald-500 text-slate-950 border border-emerald-300';
     }
@@ -500,10 +685,9 @@ export function updateAppModeUI() {
       drawerBadge.textContent = 'REFEREE';
       drawerBadge.className = 'px-2 py-0.5 rounded-lg font-black text-[10px] font-mono-sport uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
     }
-    if (touchlineBar) {
-      touchlineBar.classList.add('hidden');
-    }
+    if (touchlineBar) touchlineBar.classList.add('hidden');
   }
+
   updateCoachTeamUI();
   renderTouchlineBarUI();
   renderRefereeHelperBar();
@@ -543,7 +727,10 @@ export function registerScoreChangeCallback(cb) {
 }
 
 let isPowerPlayDismissed = false;
-let kickoffTeam = 'home'; // 'home' | 'away'
+let wasPowerPlayActive = false;
+let isPowerPlayEndedAlertActive = false;
+
+let kickoffTeam = 'home';
 let kickoffChosen = false;
 let kickoffConfirmActive = false;
 let kickoffConfirmMessage = '';
@@ -581,9 +768,12 @@ export function showMatchToast(message, icon = '⚽', duration = 3000) {
 export function dismissKickoffConfirmAlert() {
   kickoffConfirmActive = false;
   kickoffConfirmMessage = '';
-  if (kickoffConfirmTimeout) { clearTimeout(kickoffConfirmTimeout); kickoffConfirmTimeout = null; }
-  const el = document.getElementById('refHelperKickoffConfirmAlert');
-  if (el) el.classList.add('hidden');
+  if (kickoffConfirmTimeout) {
+    clearTimeout(kickoffConfirmTimeout);
+    kickoffConfirmTimeout = null;
+  }
+  document.getElementById('refHelperKickoffConfirmAlert')?.classList.add('hidden');
+  renderRefereeHelperBar();
 }
 
 function showKickoffConfirmInBar(message) {
@@ -623,7 +813,6 @@ export function toggleKickoffTeam() {
   return kickoffTeam;
 }
 
-
 export function updateKickoffBadges() {
   const homeBadge = document.getElementById('homeKickoffBadge');
   const awayBadge = document.getElementById('awayKickoffBadge');
@@ -633,7 +822,6 @@ export function updateKickoffBadges() {
   const currentPeriod = timerState.currentPeriod || '1st Half';
   const isFT = currentPeriod === 'Full Time';
 
-  // Badges only show in Referee Mode when kickoff has been chosen and match is not Full Time
   if (appMode !== 'referee' || !kickoffChosen || isFT) {
     homeBadge.classList.add('hidden');
     awayBadge.classList.add('hidden');
@@ -643,13 +831,10 @@ export function updateKickoffBadges() {
   const is2ndHalf = currentPeriod === '2nd Half';
   const activeKickoffTeam = is2ndHalf ? (kickoffTeam === 'home' ? 'away' : 'home') : kickoffTeam;
 
-  if (activeKickoffTeam === 'home') {
-    homeBadge.classList.remove('hidden');
-    awayBadge.classList.add('hidden');
-  } else {
-    homeBadge.classList.add('hidden');
-    awayBadge.classList.remove('hidden');
-  }
+  homeBadge.classList.toggle('hidden', activeKickoffTeam !== 'home');
+  homeBadge.classList.toggle('inline-flex', activeKickoffTeam === 'home');
+  awayBadge.classList.toggle('hidden', activeKickoffTeam !== 'away');
+  awayBadge.classList.toggle('inline-flex', activeKickoffTeam === 'away');
 }
 
 export function setupKickoffLongPress() {
@@ -665,13 +850,8 @@ export function setupKickoffLongPress() {
     const startPress = (e) => {
       e.stopPropagation();
       isLongPress = false;
-      if (e.touches && e.touches.length > 0) {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-      } else {
-        startX = e.clientX;
-        startY = e.clientY;
-      }
+      startX = e.clientX || 0;
+      startY = e.clientY || 0;
       badge.classList.add('scale-95', 'brightness-125');
       if (pressTimer) clearTimeout(pressTimer);
       pressTimer = setTimeout(() => {
@@ -681,7 +861,7 @@ export function setupKickoffLongPress() {
       }, 500);
     };
 
-    const cancelPress = (e) => {
+    const cancelPress = () => {
       if (pressTimer) {
         clearTimeout(pressTimer);
         pressTimer = null;
@@ -705,10 +885,8 @@ export function setupKickoffLongPress() {
 
     const checkMove = (e) => {
       if (!pressTimer) return;
-      const currentX = e.touches ? e.touches[0].clientX : e.clientX;
-      const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-      if (Math.hypot(currentX - startX, currentY - startY) > 10) {
-        cancelPress(e);
+      if (Math.hypot((e.clientX || 0) - startX, (e.clientY || 0) - startY) > 10) {
+        cancelPress();
       }
     };
 
@@ -717,7 +895,6 @@ export function setupKickoffLongPress() {
     badge.addEventListener('pointercancel', cancelPress);
     badge.addEventListener('pointerleave', cancelPress);
     badge.addEventListener('pointermove', checkMove);
-
     badge.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -747,6 +924,8 @@ export function renderRefereeHelperBar() {
   const oneMinuteAlert = document.getElementById('refHelperOneMinuteAlert');
   const subAlert = document.getElementById('refHelperSubAlert');
   const ppAlert = document.getElementById('refHelperPowerPlayAlert');
+  const ppEndedAlert = document.getElementById('refHelperPowerPlayEndedAlert');
+  const coolDownAlert = document.getElementById('refHelperCoolDownAlert');
   const pausedGoalAlert = document.getElementById('refHelperPausedGoalAlert');
   const forgotResumeAlert = document.getElementById('refHelperForgotResumeAlert');
   const kickoffConfirmAlert = document.getElementById('refHelperKickoffConfirmAlert');
@@ -757,51 +936,41 @@ export function renderRefereeHelperBar() {
   const ppMsg = document.getElementById('refHelperPowerPlayMsg');
 
   const timerState = getTimerState();
+  const coolDownState = getCoolDownState();
   const currentPeriod = timerState.currentPeriod || '1st Half';
-  const is2ndHalf = currentPeriod === '2nd Half';
   const isFT = currentPeriod === 'Full Time';
 
-  // Update team names on Kick-off prompt buttons
-  if (kickoffHomeBtn) {
-    kickoffHomeBtn.innerText = teams.home?.name || 'Home Team';
-  }
-  if (kickoffAwayBtn) {
-    kickoffAwayBtn.innerText = teams.away?.name || 'Away Team';
-  }
+  if (kickoffHomeBtn) kickoffHomeBtn.innerText = teams.home?.name || 'Home Team';
+  if (kickoffAwayBtn) kickoffAwayBtn.innerText = teams.away?.name || 'Away Team';
 
-  // Update idle status info
   const targetMin = Math.round((timerState.targetHalfSeconds || 900) / 60);
-  if (periodTargetText) {
-    periodTargetText.innerText = `${targetMin}m Target`;
-  }
+  if (periodTargetText) periodTargetText.innerText = `${targetMin}m Target`;
+
   const prematchBtn = document.getElementById('refHelperPrematchBtn');
   const idleStatus = document.getElementById('refHelperIdleStatus');
 
   if (isFT) {
-    if (prematchBtn) prematchBtn.classList.add('hidden');
-    if (idleStatus) idleStatus.classList.remove('hidden');
+    prematchBtn?.classList.add('hidden');
+    idleStatus?.classList.remove('hidden');
     if (idleStatusText) idleStatusText.innerText = 'Match Complete';
     if (idleDot) idleDot.className = 'w-2 h-2 rounded-full bg-purple-400 shrink-0';
   } else if (timerState.isTimerRunning) {
-    if (prematchBtn) prematchBtn.classList.add('hidden');
-    if (idleStatus) idleStatus.classList.remove('hidden');
+    prematchBtn?.classList.add('hidden');
+    idleStatus?.classList.remove('hidden');
     if (idleStatusText) idleStatusText.innerText = 'Match in progress';
     if (idleDot) idleDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0';
   } else if (timerState.hasHalfStarted) {
-    if (prematchBtn) prematchBtn.classList.add('hidden');
-    if (idleStatus) idleStatus.classList.remove('hidden');
+    prematchBtn?.classList.add('hidden');
+    idleStatus?.classList.remove('hidden');
     if (idleStatusText) idleStatusText.innerText = 'Clock paused';
     if (idleDot) idleDot.className = 'w-2 h-2 rounded-full bg-amber-400 shrink-0';
   } else {
-    // Pre-match state before kickoff
-    if (prematchBtn) prematchBtn.classList.remove('hidden');
-    if (idleStatus) idleStatus.classList.add('hidden');
+    prematchBtn?.classList.remove('hidden');
+    idleStatus?.classList.add('hidden');
   }
 
-  // Update KO badges in score boxes
   updateKickoffBadges();
 
-  // Alert conditions
   const isPausedGoal = Boolean(isPausedGoalAlertActive && !timerState.isTimerRunning && !isFT);
   const isForgotResume = Boolean(
     timerState.hasHalfStarted &&
@@ -822,83 +991,91 @@ export function renderRefereeHelperBar() {
                      timerState.timerSeconds >= subTarget &&
                      timerState.timerSeconds < (subTarget + 60) &&
                      !isFT;
+
   const diff = homeScore - awayScore;
   const absDiff = Math.abs(diff);
-  const isPowerPlay = absDiff >= 4 && !isPowerPlayDismissed;
+  const isPowerPlay = absDiff >= 4 && !isPowerPlayDismissed && !isFT;
+  const isPowerPlayEnded = isPowerPlayEndedAlertActive && absDiff < 4 && !isFT;
+  const isCoolDown = Boolean(coolDownState && coolDownState.active);
 
   let activeAlertCount = 0;
 
-  // Kickoff confirmation (brief auto-dismissing confirmation row)
   if (kickoffConfirmActive && kickoffConfirmAlert) {
     if (kickoffConfirmMsgEl) kickoffConfirmMsgEl.innerText = kickoffConfirmMessage;
     kickoffConfirmAlert.classList.remove('hidden');
     activeAlertCount++;
-  } else if (kickoffConfirmAlert) {
-    kickoffConfirmAlert.classList.add('hidden');
+  } else {
+    kickoffConfirmAlert?.classList.add('hidden');
   }
 
   if (isPausedGoal && pausedGoalAlert) {
     pausedGoalAlert.classList.remove('hidden');
     activeAlertCount++;
-  } else if (pausedGoalAlert) {
-    pausedGoalAlert.classList.add('hidden');
+  } else {
+    pausedGoalAlert?.classList.add('hidden');
   }
 
   if (isForgotResume && forgotResumeAlert) {
-    if (lostTimeBadge) {
-      lostTimeBadge.innerText = `+${formatTime(timerState.stoppageSeconds)} lost`;
-    }
+    if (lostTimeBadge) lostTimeBadge.innerText = `+${formatTime(timerState.stoppageSeconds)} lost`;
     forgotResumeAlert.classList.remove('hidden');
     activeAlertCount++;
-  } else if (forgotResumeAlert) {
-    forgotResumeAlert.classList.add('hidden');
+  } else {
+    forgotResumeAlert?.classList.add('hidden');
   }
 
   if (isOneMinute && oneMinuteAlert) {
-    if (oneMinuteMsg) {
-      oneMinuteMsg.innerText = `Final minute of ${currentPeriod}`;
-    }
+    if (oneMinuteMsg) oneMinuteMsg.innerText = `Final minute of ${currentPeriod}`;
     oneMinuteAlert.classList.remove('hidden');
     activeAlertCount++;
-  } else if (oneMinuteAlert) {
-    oneMinuteAlert.classList.add('hidden');
+  } else {
+    oneMinuteAlert?.classList.add('hidden');
   }
 
   if (isSubAlert && subAlert) {
     subAlert.classList.remove('hidden');
     activeAlertCount++;
-  } else if (subAlert) {
-    subAlert.classList.add('hidden');
+  } else {
+    subAlert?.classList.add('hidden');
   }
 
   if (isPowerPlay && ppAlert) {
     if (ppMsg) {
       const trailingTeamName = diff >= 4 ? (teams.away.name || 'Away Team') : (teams.home.name || 'Home Team');
-      ppMsg.innerText = `${trailingTeamName} may field +1 player`;
+      if (absDiff >= 6) {
+        ppMsg.innerText = `${trailingTeamName} (${absDiff} behind): +2 players (7v5)`;
+      } else {
+        ppMsg.innerText = `${trailingTeamName} (${absDiff} behind): +1 player (6v5)`;
+      }
     }
     ppAlert.classList.remove('hidden');
     activeAlertCount++;
-  } else if (ppAlert) {
-    ppAlert.classList.add('hidden');
-  }
-
-  // If ANY alert is active, hide default container; otherwise show it
-  if (activeAlertCount > 0) {
-    if (defaultContent) defaultContent.classList.add('hidden');
   } else {
-    if (defaultContent) defaultContent.classList.remove('hidden');
-    // Inside default container: show kick-off prompt if in 1st half, half started, and kick-off not chosen
-    const shouldPromptKickoff = !kickoffChosen && timerState.hasHalfStarted && currentPeriod === '1st Half';
-    if (shouldPromptKickoff) {
-      if (kickoffPrompt) kickoffPrompt.classList.remove('hidden');
-      if (idleContent) idleContent.classList.add('hidden');
-    } else {
-      if (kickoffPrompt) kickoffPrompt.classList.add('hidden');
-      if (idleContent) idleContent.classList.remove('hidden');
-    }
+    ppAlert?.classList.add('hidden');
   }
 
-  // Update header count badge
+  if (isPowerPlayEnded && ppEndedAlert) {
+    ppEndedAlert.classList.remove('hidden');
+    activeAlertCount++;
+  } else {
+    ppEndedAlert?.classList.add('hidden');
+  }
+
+  if (isCoolDown && coolDownAlert) {
+    coolDownAlert.classList.remove('hidden');
+    activeAlertCount++;
+  } else {
+    coolDownAlert?.classList.add('hidden');
+  }
+
+  if (activeAlertCount > 0) {
+    defaultContent?.classList.add('hidden');
+  } else {
+    defaultContent?.classList.remove('hidden');
+    const shouldPromptKickoff = !kickoffChosen && timerState.hasHalfStarted && currentPeriod === '1st Half';
+    kickoffPrompt?.classList.toggle('hidden', !shouldPromptKickoff);
+    idleContent?.classList.toggle('hidden', shouldPromptKickoff);
+  }
+
   const countBadge = document.getElementById('refHelperAlertCountBadge');
   if (countBadge) {
     if (activeAlertCount > 1) {
@@ -912,16 +1089,21 @@ export function renderRefereeHelperBar() {
 
 export function dismissPowerPlayBanner() {
   isPowerPlayDismissed = true;
-  const ppAlert = document.getElementById('refHelperPowerPlayAlert');
-  if (ppAlert) ppAlert.classList.add('hidden');
+  document.getElementById('refHelperPowerPlayAlert')?.classList.add('hidden');
+  renderRefereeHelperBar();
+  hapticFeedback('tap');
+}
+
+export function dismissPowerPlayEndedBanner() {
+  isPowerPlayEndedAlertActive = false;
+  document.getElementById('refHelperPowerPlayEndedAlert')?.classList.add('hidden');
   renderRefereeHelperBar();
   hapticFeedback('tap');
 }
 
 export function dismissPausedGoalToast() {
   isPausedGoalAlertActive = false;
-  const pausedAlert = document.getElementById('refHelperPausedGoalAlert');
-  if (pausedAlert) pausedAlert.classList.add('hidden');
+  document.getElementById('refHelperPausedGoalAlert')?.classList.add('hidden');
   renderRefereeHelperBar();
 }
 
@@ -933,9 +1115,19 @@ export function resumeFromToast() {
 }
 
 export function checkPowerPlay() {
-  const diff = homeScore - awayScore;
-  if (Math.abs(diff) < 4) {
+  const absDiff = Math.abs(homeScore - awayScore);
+  if (absDiff >= 4) {
+    wasPowerPlayActive = true;
+    isPowerPlayEndedAlertActive = false;
+  } else {
     isPowerPlayDismissed = false;
+    if (wasPowerPlayActive) {
+      // Deficit just dropped from 4+ back down to 3 or fewer! Remind ref to return to 5v5!
+      wasPowerPlayActive = false;
+      isPowerPlayEndedAlertActive = true;
+      playWhistleTone('chime_ready');
+      hapticFeedback('alert');
+    }
   }
   renderRefereeHelperBar();
 }
@@ -950,47 +1142,64 @@ export function notifyScoreChange() {
 }
 
 export function getScoreState() {
+  ensureRotationSync();
   return {
     homeScore,
     awayScore,
-    halfTimeScores,
+    halfTimeScores: { ...halfTimeScores },
     kickoffTeam,
     kickoffChosen,
+    isPowerPlayDismissed,
+    wasPowerPlayActive,
+    isPowerPlayEndedAlertActive,
+    isPausedGoalAlertActive,
     coachTeam,
-    goals,
+    goals: goals.map(g => ({ ...g })),
     appMode,
     coachNotes: {
       potm: coachNotes.potm ? { ...coachNotes.potm } : null,
       notes: coachNotes.notes || '',
-      moments: [...(coachNotes.moments || [])]
+      moments: (coachNotes.moments || []).map(m => ({ ...m })),
+      rotation: {
+        onPitch: [...(coachNotes.rotation?.onPitch || [])],
+        gk: coachNotes.rotation?.gk || 1,
+        gkHistory: [...(coachNotes.rotation?.gkHistory || [])],
+        stints: { ...(coachNotes.rotation?.stints || {}) }
+      }
     },
     teams: {
-      home: { ...teams.home, roster: [...(teams.home.roster || [])] },
-      away: { ...teams.away, roster: [...(teams.away.roster || [])] }
+      home: { ...teams.home, roster: (teams.home.roster || []).map(p => ({ ...p })) },
+      away: { ...teams.away, roster: (teams.away.roster || []).map(p => ({ ...p })) }
     }
   };
 }
 
 export function toggleAppMode() {
   const nextMode = appMode === 'coach' ? 'referee' : 'coach';
-  setAppMode(nextMode, true);
+  setAppMode(nextMode);
   return nextMode;
 }
 
 export function restoreScoreState(state) {
   if (!state) return;
+  lastDebounceTime = { home: 0, away: 0 };
   homeScore = state.homeScore || 0;
   awayScore = state.awayScore || 0;
-  halfTimeScores = state.halfTimeScores || { home: null, away: null };
+  halfTimeScores = state.halfTimeScores ? { ...state.halfTimeScores } : { home: null, away: null };
   kickoffTeam = state.kickoffTeam || 'home';
   kickoffChosen = Boolean(state.kickoffChosen);
   if (state.coachTeam === 'home' || state.coachTeam === 'away') {
     coachTeam = state.coachTeam;
   }
-  goals = state.goals ? [...state.goals] : [];
+  goals = state.goals ? state.goals.map(g => ({ ...g })) : [];
   isPowerPlayDismissed = Boolean(state.isPowerPlayDismissed);
+  wasPowerPlayActive = typeof state.wasPowerPlayActive === 'boolean'
+    ? state.wasPowerPlayActive
+    : Math.abs(homeScore - awayScore) >= 4;
+  isPowerPlayEndedAlertActive = Boolean(state.isPowerPlayEndedAlertActive);
   isPausedGoalAlertActive = Boolean(state.isPausedGoalAlertActive);
   activeInlineTag = null;
+
   if (inlineTagTimeout) {
     clearTimeout(inlineTagTimeout);
     inlineTagTimeout = null;
@@ -999,42 +1208,52 @@ export function restoreScoreState(state) {
     clearTimeout(matchToastTimeout);
     matchToastTimeout = null;
   }
+
   const matchToast = document.getElementById('matchNotificationToast');
   if (matchToast) {
     matchToast.classList.remove('opacity-100', 'translate-y-0');
     matchToast.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
   }
-  const coachToast = document.getElementById('coachTouchlineToast');
-  if (coachToast) coachToast.classList.add('hidden');
+  document.getElementById('coachTouchlineToast')?.classList.add('hidden');
 
-  if (!isPowerPlayDismissed && (Math.abs(homeScore - awayScore) < 4)) {
-    document.getElementById('refHelperPowerPlayAlert')?.classList.add('hidden');
-  }
-  if (!isPausedGoalAlertActive) {
-    document.getElementById('refHelperPausedGoalAlert')?.classList.add('hidden');
-    document.getElementById('pausedGoalToast')?.classList.add('hidden');
+  if (state.teams) {
+    teams.home = {
+      ...state.teams.home,
+      roster: state.teams.home.roster && state.teams.home.roster.length > 0
+        ? state.teams.home.roster.slice(0, MAX_SQUAD_SIZE).map(p => ({ ...p }))
+        : createDefaultRoster()
+    };
+    teams.away = {
+      ...state.teams.away,
+      roster: state.teams.away.roster && state.teams.away.roster.length > 0
+        ? state.teams.away.roster.slice(0, MAX_SQUAD_SIZE).map(p => ({ ...p }))
+        : createDefaultRoster()
+    };
   }
 
-  // Note: appMode is a persistent user role and is NEVER overridden by match score state
   if (state.coachNotes) {
     coachNotes = {
       potm: state.coachNotes.potm ? { ...state.coachNotes.potm } : null,
       notes: state.coachNotes.notes || '',
-      moments: state.coachNotes.moments ? [...state.coachNotes.moments] : []
+      moments: state.coachNotes.moments ? state.coachNotes.moments.map(m => ({ ...m })) : [],
+      rotation: state.coachNotes.rotation
+        ? {
+            onPitch: [...(state.coachNotes.rotation.onPitch || [])],
+            gk: state.coachNotes.rotation.gk || 1,
+            gkHistory: [...(state.coachNotes.rotation.gkHistory || [])],
+            stints: { ...(state.coachNotes.rotation.stints || {}) }
+          }
+        : createDefaultRotation(teams[coachTeam]?.roster || [])
     };
   } else {
-    coachNotes = { potm: null, notes: '', moments: [] };
-  }
-  if (state.teams) {
-    teams.home = {
-      ...state.teams.home,
-      roster: state.teams.home.roster && state.teams.home.roster.length > 0 ? [...state.teams.home.roster].slice(0, MAX_SQUAD_SIZE) : createDefaultRoster()
-    };
-    teams.away = {
-      ...state.teams.away,
-      roster: state.teams.away.roster && state.teams.away.roster.length > 0 ? [...state.teams.away.roster].slice(0, MAX_SQUAD_SIZE) : createDefaultRoster()
+    coachNotes = {
+      potm: null,
+      notes: '',
+      moments: [],
+      rotation: createDefaultRotation(teams[coachTeam]?.roster || [])
     };
   }
+  ensureRotationSync();
 
   const homeScoreEl = document.getElementById('homeScoreDisplay');
   const awayScoreEl = document.getElementById('awayScoreDisplay');
@@ -1044,14 +1263,14 @@ export function restoreScoreState(state) {
   applyTeamVisuals('home');
   applyTeamVisuals('away');
   renderGoalTimeline();
-  updatePrematchDropdownValues();
   updateAppModeUI();
-  renderMatchNotesUI();
+  renderTouchlineBarUI();
   renderRefereeHelperBar();
   notifyScoreChange();
 }
 
-export function resetScoreState() {
+export function resetScoreState(preserveTeams = false) {
+  lastDebounceTime = { home: 0, away: 0 };
   homeScore = 0;
   awayScore = 0;
   halfTimeScores = { home: null, away: null };
@@ -1059,51 +1278,93 @@ export function resetScoreState() {
   kickoffChosen = false;
   goals = [];
   isPowerPlayDismissed = false;
+  wasPowerPlayActive = false;
+  isPowerPlayEndedAlertActive = false;
   isPausedGoalAlertActive = false;
   activeInlineTag = null;
-  if (inlineTagTimeout) {
-    clearTimeout(inlineTagTimeout);
-    inlineTagTimeout = null;
-  }
-  if (matchToastTimeout) {
-    clearTimeout(matchToastTimeout);
-    matchToastTimeout = null;
-  }
-  if (kickoffConfirmTimeout) {
-    clearTimeout(kickoffConfirmTimeout);
-    kickoffConfirmTimeout = null;
-  }
+
+  if (inlineTagTimeout) { clearTimeout(inlineTagTimeout); inlineTagTimeout = null; }
+  if (matchToastTimeout) { clearTimeout(matchToastTimeout); matchToastTimeout = null; }
+  if (kickoffConfirmTimeout) { clearTimeout(kickoffConfirmTimeout); kickoffConfirmTimeout = null; }
   kickoffConfirmActive = false;
   kickoffConfirmMessage = '';
+
   const matchToast = document.getElementById('matchNotificationToast');
   if (matchToast) {
     matchToast.classList.remove('opacity-100', 'translate-y-0');
     matchToast.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
   }
-  const coachToast = document.getElementById('coachTouchlineToast');
-  if (coachToast) coachToast.classList.add('hidden');
-
+  document.getElementById('coachTouchlineToast')?.classList.add('hidden');
   document.getElementById('refHelperPowerPlayAlert')?.classList.add('hidden');
+  document.getElementById('refHelperPowerPlayEndedAlert')?.classList.add('hidden');
   document.getElementById('refHelperPausedGoalAlert')?.classList.add('hidden');
   document.getElementById('refHelperKickoffConfirmAlert')?.classList.add('hidden');
-  document.getElementById('pausedGoalToast')?.classList.add('hidden');
 
-  coachNotes = { potm: null, notes: '', moments: [] };
-  teams.home.name = 'Home Team';
-  teams.away.name = 'Away Team';
+  if (!preserveTeams) {
+    teams.home.name = 'Home Team';
+    teams.away.name = 'Away Team';
+  }
+  coachNotes = {
+    potm: null,
+    notes: '',
+    moments: [],
+    rotation: createDefaultRotation(teams[coachTeam]?.roster || [])
+  };
 
   const homeScoreEl = document.getElementById('homeScoreDisplay');
   const awayScoreEl = document.getElementById('awayScoreDisplay');
   if (homeScoreEl) homeScoreEl.innerText = 0;
   if (awayScoreEl) awayScoreEl.innerText = 0;
-  renderRefereeHelperBar();
 
   applyTeamVisuals('home');
   applyTeamVisuals('away');
   renderGoalTimeline();
-  updatePrematchDropdownValues();
-  renderMatchNotesUI();
+  renderTouchlineBarUI();
+  renderRefereeHelperBar();
   notifyScoreChange();
+}
+
+// Reset ONLY goals scored in a specific period (e.g. resetting 2nd Half preserves 1st Half goals!)
+export function resetCurrentHalfGoals(periodToClear) {
+  if (periodToClear === '1st Half') {
+    resetScoreState(true);
+    return;
+  }
+
+  goals = goals.filter(g => g.period !== periodToClear);
+  recalculateScoresFromGoals();
+  isPausedGoalAlertActive = false;
+  renderGoalTimeline();
+  notifyScoreChange();
+}
+
+function recalculateScoresFromGoals() {
+  let h = 0;
+  let a = 0;
+  let htH = 0;
+  let htA = 0;
+
+  goals.forEach(g => {
+    if (g.team === 'home') h++;
+    else a++;
+    g.scoreHome = h;
+    g.scoreAway = a;
+    if (g.period === '1st Half') {
+      if (g.team === 'home') htH++;
+      else htA++;
+    }
+  });
+
+  homeScore = h;
+  awayScore = a;
+  const homeScoreEl = document.getElementById('homeScoreDisplay');
+  const awayScoreEl = document.getElementById('awayScoreDisplay');
+  if (homeScoreEl) homeScoreEl.innerText = homeScore;
+  if (awayScoreEl) awayScoreEl.innerText = awayScore;
+
+  if (halfTimeScores.home !== null || halfTimeScores.away !== null) {
+    halfTimeScores = { home: htH, away: htA };
+  }
 }
 
 export function finaliseHalfScore() {
@@ -1125,18 +1386,18 @@ let pendingAttributionTeam = 'home';
 let pendingAttributionExistingIndex = null;
 let pendingAttributionScorer = null;
 let pendingAttributionAssist = null;
-let pendingAttributionStage = 1; // 1: Scorer, 2: Assist
+let pendingAttributionStage = 1;
 
 let skipAssistStep = false;
 try {
   skipAssistStep = localStorage.getItem('whatsthescoreref_skip_assist') === 'true';
-} catch (e) {}
+} catch (_) {}
 
 export function setSkipAssistStep(val) {
   skipAssistStep = Boolean(val);
   try {
     localStorage.setItem('whatsthescoreref_skip_assist', skipAssistStep ? 'true' : 'false');
-  } catch (e) {}
+  } catch (_) {}
   hapticFeedback('tap');
   renderAttributionModal();
 }
@@ -1145,19 +1406,30 @@ export function getSkipAssistStep() {
   return skipAssistStep;
 }
 
+function triggerScorePop(team) {
+  const el = document.getElementById(team === 'home' ? 'homeScoreDisplay' : 'awayScoreDisplay');
+  if (!el) return;
+  el.classList.remove('score-pop-anim');
+  void el.offsetWidth;
+  el.classList.add('score-pop-anim');
+}
+
 export function executeDirectGoal(team, attribution = null) {
   const timerState = getTimerState();
   if (team === 'home') {
     homeScore++;
-    document.getElementById('homeScoreDisplay').innerText = homeScore;
+    const el = document.getElementById('homeScoreDisplay');
+    if (el) el.innerText = homeScore;
   } else {
     awayScore++;
-    document.getElementById('awayScoreDisplay').innerText = awayScore;
+    const el = document.getElementById('awayScoreDisplay');
+    if (el) el.innerText = awayScore;
   }
+  triggerScorePop(team);
 
   goals.push({
     id: Date.now(),
-    team: team,
+    team,
     teamName: teams[team].name || (team === 'home' ? 'Home Team' : 'Away Team'),
     time: formatTime(timerState.timerSeconds),
     timeSeconds: timerState.timerSeconds,
@@ -1172,18 +1444,14 @@ export function executeDirectGoal(team, attribution = null) {
   renderGoalTimeline();
   notifyScoreChange();
 
-  // Safeguard: If referee logs a goal while clock is paused, prompt auto-resume!
   if (!timerState.isTimerRunning && timerState.currentPeriod !== 'Full Time') {
     isPausedGoalAlertActive = true;
     renderRefereeHelperBar();
-    document.getElementById('pausedGoalToast')?.classList.remove('hidden');
   }
 }
 
 export function incrementScore(team) {
   const timerState = getTimerState();
-  
-  // If match has ended (Full Time), require confirmation and time confirmation
   if (timerState.currentPeriod === 'Full Time') {
     openConcludedGoalModal(team);
     return;
@@ -1194,12 +1462,8 @@ export function incrementScore(team) {
   lastDebounceTime[team] = now;
   hapticFeedback('tap');
 
-  if (appMode === 'coach') {
-    if (team === coachTeam) {
-      openGoalAttributionModal(team);
-    } else {
-      executeDirectGoal(team);
-    }
+  if (appMode === 'coach' && team === coachTeam) {
+    openGoalAttributionModal(team);
     return;
   }
 
@@ -1220,32 +1484,25 @@ export function openGoalAttributionModal(team, existingGoalIndex = null) {
   }
 
   renderAttributionModal();
-  if (window.openModal) {
-    window.openModal('goalAttributionModal');
-  }
+  if (window.openModal) window.openModal('goalAttributionModal');
 }
 
 export function openGoalAttributionForExistingGoal(index) {
   if (index < 0 || index >= goals.length) return;
-  const g = goals[index];
-  openGoalAttributionModal(g.team, index);
+  openGoalAttributionModal(goals[index].team, index);
 }
 
 export function renderAttributionModal() {
   const team = pendingAttributionTeam;
   const t = teams[team] || { name: team === 'home' ? 'Home Team' : 'Away Team', color: '#f43f5e', roster: [] };
-  const teamName = t.name || (team === 'home' ? 'Home Team' : 'Away Team');
   const roster = (t.roster && t.roster.length > 0) ? t.roster : createDefaultRoster();
-  
+
   const cardEl = document.getElementById('goalAttributionCard');
   const titleEl = document.getElementById('attributionModalTitle');
   const teamDot = document.getElementById('attributionTeamDot');
-  const stageDescEl = document.getElementById('attributionStageDesc');
   const fastModeLabel = document.getElementById('attributionFastModeLabel');
   const fastModeCheckbox = document.getElementById('attributionFastModeCheckbox');
-  const topActionContainer = document.getElementById('attributionTopActionContainer');
   const chipContainer = document.getElementById('attributionChipContainer');
-  const stepIndicator = document.getElementById('attributionStepIndicator');
   const backBtn = document.getElementById('attributionBackBtn');
   const ownGoalBtn = document.getElementById('attributionOwnGoalBtn');
   const quickSkipBtn = document.getElementById('attributionQuickSkipBtn');
@@ -1256,19 +1513,14 @@ export function renderAttributionModal() {
     if (cardEl) {
       cardEl.className = 'bg-slate-900 border-2 border-emerald-500/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-emerald-500/30';
     }
-    if (titleEl) {
-      titleEl.innerText = 'Who scored?';
-    }
-    if (stepIndicator) stepIndicator.innerText = '';
-    if (stageDescEl) stageDescEl.innerHTML = '';
+    if (titleEl) titleEl.innerText = 'Who scored?';
     if (fastModeLabel) fastModeLabel.classList.remove('hidden');
     if (fastModeCheckbox) fastModeCheckbox.checked = skipAssistStep;
-    if (topActionContainer) topActionContainer.classList.add('hidden');
-    if (backBtn) backBtn.classList.add('hidden');
-    if (ownGoalBtn) ownGoalBtn.classList.remove('hidden');
+    backBtn?.classList.add('hidden');
+    ownGoalBtn?.classList.remove('hidden');
     if (quickSkipBtn) {
-      quickSkipBtn.className = 'py-2.5 px-2 bg-slate-800 hover:bg-slate-750 text-slate-200 font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1';
-      quickSkipBtn.innerHTML = `<span>⚡</span><span>${pendingAttributionExistingIndex !== null ? 'Clear Player Credit' : 'Uncredited Goal'}</span>`;
+      quickSkipBtn.className = 'py-2.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1';
+      quickSkipBtn.innerHTML = `<span>⚡</span><span>${pendingAttributionExistingIndex !== null ? 'Clear Credit' : 'Uncredited Goal'}</span>`;
     }
 
     if (chipContainer) {
@@ -1276,22 +1528,22 @@ export function renderAttributionModal() {
         const hasInitials = Boolean(player.initials && player.initials.trim().length > 0);
         const isSelected = pendingAttributionScorer && pendingAttributionScorer.number === player.number;
         const badgeText = hasInitials ? `#${player.number}` : 'PLAYER';
-        const initialsText = hasInitials ? player.initials : `#${player.number}`;
+        const initialsText = hasInitials ? escapeHtml(player.initials) : `#${player.number}`;
 
         const btnClass = isSelected
           ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-200 text-slate-950 shadow-xl shadow-emerald-500/30 scale-[1.03] ring-2 ring-emerald-300'
-          : 'bg-slate-800/90 hover:bg-slate-750 border-slate-700/80 hover:border-emerald-400/80 text-white shadow-md hover:scale-[1.02]';
+          : 'bg-slate-800/90 hover:bg-slate-700 border-slate-700/80 hover:border-emerald-400/80 text-white shadow-md hover:scale-[1.02]';
 
         return `
           <button type="button" onclick="window.selectAttributionScorer(${player.number})"
             class="relative p-2.5 sm:p-3 rounded-2xl border-2 flex flex-col items-center justify-between min-h-[72px] sm:min-h-[82px] active:scale-95 transition cursor-pointer group ${btnClass}">
             <div class="flex items-center justify-between w-full">
-              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/30 text-slate-950 font-black' : 'bg-slate-950/90 text-amber-300 border border-amber-400/40'}">
+              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/30 text-slate-950' : 'bg-slate-950/90 text-amber-300 border border-amber-400/40'}">
                 ${badgeText}
               </span>
               ${isSelected ? '<span class="text-sm font-black text-slate-950">✓</span>' : '<span class="text-[10px] text-emerald-400/60 font-black opacity-0 group-hover:opacity-100 transition">GOAL</span>'}
             </div>
-            <span class="font-mono-sport font-black text-lg sm:text-2xl tracking-wider uppercase leading-none py-1 ${isSelected ? 'text-slate-950 font-extrabold' : 'text-white'}">
+            <span class="font-mono-sport font-black text-lg sm:text-2xl tracking-wider uppercase leading-none py-1 ${isSelected ? 'text-slate-950' : 'text-white'}">
               ${initialsText}
             </span>
           </button>
@@ -1299,27 +1551,16 @@ export function renderAttributionModal() {
       }).join('');
     }
   } else {
-    // Stage 2: Assist
     if (cardEl) {
       cardEl.className = 'bg-slate-900 border-2 border-sky-500/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-sky-500/30';
     }
-    if (titleEl) {
-      titleEl.innerText = 'Who assisted?';
-    }
-    if (stepIndicator) stepIndicator.innerText = '';
-    if (stageDescEl) stageDescEl.innerHTML = '';
-    if (fastModeLabel) fastModeLabel.classList.add('hidden');
-
-    if (topActionContainer) {
-      topActionContainer.classList.add('hidden');
-      topActionContainer.innerHTML = '';
-    }
-
+    if (titleEl) titleEl.innerText = 'Who assisted?';
+    fastModeLabel?.classList.add('hidden');
     if (backBtn) {
       backBtn.classList.remove('hidden');
       backBtn.innerHTML = '<span>←</span><span>Back</span>';
     }
-    if (ownGoalBtn) ownGoalBtn.classList.add('hidden');
+    ownGoalBtn?.classList.add('hidden');
     if (quickSkipBtn) {
       quickSkipBtn.className = 'py-3 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1 shadow-md';
       quickSkipBtn.innerHTML = '<span>No Assist</span>';
@@ -1331,22 +1572,22 @@ export function renderAttributionModal() {
         const hasInitials = Boolean(player.initials && player.initials.trim().length > 0);
         const isSelected = pendingAttributionAssist && pendingAttributionAssist.number === player.number;
         const badgeText = hasInitials ? `#${player.number}` : 'PLAYER';
-        const initialsText = hasInitials ? player.initials : `#${player.number}`;
+        const initialsText = hasInitials ? escapeHtml(player.initials) : `#${player.number}`;
 
         const btnClass = isSelected
           ? 'bg-gradient-to-br from-sky-500 to-sky-600 border-sky-200 text-slate-950 shadow-xl shadow-sky-500/30 scale-[1.03] ring-2 ring-sky-300'
-          : 'bg-slate-800/90 hover:bg-slate-750 border-slate-700/80 hover:border-sky-400/80 text-white shadow-md hover:scale-[1.02]';
+          : 'bg-slate-800/90 hover:bg-slate-700 border-slate-700/80 hover:border-sky-400/80 text-white shadow-md hover:scale-[1.02]';
 
         return `
           <button type="button" onclick="window.selectAttributionAssist(${player.number})"
             class="relative p-2.5 sm:p-3 rounded-2xl border-2 flex flex-col items-center justify-between min-h-[72px] sm:min-h-[82px] active:scale-95 transition cursor-pointer group ${btnClass}">
             <div class="flex items-center justify-between w-full">
-              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/30 text-slate-950 font-black' : 'bg-slate-950/90 text-amber-300 border border-amber-400/40'}">
+              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/30 text-slate-950' : 'bg-slate-950/90 text-amber-300 border border-amber-400/40'}">
                 ${badgeText}
               </span>
               ${isSelected ? '<span class="text-sm font-black text-slate-950">✓</span>' : '<span class="text-[10px] text-sky-400/60 font-black opacity-0 group-hover:opacity-100 transition">ASSIST</span>'}
             </div>
-            <span class="font-mono-sport font-black text-lg sm:text-2xl tracking-wider uppercase leading-none py-1 ${isSelected ? 'text-slate-950 font-extrabold' : 'text-white'}">
+            <span class="font-mono-sport font-black text-lg sm:text-2xl tracking-wider uppercase leading-none py-1 ${isSelected ? 'text-slate-950' : 'text-white'}">
               ${initialsText}
             </span>
           </button>
@@ -1357,8 +1598,7 @@ export function renderAttributionModal() {
 }
 
 export function selectAttributionScorer(playerNumber) {
-  const t = teams[pendingAttributionTeam];
-  const roster = t.roster || [];
+  const roster = teams[pendingAttributionTeam]?.roster || [];
   const player = roster.find(p => p.number === playerNumber) || { number: playerNumber, initials: '' };
   pendingAttributionScorer = player;
 
@@ -1375,8 +1615,7 @@ export function selectAttributionScorer(playerNumber) {
 }
 
 export function selectAttributionAssist(playerNumber) {
-  const t = teams[pendingAttributionTeam];
-  const roster = t.roster || [];
+  const roster = teams[pendingAttributionTeam]?.roster || [];
   const player = roster.find(p => p.number === playerNumber) || { number: playerNumber, initials: '' };
   pendingAttributionAssist = player;
   hapticFeedback('success');
@@ -1433,10 +1672,11 @@ export function completeAttribution(isOwnGoal = false) {
   executeDirectGoal(pendingAttributionTeam, {
     scorer: isOwnGoal ? null : pendingAttributionScorer,
     assist: isOwnGoal ? null : pendingAttributionAssist,
-    isOwnGoal: isOwnGoal
+    isOwnGoal
   });
 }
 
+// Fixed: decrementScore & undoLastGoal now delegate to executeGoalRemovalByIndex so all running scores & half-time scores recalculate!
 export function decrementScore(team) {
   const timerState = getTimerState();
   if (timerState.currentPeriod === 'Full Time') {
@@ -1449,22 +1689,23 @@ export function decrementScore(team) {
   const now = Date.now();
   if (now - (lastDebounceTime[team] || 0) < DEBOUNCE_MS) return;
   lastDebounceTime[team] = now;
-  hapticFeedback('tap');
 
+  for (let i = goals.length - 1; i >= 0; i--) {
+    if (goals[i].team === team) {
+      executeGoalRemovalByIndex(i);
+      return;
+    }
+  }
+
+  // Fallback if score was manually imported without individual goal entries
   if (team === 'home' && homeScore > 0) {
     homeScore--;
     document.getElementById('homeScoreDisplay').innerText = homeScore;
-    for (let i = goals.length - 1; i >= 0; i--) {
-      if (goals[i].team === 'home') { goals.splice(i, 1); break; }
-    }
     renderGoalTimeline();
     notifyScoreChange();
   } else if (team === 'away' && awayScore > 0) {
     awayScore--;
     document.getElementById('awayScoreDisplay').innerText = awayScore;
-    for (let i = goals.length - 1; i >= 0; i--) {
-      if (goals[i].team === 'away') { goals.splice(i, 1); break; }
-    }
     renderGoalTimeline();
     notifyScoreChange();
   }
@@ -1477,18 +1718,7 @@ export function undoLastGoal() {
     promptConcludedGoalRemoval({ type: 'undo' });
     return;
   }
-
-  hapticFeedback('tap');
-  const removed = goals.pop();
-  if (removed.team === 'home' && homeScore > 0) {
-    homeScore--;
-    document.getElementById('homeScoreDisplay').innerText = homeScore;
-  } else if (removed.team === 'away' && awayScore > 0) {
-    awayScore--;
-    document.getElementById('awayScoreDisplay').innerText = awayScore;
-  }
-  renderGoalTimeline();
-  notifyScoreChange();
+  executeGoalRemovalByIndex(goals.length - 1);
 }
 
 export function removeGoal(index) {
@@ -1505,34 +1735,7 @@ export function executeGoalRemovalByIndex(index) {
   if (index < 0 || index >= goals.length) return;
   hapticFeedback('tap');
   goals.splice(index, 1);
-
-  // Recalculate running scores and half-time scores
-  let h = 0;
-  let a = 0;
-  let htH = 0;
-  let htA = 0;
-  goals.forEach(g => {
-    if (g.team === 'home') h++;
-    else a++;
-    g.scoreHome = h;
-    g.scoreAway = a;
-    if (g.period === '1st Half') {
-      if (g.team === 'home') htH++;
-      else htA++;
-    }
-  });
-
-  homeScore = h;
-  awayScore = a;
-  const homeScoreEl = document.getElementById('homeScoreDisplay');
-  const awayScoreEl = document.getElementById('awayScoreDisplay');
-  if (homeScoreEl) homeScoreEl.innerText = homeScore;
-  if (awayScoreEl) awayScoreEl.innerText = awayScore;
-
-  if (halfTimeScores.home !== null || halfTimeScores.away !== null) {
-    halfTimeScores = { home: htH, away: htA };
-  }
-
+  recalculateScoresFromGoals();
   renderGoalTimeline();
   notifyScoreChange();
 }
@@ -1569,9 +1772,7 @@ export function openConcludedGoalModal(team) {
   setConcludedGoalPeriod('2nd Half');
   updateConcludedGoalTimeDisplay();
 
-  if (window.openModal) {
-    window.openModal('confirmConcludedGoalModal');
-  }
+  if (window.openModal) window.openModal('confirmConcludedGoalModal');
 }
 
 export function setConcludedGoalPeriod(period) {
@@ -1595,15 +1796,10 @@ export function setConcludedGoalSeconds(secs) {
 
 export function setConcludedGoalPreset(preset) {
   const targetSec = typeof getTargetHalfSeconds === 'function' ? getTargetHalfSeconds() : 15 * 60;
-  if (preset === 'early') {
-    setConcludedGoalSeconds(60);
-  } else if (preset === 'mid') {
-    setConcludedGoalSeconds(Math.floor(targetSec / 2));
-  } else if (preset === 'full') {
-    setConcludedGoalSeconds(targetSec);
-  } else if (typeof preset === 'number') {
-    setConcludedGoalSeconds(preset);
-  }
+  if (preset === 'early') setConcludedGoalSeconds(60);
+  else if (preset === 'mid') setConcludedGoalSeconds(Math.floor(targetSec / 2));
+  else if (preset === 'full') setConcludedGoalSeconds(targetSec);
+  else if (typeof preset === 'number') setConcludedGoalSeconds(preset);
 }
 
 export function adjustConcludedGoalSeconds(delta) {
@@ -1613,9 +1809,7 @@ export function adjustConcludedGoalSeconds(delta) {
 
 export function updateConcludedGoalTimeDisplay() {
   const display = document.getElementById('concludedGoalTimeDisplay');
-  if (display) {
-    display.innerText = formatTime(pendingConcludedGoalSeconds);
-  }
+  if (display) display.innerText = formatTime(pendingConcludedGoalSeconds);
 }
 
 export function confirmConcludedGoal() {
@@ -1623,18 +1817,22 @@ export function confirmConcludedGoal() {
   const team = pendingConcludedGoalTeam;
   const period = pendingConcludedGoalPeriod || '2nd Half';
   const timeStr = formatTime(pendingConcludedGoalSeconds);
+  const goalId = Date.now();
 
   hapticFeedback('success');
 
   const newGoal = {
-    id: Date.now(),
-    team: team,
+    id: goalId,
+    team,
     teamName: teams[team].name || (team === 'home' ? 'Home Team' : 'Away Team'),
     time: timeStr,
     timeSeconds: pendingConcludedGoalSeconds,
-    period: period,
+    period,
     scoreHome: 0,
-    scoreAway: 0
+    scoreAway: 0,
+    scorer: null,
+    assist: null,
+    isOwnGoal: false
   };
 
   goals.push(newGoal);
@@ -1650,40 +1848,19 @@ export function confirmConcludedGoal() {
   }
 
   goals.sort((a, b) => getGoalSortKey(a) - getGoalSortKey(b));
-
-  let h = 0;
-  let a = 0;
-  let htH = 0;
-  let htA = 0;
-
-  goals.forEach(g => {
-    if (g.team === 'home') h++;
-    else a++;
-    g.scoreHome = h;
-    g.scoreAway = a;
-
-    if (g.period === '1st Half') {
-      if (g.team === 'home') htH++;
-      else htA++;
-    }
-  });
-
-  homeScore = h;
-  awayScore = a;
-  const homeScoreEl = document.getElementById('homeScoreDisplay');
-  const awayScoreEl = document.getElementById('awayScoreDisplay');
-  if (homeScoreEl) homeScoreEl.innerText = homeScore;
-  if (awayScoreEl) awayScoreEl.innerText = awayScore;
-
-  if (halfTimeScores.home !== null || halfTimeScores.away !== null) {
-    halfTimeScores = { home: htH, away: htA };
-  }
-
+  recalculateScoresFromGoals();
+  triggerScorePop(team);
   renderGoalTimeline();
   notifyScoreChange();
 
-  if (window.closeModal) {
-    window.closeModal('confirmConcludedGoalModal');
+  if (window.closeModal) window.closeModal('confirmConcludedGoalModal');
+
+  // In Coach Mode, let coach immediately attribute scorer on concluded goal too!
+  if (appMode === 'coach' && team === coachTeam) {
+    const insertedIdx = goals.findIndex(g => g.id === goalId);
+    if (insertedIdx >= 0) {
+      openGoalAttributionForExistingGoal(insertedIdx);
+    }
   }
 }
 
@@ -1697,26 +1874,20 @@ export function promptConcludedGoalRemoval(action) {
   let desc = 'This match is finished at Full Time. Are you sure you want to remove this goal and adjust the final score?';
   if (action.type === 'undo') {
     const last = goals[goals.length - 1];
-    if (last) {
-      desc = `Remove the last goal (${last.time} - ${last.teamName}) from this concluded match?`;
-    }
+    if (last) desc = `Remove the last goal (${last.time} - ${last.teamName}) from this concluded match?`;
   } else if (action.type === 'decrement') {
     const tName = teams[action.team]?.name || (action.team === 'home' ? 'Home Team' : 'Away Team');
     desc = `Remove the most recent goal for ${tName} and adjust the final score?`;
   } else if (action.type === 'removeIndex') {
     const target = goals[action.index];
-    if (target) {
-      desc = `Delete goal at ${target.time} (${target.period} - ${target.teamName}) from this concluded match?`;
-    }
+    if (target) desc = `Delete goal at ${target.time} (${target.period} - ${target.teamName}) from this concluded match?`;
   }
 
   if (descEl) descEl.innerText = desc;
   if (titleEl) titleEl.innerText = 'Adjust Concluded Score?';
   if (btnTextEl) btnTextEl.innerText = 'YES, REMOVE GOAL';
 
-  if (window.openModal) {
-    window.openModal('confirmConcludedScoreRemovalModal');
-  }
+  if (window.openModal) window.openModal('confirmConcludedScoreRemovalModal');
 }
 
 export function executeConcludedGoalRemoval() {
@@ -1724,9 +1895,7 @@ export function executeConcludedGoalRemoval() {
   const action = pendingRemovalAction;
   pendingRemovalAction = null;
 
-  if (window.closeModal) {
-    window.closeModal('confirmConcludedScoreRemovalModal');
-  }
+  if (window.closeModal) window.closeModal('confirmConcludedScoreRemovalModal');
 
   if (action.type === 'undo') {
     if (goals.length === 0) return;
@@ -1743,56 +1912,22 @@ export function executeConcludedGoalRemoval() {
   }
 }
 
-// Dynamic Undo Visibility & Tap Hint Toggle: Dim/hide until an event (like a goal) is actually logged
 export function updateUndoButtons() {
   const homeUndo = document.getElementById('homeUndoBtn');
   const awayUndo = document.getElementById('awayUndoBtn');
   const homeTapHint = document.getElementById('homeTapHint');
   const awayTapHint = document.getElementById('awayTapHint');
 
-  // When goals are logged, hide "TAP TO ADD GOAL" hint to keep card spacious
-  if (homeTapHint) {
-    if (homeScore > 0) homeTapHint.classList.add('hidden');
-    else homeTapHint.classList.remove('hidden');
-  }
-  if (awayTapHint) {
-    if (awayScore > 0) awayTapHint.classList.add('hidden');
-    else awayTapHint.classList.remove('hidden');
-  }
+  if (homeTapHint) homeTapHint.classList.toggle('hidden', homeScore > 0);
+  if (awayTapHint) awayTapHint.classList.toggle('hidden', awayScore > 0);
 
   if (homeUndo) {
-    if (homeScore > 0) {
-      homeUndo.classList.remove('undo-pill-hidden');
-      homeUndo.classList.add('undo-pill-visible');
-      homeUndo.style.display = 'inline-flex';
-      homeUndo.style.opacity = '1';
-      homeUndo.style.pointerEvents = 'auto';
-      homeUndo.style.visibility = 'visible';
-    } else {
-      homeUndo.classList.add('undo-pill-hidden');
-      homeUndo.classList.remove('undo-pill-visible');
-      homeUndo.style.display = 'none';
-      homeUndo.style.opacity = '0';
-      homeUndo.style.pointerEvents = 'none';
-      homeUndo.style.visibility = 'hidden';
-    }
+    homeUndo.classList.toggle('undo-pill-visible', homeScore > 0);
+    homeUndo.classList.toggle('undo-pill-hidden', homeScore <= 0);
   }
   if (awayUndo) {
-    if (awayScore > 0) {
-      awayUndo.classList.remove('undo-pill-hidden');
-      awayUndo.classList.add('undo-pill-visible');
-      awayUndo.style.display = 'inline-flex';
-      awayUndo.style.opacity = '1';
-      awayUndo.style.pointerEvents = 'auto';
-      awayUndo.style.visibility = 'visible';
-    } else {
-      awayUndo.classList.add('undo-pill-hidden');
-      awayUndo.classList.remove('undo-pill-visible');
-      awayUndo.style.display = 'none';
-      awayUndo.style.opacity = '0';
-      awayUndo.style.pointerEvents = 'none';
-      awayUndo.style.visibility = 'hidden';
-    }
+    awayUndo.classList.toggle('undo-pill-visible', awayScore > 0);
+    awayUndo.classList.toggle('undo-pill-hidden', awayScore <= 0);
   }
 }
 
@@ -1806,7 +1941,6 @@ export function renderGoalTimeline() {
 
   if (modalBadgeEl) modalBadgeEl.innerText = `${goals.length} Goal${goals.length === 1 ? '' : 's'}`;
 
-  // Update undo buttons visibility based on score
   updateUndoButtons();
 
   const homeGoals = goals.filter(g => g.team === 'home');
@@ -1819,18 +1953,21 @@ export function renderGoalTimeline() {
     const isOG = Boolean(g.isOwnGoal);
     let scorerText = '';
     if (!isOG && g.scorer) {
-      scorerText = g.scorer.initials ? ` #${g.scorer.number}` : ` #${g.scorer.number}`;
+      // Fixed: now displays player initials when present!
+      scorerText = g.scorer.initials
+        ? ` #${g.scorer.number} ${escapeHtml(g.scorer.initials)}`
+        : ` #${g.scorer.number}`;
     }
     if (isOG) {
       return `
-        <button type="button" onclick="openModal('timelineModal')" class="px-2 py-0.5 rounded-lg bg-amber-950/80 border border-amber-500/60 hover:border-amber-400 text-[11px] font-mono-sport font-black text-amber-300 flex items-center gap-1 shrink-0 active:scale-95 transition cursor-pointer shadow-sm" title="Own Goal at ${g.time} (Tap to view log)">
-          <span class="text-xs">⚠️</span><span class="tracking-wide">${g.time} OG</span>
+        <button type="button" onclick="openModal('timelineModal')" class="px-2 py-0.5 rounded-lg bg-amber-950/80 border border-amber-500/60 hover:border-amber-400 text-[11px] font-mono-sport font-black text-amber-300 flex items-center gap-1 shrink-0 active:scale-95 transition cursor-pointer shadow-sm" title="Own Goal at ${escapeHtml(g.time)} (Tap to view log)">
+          <span class="text-xs">⚠️</span><span class="tracking-wide">${escapeHtml(g.time)} OG</span>
         </button>
       `;
     }
     return `
-      <button type="button" onclick="openModal('timelineModal')" class="px-2 py-0.5 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-emerald-400 text-[11px] font-mono-sport font-black text-emerald-300 flex items-center gap-1 shrink-0 active:scale-95 transition cursor-pointer shadow-sm" title="Goal at ${g.time}${scorerText ? ' by ' + scorerText : ''} (Tap to view log)">
-        <span class="text-xs">⚽</span><span class="tracking-wide">${g.time}${scorerText}</span>
+      <button type="button" onclick="openModal('timelineModal')" class="px-2 py-0.5 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-emerald-400 text-[11px] font-mono-sport font-black text-emerald-300 flex items-center gap-1 shrink-0 active:scale-95 transition cursor-pointer shadow-sm" title="Goal at ${escapeHtml(g.time)}${scorerText} (Tap to view log)">
+        <span class="text-xs">⚽</span><span class="tracking-wide">${escapeHtml(g.time)}${scorerText}</span>
       </button>
     `;
   }
@@ -1852,12 +1989,8 @@ export function renderGoalTimeline() {
     `;
   }
 
-  if (homeChipsEl) {
-    homeChipsEl.innerHTML = renderChipsForTeam(homeGoals);
-  }
-  if (awayChipsEl) {
-    awayChipsEl.innerHTML = renderChipsForTeam(awayGoals);
-  }
+  if (homeChipsEl) homeChipsEl.innerHTML = renderChipsForTeam(homeGoals);
+  if (awayChipsEl) awayChipsEl.innerHTML = renderChipsForTeam(awayGoals);
 
   if (goals.length === 0) {
     if (modalListEl) modalListEl.innerHTML = '<div class="text-center py-6 text-slate-500 text-xs italic">No goals scored yet</div>';
@@ -1872,8 +2005,8 @@ export function renderGoalTimeline() {
       if (g.isOwnGoal) {
         attributionHtml = `<span class="text-amber-400 font-bold text-[11px] flex items-center gap-1"><span>⚠️</span><span>Own Goal</span></span>`;
       } else if (g.scorer) {
-        const sLabel = g.scorer.initials ? `#${g.scorer.number} ${g.scorer.initials}` : `#${g.scorer.number}`;
-        const aLabel = g.assist ? (g.assist.initials ? `#${g.assist.number} ${g.assist.initials}` : `#${g.assist.number}`) : '';
+        const sLabel = g.scorer.initials ? `#${g.scorer.number} ${escapeHtml(g.scorer.initials)}` : `#${g.scorer.number}`;
+        const aLabel = g.assist ? (g.assist.initials ? `#${g.assist.number} ${escapeHtml(g.assist.initials)}` : `#${g.assist.number}`) : '';
         attributionHtml = `
           <div class="flex items-center gap-2 text-[11px]">
             <span class="text-emerald-400 font-bold">⚽ ${sLabel}</span>
@@ -1888,13 +2021,13 @@ export function renderGoalTimeline() {
         <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2 truncate">
-              <span class="text-emerald-400 font-black font-mono-sport text-xs shrink-0">${g.time}</span>
-              <span class="text-[10px] text-slate-500 font-bold shrink-0">(${g.period})</span>
-              <span class="text-slate-200 font-semibold text-xs truncate">${g.teamName}</span>
+              <span class="text-emerald-400 font-black font-mono-sport text-xs shrink-0">${escapeHtml(g.time)}</span>
+              <span class="text-[10px] text-slate-500 font-bold shrink-0">(${escapeHtml(g.period)})</span>
+              <span class="text-slate-200 font-semibold text-xs truncate">${escapeHtml(g.teamName)}</span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <span class="font-mono-sport font-bold text-slate-300 text-xs">[ ${g.scoreHome} - ${g.scoreAway} ]</span>
-              <button onclick="window.removeGoal(${actualIdx})" class="text-slate-500 hover:text-rose-400 p-1" title="Delete goal">
+              <button onclick="window.removeGoal(${actualIdx})" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Delete goal">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
@@ -1913,51 +2046,38 @@ export function renderGoalTimeline() {
 
 export function applyTeamVisuals(side) {
   const t = teams[side];
-  const palette = KIT_PALETTE[t.color] || { hex: t.color, border: t.color, btnBg: t.color, btnBorder: t.color, btnText: '#ffffff' };
+  const palette = KIT_PALETTE[t.color] || { hex: t.color, border: t.color };
 
-  // 1. Team Name
   const nameEl = document.getElementById(side + 'TeamNameDisplay');
   if (nameEl) nameEl.innerText = t.name || (side === 'home' ? 'Home Team' : 'Away Team');
 
-  // 2. Badge Dot
   const dotEl = document.getElementById(side + 'BadgeDot');
   if (dotEl) {
     dotEl.style.backgroundColor = palette.hex;
     dotEl.style.borderColor = palette.hex === '#f8fafc' ? '#94a3b8' : 'rgba(255,255,255,0.6)';
   }
 
-  // 3. Label text color
   const labelEl = document.getElementById(side + 'Label');
   if (labelEl) labelEl.style.color = palette.hex === '#f8fafc' ? '#e2e8f0' : palette.hex;
 
-  // 4. Card Border & Top Kit Accent Stripe
   const cardEl = document.getElementById(side + 'CardContainer');
-  if (cardEl) cardEl.style.borderColor = palette.border;
-  const stripeEl = document.getElementById(side + 'KitStripe');
-  if (stripeEl) stripeEl.style.backgroundColor = palette.hex;
-
-  // 5. Massive '+' Scoring Button
-  const plusBtn = document.getElementById(side + 'PlusBtn');
-  if (plusBtn) {
-    plusBtn.style.backgroundColor = palette.btnBg;
-    plusBtn.style.borderColor = palette.btnBorder;
-    plusBtn.style.color = palette.btnText;
+  if (cardEl) {
+    cardEl.style.borderColor = palette.border;
+    cardEl.style.setProperty('--kit-accent', palette.hex);
   }
 }
 
 // Team Customization Modal Handlers
 export function openEditTeamModal(side) {
   const timerState = getTimerState();
-  if (timerState && timerState.isTimerRunning) {
-    return; // Suppress team edit modal during live play to prevent keyboard popping up
-  }
+  if (timerState && timerState.isTimerRunning) return;
 
   currentEditingTeam = side;
   const t = teams[side];
   const titleEl = document.getElementById('teamEditTitle');
   if (titleEl) {
     titleEl.innerHTML = `
-      <span class="w-3.5 h-3.5 rounded-full inline-block border border-white/40 shrink-0" style="background-color: ${t.color}"></span>
+      <span class="w-3.5 h-3.5 rounded-full inline-block border border-white/40 shrink-0" style="background-color: ${escapeHtml(t.color)}"></span>
       <span>Edit ${side === 'home' ? 'Home' : 'Away'} Team</span>
     `;
   }
@@ -1968,7 +2088,7 @@ export function openEditTeamModal(side) {
   const leagueSelect = document.getElementById('leagueTeamSelect');
   if (leagueSelect) {
     let matched = false;
-    for (let opt of leagueSelect.options) {
+    for (const opt of leagueSelect.options) {
       if (opt.value === t.name) {
         leagueSelect.value = t.name;
         matched = true;
@@ -2019,94 +2139,15 @@ export function renderTeamRosterEditor() {
 
   const roster = (t.roster && t.roster.length > 0) ? t.roster : createDefaultRoster();
 
-  listEl.innerHTML = roster.map((p, idx) => {
-    return `
-      <div class="p-1 rounded-lg bg-slate-950 border border-slate-800 flex items-center gap-1.5 focus-within:border-amber-400 transition">
-        <span class="w-6 h-6 rounded bg-slate-800 text-amber-300 font-mono-sport font-black text-[11px] flex items-center justify-center border border-slate-700 shrink-0">#${p.number}</span>
-        <input type="text" id="teamEditRosterInput_${p.number}" data-number="${p.number}" maxlength="3" placeholder="Initials" value="${p.initials || ''}"
-          oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '')"
-          class="team-edit-roster-input w-full bg-slate-900 border border-slate-700/80 focus:border-amber-400 rounded px-2 py-1 text-white font-mono-sport font-bold text-xs uppercase focus:outline-none"
-          onkeydown="if(event.key==='Enter'){ const inputs = document.querySelectorAll('.team-edit-roster-input'); if(inputs[${idx + 1}]) inputs[${idx + 1}].focus(); else saveTeamChanges(); }">
-      </div>
-    `;
-  }).join('');
-}
-
-export function editRosterPlayerModal(playerNumber) {
-  const t = teams[currentEditingTeam];
-  const player = (t.roster || []).find(p => p.number === playerNumber);
-  if (!player) return;
-
-  const numInput = document.getElementById('rosterPlayerNumInput');
-  const initInput = document.getElementById('rosterPlayerInitialsInput');
-  if (numInput) numInput.value = player.number;
-  if (initInput) initInput.value = player.initials || '';
-
-  window.openModal('rosterPlayerEditModal');
-  setTimeout(() => {
-    initInput?.focus();
-    initInput?.select();
-  }, 100);
-}
-
-export function openAddRosterPlayerModal() {
-  const t = teams[currentEditingTeam];
-  const roster = t.roster || [];
-  if (roster.length >= MAX_SQUAD_SIZE) {
-    alert(`Maximum squad size is ${MAX_SQUAD_SIZE} players.`);
-    return;
-  }
-
-  let nextNum = 1;
-  while (roster.some(p => p.number === nextNum)) {
-    nextNum++;
-  }
-
-  const numInput = document.getElementById('rosterPlayerNumInput');
-  const initInput = document.getElementById('rosterPlayerInitialsInput');
-  if (numInput) numInput.value = nextNum;
-  if (initInput) initInput.value = '';
-
-  window.openModal('rosterPlayerEditModal');
-  setTimeout(() => {
-    initInput?.focus();
-  }, 100);
-}
-
-export function saveRosterPlayer() {
-  const numInput = document.getElementById('rosterPlayerNumInput');
-  const initInput = document.getElementById('rosterPlayerInitialsInput');
-  const num = parseInt(numInput ? numInput.value : '0', 10);
-  const initials = (initInput ? initInput.value : '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3);
-
-  if (!num || num < 1 || num > 99) return;
-
-  const t = teams[currentEditingTeam];
-  if (!t.roster) t.roster = [];
-
-  const existingIdx = t.roster.findIndex(p => p.number === num);
-  if (existingIdx >= 0) {
-    t.roster[existingIdx].initials = initials;
-  } else {
-    if (t.roster.length >= MAX_SQUAD_SIZE) {
-      alert(`Maximum squad size is ${MAX_SQUAD_SIZE} players.`);
-      return;
-    }
-    t.roster.push({ number: num, initials });
-    t.roster.sort((a, b) => a.number - b.number);
-  }
-
-  renderTeamRosterEditor();
-  window.closeModal('rosterPlayerEditModal');
-  notifyScoreChange();
-}
-
-export function removeRosterPlayer(playerNumber) {
-  const t = teams[currentEditingTeam];
-  if (!t.roster) return;
-  t.roster = t.roster.filter(p => p.number !== playerNumber);
-  renderTeamRosterEditor();
-  notifyScoreChange();
+  listEl.innerHTML = roster.map((p, idx) => `
+    <div class="p-1 rounded-lg bg-slate-950 border border-slate-800 flex items-center gap-1.5 focus-within:border-amber-400 transition">
+      <span class="w-6 h-6 rounded bg-slate-800 text-amber-300 font-mono-sport font-black text-[11px] flex items-center justify-center border border-slate-700 shrink-0">#${p.number}</span>
+      <input type="text" id="teamEditRosterInput_${p.number}" data-number="${p.number}" maxlength="3" placeholder="Initials" value="${escapeHtml(p.initials || '')}"
+        oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '')"
+        class="team-edit-roster-input w-full bg-slate-900 border border-slate-700/80 focus:border-amber-400 rounded px-2 py-1 text-white font-mono-sport font-bold text-base sm:text-xs uppercase focus:outline-none"
+        onkeydown="if(event.key==='Enter'){ const inputs = document.querySelectorAll('.team-edit-roster-input'); if(inputs[${idx + 1}]) inputs[${idx + 1}].focus(); else saveTeamChanges(); }">
+    </div>
+  `).join('');
 }
 
 export function resetRosterToDefault() {
@@ -2121,15 +2162,6 @@ export function onLeagueTeamSelected(teamName) {
   const input = document.getElementById('teamNameInput');
   if (input) input.value = teamName;
   const found = LEAGUE_TEAMS.find(t => t.name === teamName);
-  if (found) {
-    selectKitColor(found.defaultColor, found.border);
-  }
-}
-
-export function setPresetTeamName(name) {
-  const input = document.getElementById('teamNameInput');
-  if (input) input.value = name;
-  const found = LEAGUE_TEAMS.find(t => t.name === name);
   if (found) {
     selectKitColor(found.defaultColor, found.border);
   }
@@ -2163,10 +2195,10 @@ export function updateSwatchSelection(activeColor) {
     const check = btn.querySelector('.swatch-check');
     if (color && color.toLowerCase() === (activeColor || '').toLowerCase()) {
       btn.classList.add('ring-2', 'ring-white');
-      if (check) check.classList.remove('hidden');
+      check?.classList.remove('hidden');
     } else {
       btn.classList.remove('ring-2', 'ring-white');
-      if (check) check.classList.add('hidden');
+      check?.classList.add('hidden');
     }
   });
 }
@@ -2178,7 +2210,6 @@ export function saveTeamChanges() {
   teams[currentEditingTeam].color = selectedColor;
   teams[currentEditingTeam].border = selectedBorder;
 
-  // Read direct 2-column roster inputs
   const rosterInputs = document.querySelectorAll('.team-edit-roster-input');
   if (rosterInputs.length > 0) {
     const updatedRoster = [];
@@ -2190,6 +2221,7 @@ export function saveTeamChanges() {
     teams[currentEditingTeam].roster = updatedRoster;
   }
 
+  ensureRotationSync();
   applyTeamVisuals(currentEditingTeam);
 
   goals.forEach(g => {
@@ -2198,104 +2230,31 @@ export function saveTeamChanges() {
     }
   });
   renderGoalTimeline();
-  updatePrematchDropdownValues();
   updateCoachTeamUI();
+  if (typeof window.updatePrematchUI === 'function') {
+    window.updatePrematchUI(teams.home.name, teams.away.name);
+  }
   notifyScoreChange();
   window.closeModal('teamEditModal');
 }
 
-export function onPrematchSelect(side, teamName) {
-  if (!teamName) return;
-  const teamObj = LEAGUE_TEAMS.find(t => t.name === teamName);
-  if (!teamObj) return;
-
-  teams[side].name = teamObj.name;
-  teams[side].color = teamObj.defaultColor;
-  teams[side].border = teamObj.border;
-
-  applyTeamVisuals(side);
-
-  goals.forEach(g => {
-    if (g.team === side) g.teamName = teamObj.name;
-  });
-  renderGoalTimeline();
-  updateCoachTeamUI();
-  notifyScoreChange();
-}
-
-export function swapTeams() {
-  const temp = { ...teams.home };
-  teams.home = { ...teams.away };
-  teams.away = temp;
-
-  const tempScore = homeScore;
-  homeScore = awayScore;
-  awayScore = tempScore;
-  document.getElementById('homeScoreDisplay').innerText = homeScore;
-  document.getElementById('awayScoreDisplay').innerText = awayScore;
-
-  applyTeamVisuals('home');
-  applyTeamVisuals('away');
-
-  goals.forEach(g => {
-    if (g.team === 'home') {
-      g.team = 'away';
-      g.teamName = teams.away.name;
-    } else {
-      g.team = 'home';
-      g.teamName = teams.home.name;
-    }
-    const sH = g.scoreHome;
-    g.scoreHome = g.scoreAway;
-    g.scoreAway = sH;
-  });
-
-  coachTeam = coachTeam === 'home' ? 'away' : 'home';
-  try {
-    localStorage.setItem('whatsthescoreref_coach_team', coachTeam);
-  } catch (e) {}
-  updateCoachTeamUI();
-
-  renderGoalTimeline();
-  updatePrematchDropdownValues();
-  notifyScoreChange();
-}
-
 export function initPrematchDropdowns() {
-  const homeSel = document.getElementById('prematchHomeSelect');
-  const awaySel = document.getElementById('prematchAwaySelect');
   const editSel = document.getElementById('leagueTeamSelect');
-
-  const teamOptions = LEAGUE_TEAMS.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
-  const selectTeamPrompt = `<option value="">-- Select Team --</option>`;
-
-  if (homeSel) homeSel.innerHTML = selectTeamPrompt + teamOptions;
-  if (awaySel) awaySel.innerHTML = selectTeamPrompt + teamOptions;
-  if (editSel) editSel.innerHTML = `<option value="">-- Choose Team from League Fixtures --</option>` + teamOptions;
-
-  updatePrematchDropdownValues();
-}
-
-export function updatePrematchDropdownValues() {
-  const homeSel = document.getElementById('prematchHomeSelect');
-  const awaySel = document.getElementById('prematchAwaySelect');
-  if (homeSel && teams.home?.name) homeSel.value = teams.home.name;
-  if (awaySel && teams.away?.name) awaySel.value = teams.away.name;
+  if (editSel) {
+    const teamOptions = LEAGUE_TEAMS.map(t => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)}</option>`).join('');
+    editSel.innerHTML = `<option value="">-- Choose Team from League Fixtures --</option>` + teamOptions;
+  }
 }
 
 // ---------------- Coach Mode Heads-Up Inline Touchline Bar Handlers ----------------
-let activeInlineTag = null; // { tag: 'Great Pressing', icon: '⚡', taggedMoments: {} } or 'POTM'
+let activeInlineTag = null;
 let inlineTagTimeout = null;
 let touchlineToastTimeout = null;
-let isMomentsDrawerOpen = false;
-let isNotesDrawerOpen = false;
 
 export function selectInlineTag(tag, icon) {
   activeInlineTag = { tag, icon, momentId: null, taggedPlayers: {} };
   clearTimeout(inlineTagTimeout);
-  inlineTagTimeout = setTimeout(() => {
-    cancelInlineTag();
-  }, 6000);
+  inlineTagTimeout = setTimeout(() => cancelInlineTag(), 6000);
   hapticFeedback('tap');
   renderTouchlineBarUI();
 }
@@ -2303,9 +2262,7 @@ export function selectInlineTag(tag, icon) {
 export function selectInlinePotmMode() {
   activeInlineTag = 'POTM';
   clearTimeout(inlineTagTimeout);
-  inlineTagTimeout = setTimeout(() => {
-    cancelInlineTag();
-  }, 8000);
+  inlineTagTimeout = setTimeout(() => cancelInlineTag(), 8000);
   hapticFeedback('tap');
   renderTouchlineBarUI();
 }
@@ -2337,9 +2294,7 @@ export function recordInlineMomentForPlayer(playerNumber) {
 
   const tag = activeInlineTag.tag;
   const icon = activeInlineTag.icon;
-  if (!activeInlineTag.taggedPlayers) {
-    activeInlineTag.taggedPlayers = {};
-  }
+  if (!activeInlineTag.taggedPlayers) activeInlineTag.taggedPlayers = {};
 
   const t = teams[coachTeam];
   const player = playerNumber === 'team'
@@ -2347,7 +2302,6 @@ export function recordInlineMomentForPlayer(playerNumber) {
     : ((t.roster || []).find(p => p.number === playerNumber) || { number: playerNumber, initials: '' });
   const pLabel = player ? (player.initials ? `#${player.number} ${player.initials}` : `#${player.number}`) : 'Entire Team';
 
-  // Toggle multi-player selection: group ALL selected players into a single moment card
   if (activeInlineTag.taggedPlayers[playerNumber]) {
     delete activeInlineTag.taggedPlayers[playerNumber];
 
@@ -2361,7 +2315,6 @@ export function recordInlineMomentForPlayer(playerNumber) {
         }
         moment.player = moment.players.length > 0 ? moment.players[0] : null;
 
-        // If no players remain in this active tag session, remove the moment card entirely
         if (moment.players.length === 0 && Object.keys(activeInlineTag.taggedPlayers).length === 0) {
           coachNotes.moments = coachNotes.moments.filter(m => m.id !== activeInlineTag.momentId);
           activeInlineTag.momentId = null;
@@ -2369,7 +2322,7 @@ export function recordInlineMomentForPlayer(playerNumber) {
       }
     }
     showTouchlineToast(`✕ Removed ${pLabel} from ${tag}`);
-    renderMatchNotesUI();
+    renderTouchlineBarUI();
     renderCoachMomentsModal();
     notifyScoreChange();
   } else {
@@ -2379,16 +2332,12 @@ export function recordInlineMomentForPlayer(playerNumber) {
       const moment = (coachNotes.moments || []).find(m => m.id === activeInlineTag.momentId);
       if (moment) {
         if (playerNumber === 'team') {
-          if (!moment.players.some(p => !p || p === 'team')) {
-            moment.players.push(null);
-          }
+          if (!moment.players.some(p => !p || p === 'team')) moment.players.push(null);
         } else {
-          if (!moment.players.some(p => p && p.number === player.number)) {
-            moment.players.push(player);
-          }
+          if (!moment.players.some(p => p && p.number === player.number)) moment.players.push(player);
         }
         moment.player = moment.players[0] || null;
-        renderMatchNotesUI();
+        renderTouchlineBarUI();
         renderCoachMomentsModal();
         notifyScoreChange();
       }
@@ -2404,12 +2353,8 @@ export function recordInlineMomentForPlayer(playerNumber) {
     showTouchlineToast(`✓ Logged ${icon} ${tag} (${currentNames})`);
   }
 
-  // Extend how long the pop-up shows after each press (resets to full 5.5s)
   clearTimeout(inlineTagTimeout);
-  inlineTagTimeout = setTimeout(() => {
-    cancelInlineTag();
-  }, 5500);
-
+  inlineTagTimeout = setTimeout(() => cancelInlineTag(), 5500);
   renderTouchlineBarUI();
 }
 
@@ -2428,12 +2373,7 @@ export function showTouchlineToast(message) {
 
 export function openCoachMomentsModal() {
   renderCoachMomentsModal();
-  if (typeof window.openModal === 'function') {
-    window.openModal('coachMomentsModal');
-  } else {
-    const m = document.getElementById('coachMomentsModal');
-    if (m) m.classList.remove('hidden');
-  }
+  if (typeof window.openModal === 'function') window.openModal('coachMomentsModal');
 }
 
 export function renderCoachMomentsModal() {
@@ -2441,10 +2381,7 @@ export function renderCoachMomentsModal() {
   const badgeEl = document.getElementById('coachMomentsModalBadge');
   const moments = coachNotes.moments || [];
 
-  if (badgeEl) {
-    badgeEl.innerText = `${moments.length} Moment${moments.length === 1 ? '' : 's'}`;
-  }
-
+  if (badgeEl) badgeEl.innerText = `${moments.length} Moment${moments.length === 1 ? '' : 's'}`;
   if (!listEl) return;
 
   if (moments.length === 0) {
@@ -2457,22 +2394,22 @@ export function renderCoachMomentsModal() {
     if (m.players && Array.isArray(m.players) && m.players.length > 0) {
       pLabel = m.players.map(p => {
         if (!p || p === 'team') return 'Entire Team';
-        return p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
+        return p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
       }).join(', ');
     } else if (m.player) {
-      pLabel = m.player.initials ? `#${m.player.number} ${m.player.initials}` : `#${m.player.number}`;
+      pLabel = m.player.initials ? `#${m.player.number} ${escapeHtml(m.player.initials)}` : `#${m.player.number}`;
     }
     return `
       <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 shadow-sm">
         <div class="flex items-center gap-2.5 min-w-0 overflow-hidden">
           <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-base shrink-0">
-            ${m.icon || '📋'}
+            ${escapeHtml(m.icon || '📋')}
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="text-amber-400 font-mono-sport font-black text-xs">${m.time}</span>
-              <span class="text-slate-400 text-[10px] font-bold">(${m.period})</span>
-              <span class="font-bold text-white text-xs">${m.tag}</span>
+              <span class="text-amber-400 font-mono-sport font-black text-xs">${escapeHtml(m.time)}</span>
+              <span class="text-slate-400 text-[10px] font-bold">(${escapeHtml(m.period)})</span>
+              <span class="font-bold text-white text-xs">${escapeHtml(m.tag)}</span>
             </div>
             <div class="text-[11px] text-amber-300/90 font-mono-sport font-semibold truncate" title="${pLabel}">
               ${pLabel}
@@ -2519,9 +2456,7 @@ export function copyCoachMoments() {
     navigator.clipboard.writeText(text).then(() => {
       showTouchlineToast('📋 Moments copied to clipboard!');
       hapticFeedback('success');
-    }).catch(() => {
-      fallbackCopyText(text);
-    });
+    }).catch(() => fallbackCopyText(text));
   } else {
     fallbackCopyText(text);
   }
@@ -2530,64 +2465,60 @@ export function copyCoachMoments() {
 function fallbackCopyText(text) {
   const ta = document.createElement('textarea');
   ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
+  ta.style.cssText = 'position:fixed;opacity:0;';
   document.body.appendChild(ta);
   ta.select();
   try {
     document.execCommand('copy');
     showTouchlineToast('📋 Moments copied to clipboard!');
     hapticFeedback('success');
-  } catch (e) {
+  } catch (_) {
     showTouchlineToast('Failed to copy moments');
   }
   document.body.removeChild(ta);
 }
 
+export function renderCoachNotesPotmPicker() {
+  const container = document.getElementById('coachNotesPotmChips');
+  if (!container) return;
+  const roster = teams[coachTeam]?.roster || createDefaultRoster();
+  container.innerHTML = roster.map(p => {
+    const isSelected = coachNotes.potm && coachNotes.potm.number === p.number;
+    const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
+    const btnClass = isSelected
+      ? 'py-1 px-2.5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs border border-yellow-200 shadow transition cursor-pointer flex items-center gap-1'
+      : 'py-1 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs border border-slate-700 transition cursor-pointer';
+    return `
+      <button type="button" onclick="setCoachPotm({ number: ${p.number}, initials: '${escapeHtml(p.initials || '')}' })" class="${btnClass}">
+        ${isSelected ? '⭐ ' : ''}<span>${label}</span>
+      </button>
+    `;
+  }).join('');
+}
+
 export function openCoachNotesModal() {
-  const modal = document.getElementById('coachNotesModal');
   const textarea = document.getElementById('coachNotesModalTextarea');
-  if (textarea) {
-    textarea.value = coachNotes.notes || '';
-  }
+  if (textarea) textarea.value = coachNotes.notes || '';
+  renderCoachNotesPotmPicker();
   hapticFeedback('tap');
-  if (window.openModal) {
-    window.openModal('coachNotesModal');
-  } else if (modal) {
-    modal.classList.remove('hidden');
-  }
-  setTimeout(() => {
-    if (textarea) {
-      textarea.focus();
-    }
-  }, 100);
+  if (window.openModal) window.openModal('coachNotesModal');
+  setTimeout(() => textarea?.focus(), 100);
 }
 
 export function saveCoachNotesModal() {
   const textarea = document.getElementById('coachNotesModalTextarea');
-  if (textarea) {
-    coachNotes.notes = textarea.value;
-  }
+  if (textarea) coachNotes.notes = textarea.value;
   hapticFeedback('success');
   notifyScoreChange();
   renderTouchlineBarUI();
-  if (window.closeModal) {
-    window.closeModal('coachNotesModal');
-  } else {
-    const modal = document.getElementById('coachNotesModal');
-    if (modal) modal.classList.add('hidden');
-  }
+  if (window.closeModal) window.closeModal('coachNotesModal');
 }
 
 export function insertCoachNotesPrompt(promptText) {
   const textarea = document.getElementById('coachNotesModalTextarea');
   if (!textarea) return;
   const current = textarea.value || '';
-  if (current.trim().length > 0) {
-    textarea.value = current.trimEnd() + '\n\n' + promptText;
-  } else {
-    textarea.value = promptText;
-  }
+  textarea.value = current.trim().length > 0 ? `${current.trimEnd()}\n\n${promptText}` : promptText;
   coachNotes.notes = textarea.value;
   notifyScoreChange();
   textarea.focus();
@@ -2596,13 +2527,11 @@ export function insertCoachNotesPrompt(promptText) {
 
 export function clearCoachNotesModalText() {
   const textarea = document.getElementById('coachNotesModalTextarea');
-  if (textarea) {
-    textarea.value = '';
-  }
+  if (textarea) textarea.value = '';
   coachNotes.notes = '';
   notifyScoreChange();
   renderTouchlineBarUI();
-  if (textarea) textarea.focus();
+  textarea?.focus();
 }
 
 export function toggleInlineNotesDrawer() {
@@ -2612,39 +2541,34 @@ export function toggleInlineNotesDrawer() {
 export function renderTouchlineBarUI() {
   const touchlineBar = document.getElementById('coachTouchlineBar');
   if (touchlineBar) {
-    if (appMode === 'coach') {
-      touchlineBar.classList.remove('hidden');
-    } else {
-      touchlineBar.classList.add('hidden');
-    }
+    touchlineBar.classList.toggle('hidden', appMode !== 'coach');
   }
 
-  // Badge count on Touchline Moments button
   const countBadge = document.getElementById('coachMomentsCountBadge');
   if (countBadge) {
-    const count = (coachNotes.moments ? coachNotes.moments.length : 0);
-    countBadge.innerText = count;
+    countBadge.innerText = coachNotes.moments ? coachNotes.moments.length : 0;
   }
 
-  // Update POTM Touchline Badge in header
   const potmBadge = document.getElementById('coachTouchlinePotmBadge');
   const potmText = document.getElementById('coachTouchlinePotmText');
   if (potmBadge && potmText) {
-    if (appMode === 'coach' && coachNotes && coachNotes.potm) {
+    if (appMode === 'coach') {
       potmBadge.classList.remove('hidden');
       potmBadge.classList.add('inline-flex');
-      const p = coachNotes.potm;
-      potmText.innerText = `#${p.number}${p.initials ? ' ' + p.initials : ''}`;
+      if (coachNotes && coachNotes.potm) {
+        const p = coachNotes.potm;
+        potmText.innerText = `#${p.number}${p.initials ? ' ' + p.initials : ''}`;
+      } else {
+        potmText.innerText = 'POTM';
+      }
     } else {
       potmBadge.classList.add('hidden');
       potmBadge.classList.remove('inline-flex');
     }
   }
 
-  // Also update modal if visible
   renderCoachMomentsModal();
 
-  // Full Time POTM Prompt Card on Main Screen
   const ftPotmCard = document.getElementById('coachTouchlinePotmPrompt');
   const ftPotmChips = document.getElementById('coachTouchlinePotmChips');
   const timerState = getTimerState();
@@ -2658,12 +2582,12 @@ export function renderTouchlineBarUI() {
 
       ftPotmChips.innerHTML = roster.map(p => {
         const isSelected = coachNotes.potm && coachNotes.potm.number === p.number;
-        const label = p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
+        const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
         const btnClass = isSelected
           ? 'py-1 px-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs border-2 border-yellow-200 shadow scale-105 transition cursor-pointer flex items-center gap-1'
           : 'py-1 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs border border-slate-700 transition cursor-pointer';
         return `
-          <button type="button" onclick="setCoachPotm({ number: ${p.number}, initials: '${p.initials || ''}' })" class="${btnClass}">
+          <button type="button" onclick="setCoachPotm({ number: ${p.number}, initials: '${escapeHtml(p.initials || '')}' })" class="${btnClass}">
             ${isSelected ? '⭐ ' : ''}<span>${label}</span>
           </button>
         `;
@@ -2674,11 +2598,11 @@ export function renderTouchlineBarUI() {
         if (hasPotm) {
           actionsContainer.innerHTML = `
             <div class="mt-2 pt-2 border-t border-amber-500/30 flex flex-col gap-1.5 animate-fadeIn">
-              <button type="button" onclick="openModal('reportModal')" class="w-full py-2 px-3 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
-                <span>📋</span><span>Open Match Report & Share Card ›</span>
+              <button type="button" onclick="openReportModal()" class="w-full py-2 px-3 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
+                <span>📋</span><span>Open Match Report &amp; Share Card ›</span>
               </button>
               <div class="flex items-center justify-between text-[10px] text-amber-300/80 px-0.5">
-                <span>⭐ POTM: #${coachNotes.potm.number}${coachNotes.potm.initials ? ' ' + coachNotes.potm.initials : ''}</span>
+                <span>⭐ POTM: #${coachNotes.potm.number}${coachNotes.potm.initials ? ' ' + escapeHtml(coachNotes.potm.initials) : ''}</span>
                 <button type="button" onclick="toggleFullTimeMomentTags()" class="text-amber-400 hover:text-white font-bold underline cursor-pointer">
                   ${showFullTimeMomentTags ? 'Hide Quick Tags ▴' : 'Show Quick Tags ▾'}
                 </button>
@@ -2701,7 +2625,6 @@ export function renderTouchlineBarUI() {
     }
   }
 
-  // Default Row vs Active Tag Row
   const defaultRow = document.getElementById('coachTouchlineDefaultRow');
   const activeRow = document.getElementById('coachTouchlineActiveRow');
   const activePrompt = document.getElementById('coachTouchlineActivePrompt');
@@ -2714,13 +2637,13 @@ export function renderTouchlineBarUI() {
 
       if (activeInlineTag === 'POTM') {
         if (activePrompt) {
-          activePrompt.innerHTML = `<span>⭐ <strong>Select POTM</strong> (Player of the Match):</span>`;
+          activePrompt.innerHTML = `<span>⭐ <strong>Select POTM</strong> (Tap again to clear):</span>`;
         }
         if (chipsEl) {
           const roster = teams[coachTeam]?.roster || [];
           chipsEl.innerHTML = roster.map(p => {
             const isSelected = coachNotes.potm && coachNotes.potm.number === p.number;
-            const label = p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
+            const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
             const btnClass = isSelected
               ? 'py-1.5 px-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs border-2 border-yellow-200 shadow-md scale-105 transition cursor-pointer flex items-center gap-1'
               : 'py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs border border-slate-700 transition cursor-pointer';
@@ -2732,10 +2655,10 @@ export function renderTouchlineBarUI() {
           }).join('');
         }
       } else {
-        const tagged = activeInlineTag.taggedPlayers || activeInlineTag.taggedMoments || {};
+        const tagged = activeInlineTag.taggedPlayers || {};
         const countTagged = Object.keys(tagged).length;
         if (activePrompt) {
-          activePrompt.innerHTML = `<span>Who showed <strong>${activeInlineTag.icon} ${activeInlineTag.tag}</strong>?${countTagged > 0 ? ` <span class="text-amber-400 font-bold">(${countTagged} tagged)</span>` : ''}</span>`;
+          activePrompt.innerHTML = `<span>Who showed <strong>${escapeHtml(activeInlineTag.icon)} ${escapeHtml(activeInlineTag.tag)}</strong>?${countTagged > 0 ? ` <span class="text-amber-400 font-bold">(${countTagged} tagged)</span>` : ''}</span>`;
         }
         if (chipsEl) {
           const roster = teams[coachTeam]?.roster || [];
@@ -2753,7 +2676,7 @@ export function renderTouchlineBarUI() {
           }
           roster.forEach(p => {
             const isTagged = Boolean(tagged[p.number]);
-            const label = p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
+            const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
             const btnClass = isTagged
               ? 'py-1.5 px-2.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs border-2 border-yellow-200 shadow-md scale-105 transition cursor-pointer flex items-center gap-1'
               : 'py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-slate-200 font-bold text-xs border border-slate-700 transition cursor-pointer';
@@ -2768,15 +2691,10 @@ export function renderTouchlineBarUI() {
       }
     } else {
       activeRow.classList.add('hidden');
-      if (appMode === 'coach' && isFT && !showFullTimeMomentTags) {
-        defaultRow.classList.add('hidden');
-      } else {
-        defaultRow.classList.remove('hidden');
-      }
+      defaultRow.classList.toggle('hidden', Boolean(appMode === 'coach' && isFT && !showFullTimeMomentTags));
     }
   }
 
-  // Notes Button Active Indicator
   const notesToggleBtn = document.getElementById('coachNotesToggleBtn');
   if (notesToggleBtn) {
     const hasNotes = Boolean(coachNotes.notes && coachNotes.notes.trim().length > 0);
@@ -2790,10 +2708,8 @@ export function renderTouchlineBarUI() {
   }
 }
 
-// Backwards compatibility aliases
 export const renderMatchNotesUI = renderTouchlineBarUI;
 export const selectMomentTag = selectInlineTag;
 export const cancelMomentTagSelection = cancelInlineTag;
 export const recordMomentForPlayer = recordInlineMomentForPlayer;
-export const toggleInlineMomentsDrawer = openCoachMomentsModal;
 export function openMatchNotesModal() { openCoachNotesModal(); }

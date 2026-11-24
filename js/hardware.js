@@ -1,17 +1,22 @@
 // What's The Score Ref - Hardware Integration Module
-// Dual-Layer Screen Wake Lock (Native Wake Lock API + iOS Video Fallback), Web Audio Whistle Synthesizer, Haptic Vibration
+// Battery-Smart Screen Wake Lock (Native Wake Lock API + iOS Fallback), Web Audio Synthesizer, Haptic Vibration
+import { loadPrefs, savePrefs } from './storage.js';
 
 const NO_SLEEP_MP4 = 'data:video/mp4;base64,AAAAHGZ0eXBNNFYgAAACAGlzb21pc28yYXZjMQAAAAhmcmVlAAAGF21kYXTeBAAAbGliZmFhYyAxLjI4AABCAJMgBDIARwAAArEGBf//rdxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNDIgcjIgOTU2YzhkOCAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMTQgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0wIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDE6MHgxMTEgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTAgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz02IGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCB2YnZfbWF4cmF0ZT03NjggdmJ2X2J1ZnNpemU9MzAwMCBjcmZfbWF4PTAuMCBuYWxfaHJkPW5vbmUgZmlsbGVyPTAgaXBfcmF0aW89MS40MCBhcT0xOjEuMDAAgAAAAFZliIQL8mKAAKvMnJycnJycnJycnXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXiEASZACGQAjgCEASZACGQAjgAAAAAdBmjgX4GSAIQBJkAIZACOAAAAAB0GaVAX4GSAhAEmQAhkAI4AhAEmQAhkAI4AAAAAGQZpgL8DJIQBJkAIZACOAIQBJkAIZACOAAAAABkGagC/AySEASZACGQAjgAAAAAZBmqAvwMkhAEmQAhkAI4AhAEmQAhkAI4AAAAAGQZrAL8DJIQBJkAIZACOAAAAABkGa4C/AySEASZACGQAjgCEASZACGQAjgAAAAAZBmwAvwMkhAEmQAhkAI4AAAAAGQZsgL8DJIQBJkAIZACOAIQBJkAIZACOAAAAABkGbQC/AySEASZACGQAjgCEASZACGQAjgAAAAAZBm2AvwMkhAEmQAhkAI4AAAAAGQZuAL8DJIQBJkAIZACOAIQBJkAIZACOAAAAABkGboC/AySEASZACGQAjgAAAAAZBm8AvwMkhAEmQAhkAI4AhAEmQAhkAI4AAAAAGQZvgL8DJIQBJkAIZACOAAAAABkGaAC/AySEASZACGQAjgCEASZACGQAjgAAAAAZBmiAvwMkhAEmQAhkAI4AhAEmQAhkAI4AAAAAGQZpAL8DJIQBJkAIZACOAAAAABkGaYC/AySEASZACGQAjgCEASZACGQAjgAAAAAZBmoAvwMkhAEmQAhkAI4AAAAAGQZqgL8DJIQBJkAIZACOAIQBJkAIZACOAAAAABkGawC/AySEASZACGQAjgAAAAAZBmuAvwMkhAEmQAhkAI4AhAEmQAhkAI4AAAAAGQZsAL8DJIQBJkAIZACOAAAAABkGbIC/AySEASZACGQAjgCEASZACGQAjgAAAAAZBm0AvwMkhAEmQAhkAI4AhAEmQAhkAI4AAAAAGQZtgL8DJIQBJkAIZACOAAAAABkGbgCvAySEASZACGQAjgCEASZACGQAjgAAAAAZBm6AnwMkhAEmQAhkAI4AhAEmQAhkAI4AhAEmQAhkAI4AhAEmQAhkAI4AAAAhubW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAABDcAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAzB0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAA+kAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAALAAAACQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAPpAAAAAAABAAAAAAKobWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAB1MAAAdU5VxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAACU21pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAhNzdGJsAAAAr3N0c2QAAAAAAAAAAQAAAJ9hdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAALAAkABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAALWF2Y0MBQsAN/+EAFWdCwA3ZAsTsBEAAAPpAADqYA8UKkgEABWjLg8sgAAAAHHV1aWRraEDyXyRPxbo5pRvPAyPzAAAAAAAAABhzdHRzAAAAAAAAAAEAAAAeAAAD6QAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAABAAAAAQAAAIxzdHN6AAAAAAAAAAAAAAAeAAADDwAAAAsAAAALAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAAiHN0Y28AAAAAAAAAHgAAAEYAAANnAAADewAAA5gAAAO0AAADxwAAA+MAAAP2AAAEEgAABCUAAARBAAAEXQAABHAAAASMAAAEnwAABLsAAATOAAAE6gAABQYAAAUZAAAFNQAABUgAAAVkAAAFdwAABZMAAAWmAAAFwgAABd4AAAXxAAAGDQAABGh0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAACAAAAAAAABDcAAAAAAAAAAAAAAAEBAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAQkAAADcAABAAAAAAPgbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAC7gAAAykBVxAAAAAAALWhkbHIAAAAAAAAAAHNvdW4AAAAAAAAAAAAAAABTb3VuZEhhbmRsZXIAAAADi21pbmYAAAAQc21oZAAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAADT3N0YmwAAABnc3RzZAAAAAAAAAABAAAAV21wNGEAAAAAAAAAAQAAAAAAAAAAAAIAEAAAAAC7gAAAAAAAM2VzZHMAAAAAA4CAgCIAAgAEgICAFEAVBbjYAAu4AAAADcoFgICAAhGQBoCAgAECAAAAIHN0dHMAAAAAAAAAAgAAADIAAAQAAAAAAQAAAkAAAAFUc3RzYwAAAAAAAAAbAAAAAQAAAAEAAAABAAAAAgAAAAIAAAABAAAAAwAAAAEAAAABAAAABAAAAAIAAAABAAAABgAAAAEAAAABAAAABwAAAAIAAAABAAAACAAAAAEAAAABAAAACQAAAAIAAAABAAAACgAAAAEAAAABAAAACwAAAAIAAAABAAAADQAAAAEAAAABAAAADgAAAAIAAAABAAAADwAAAAEAAAABAAAAEAAAAAIAAAABAAAAEQAAAAEAAAABAAAAEgAAAAIAAAABAAAAFAAAAAEAAAABAAAAFQAAAAIAAAABAAAAFgAAAAEAAAABAAAAFwAAAAIAAAABAAAAGAAAAAEAAAABAAAAGQAAAAIAAAABAAAAGgAAAAEAAAABAAAAGwAAAAIAAAABAAAAHQAAAAEAAAABAAAAHgAAAAIAAAABAAAAHwAAAAQAAAABAAAA4HN0c3oAAAAAAAAAAAAAADMAAAAaAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAACMc3RjbwAAAAAAAAAfAAAALAAAA1UAAANyAAADhgAAA6IAAAO+AAAD0QAAA+0AAAQAAAAEHAAABC8AAARLAAAEZwAABHoAAASWAAAEqQAABMUAAATYAAAE9AAABRAAAAUjAAAFPwAABVIAAAVuAAAFgQAABZ0AAAWwAAAFzAAABegAAAX7AAAGFwAAAGJ1ZHRhAAAAWm1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNTUuMzMuMTAw';
+
+const initialPrefs = loadPrefs();
 
 let wakeLockSentinel = null;
 let noSleepVideo = null;
 let wakeCanvas = null;
-let wakeCanvasAnimId = null;
+let wakeCanvasTimerId = null;
 let isCanvasActive = false;
-let isWakeLockRequested = true;
+let isWakeLockRequested = initialPrefs.wakeLockEnabled !== false;
 let isVideoPlaying = false;
 let hasBoundInteractions = false;
+let lastGestureCheckTime = 0;
 let audioCtx = null;
+let isAudioMuted = Boolean(initialPrefs.audioMuted);
 
 // iOS Device Detection (iPhone, iPad, iPod, iPadOS)
 export function isIOSDevice() {
@@ -22,7 +27,7 @@ export function isIOSDevice() {
   );
 }
 
-// Initialize or resume Web Audio Context on first user interaction
+// Initialize or resume Web Audio Context on user interaction
 function getAudioContext() {
   if (!audioCtx && typeof window !== 'undefined') {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -36,23 +41,15 @@ function getAudioContext() {
   return audioCtx;
 }
 
-
-// 1. Active Foreground Canvas Keep-Alive (Sub-perceptible WebKit compositor keep-awake)
+// Low-Power Fallback Canvas Keep-Alive (2Hz instead of 60fps, only used when native Wake Lock & Video fail)
 function initWakeCanvas() {
   if (wakeCanvas || typeof document === 'undefined') return wakeCanvas;
   wakeCanvas = document.createElement('canvas');
   wakeCanvas.id = 'wakeKeepAliveCanvas';
-  wakeCanvas.width = 10;
-  wakeCanvas.height = 10;
+  wakeCanvas.width = 4;
+  wakeCanvas.height = 4;
   wakeCanvas.setAttribute('aria-hidden', 'true');
-  wakeCanvas.style.position = 'fixed';
-  wakeCanvas.style.bottom = '0px';
-  wakeCanvas.style.right = '0px';
-  wakeCanvas.style.width = '10px';
-  wakeCanvas.style.height = '10px';
-  wakeCanvas.style.opacity = '0.02';
-  wakeCanvas.style.pointerEvents = 'none';
-  wakeCanvas.style.zIndex = '1';
+  wakeCanvas.style.cssText = 'position:fixed;bottom:0;right:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:1;';
 
   if (document.body) {
     document.body.appendChild(wakeCanvas);
@@ -67,38 +64,34 @@ function initWakeCanvas() {
 }
 
 let canvasFrameCount = 0;
-function renderCanvasFrame() {
+function renderCanvasTick() {
   if (!isCanvasActive) return;
   const canvas = initWakeCanvas();
   if (canvas) {
     const ctx = canvas.getContext('2d');
     if (ctx) {
       canvasFrameCount++;
-      ctx.fillStyle = (canvasFrameCount % 2 === 0) ? 'rgba(16, 185, 129, 0.05)' : 'rgba(245, 158, 11, 0.05)';
-      ctx.fillRect(0, 0, 10, 10);
+      ctx.fillStyle = (canvasFrameCount % 2 === 0) ? 'rgba(16, 185, 129, 0.04)' : 'rgba(245, 158, 11, 0.04)';
+      ctx.fillRect(0, 0, 4, 4);
     }
   }
-  wakeCanvasAnimId = requestAnimationFrame(renderCanvasFrame);
+  wakeCanvasTimerId = setTimeout(renderCanvasTick, 500);
 }
 
 export function startCanvasKeepAlive() {
   if (isCanvasActive) return;
   isCanvasActive = true;
   initWakeCanvas();
-  if (typeof requestAnimationFrame !== 'undefined') {
-    wakeCanvasAnimId = requestAnimationFrame(renderCanvasFrame);
-  }
+  renderCanvasTick();
 }
 
 export function stopCanvasKeepAlive() {
   isCanvasActive = false;
-  if (wakeCanvasAnimId && typeof cancelAnimationFrame !== 'undefined') {
-    cancelAnimationFrame(wakeCanvasAnimId);
-    wakeCanvasAnimId = null;
+  if (wakeCanvasTimerId) {
+    clearTimeout(wakeCanvasTimerId);
+    wakeCanvasTimerId = null;
   }
 }
-
-
 
 // Lazy-create hidden looping video element for iOS Safari / WebKit wake lock fallback
 function getNoSleepVideo() {
@@ -115,17 +108,7 @@ function getNoSleepVideo() {
     noSleepVideo.loop = true;
     noSleepVideo.playsInline = true;
     noSleepVideo.preload = 'auto';
-
-    // In-viewport inline styling: Keeps WebKit compositor active without obstructing UI
-    noSleepVideo.style.position = 'fixed';
-    noSleepVideo.style.bottom = '0px';
-    noSleepVideo.style.right = '0px';
-    noSleepVideo.style.width = '2px';
-    noSleepVideo.style.height = '2px';
-    noSleepVideo.style.opacity = '0.01';
-    noSleepVideo.style.pointerEvents = 'none';
-    noSleepVideo.style.zIndex = '1';
-
+    noSleepVideo.style.cssText = 'position:fixed;bottom:0;right:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:1;';
     noSleepVideo.src = NO_SLEEP_MP4;
 
     noSleepVideo.addEventListener('playing', () => {
@@ -134,7 +117,6 @@ function getNoSleepVideo() {
     });
 
     noSleepVideo.addEventListener('timeupdate', () => {
-      // Loop smoothly before the end
       if (noSleepVideo.duration && noSleepVideo.currentTime >= noSleepVideo.duration - 0.2) {
         noSleepVideo.currentTime = 0;
       }
@@ -142,14 +124,7 @@ function getNoSleepVideo() {
 
     noSleepVideo.addEventListener('pause', () => {
       isVideoPlaying = false;
-      if (isWakeLockRequested && typeof document !== 'undefined' && document.visibilityState === 'visible') {
-        noSleepVideo.play().catch(() => {});
-      }
-    });
-
-    noSleepVideo.addEventListener('ended', () => {
-      if (isWakeLockRequested) {
-        noSleepVideo.currentTime = 0;
+      if (isWakeLockRequested && !wakeLockSentinel && typeof document !== 'undefined' && document.visibilityState === 'visible') {
         noSleepVideo.play().catch(() => {});
       }
     });
@@ -167,7 +142,6 @@ function getNoSleepVideo() {
   return noSleepVideo;
 }
 
-// Watchdog timer: Automatically re-asserts wake lock if iOS drops it
 let wakeWatchdogInterval = null;
 
 function startWakeWatchdog() {
@@ -176,27 +150,22 @@ function startWakeWatchdog() {
     if (!isWakeLockRequested) return;
     if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
 
-    // Check 1: Native screen wake lock
-    if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
-      if (!wakeLockSentinel) {
-        try {
-          wakeLockSentinel = await navigator.wakeLock.request('screen');
-        } catch (e) {}
-      }
+    if (typeof navigator !== 'undefined' && 'wakeLock' in navigator && !wakeLockSentinel) {
+      try {
+        wakeLockSentinel = await navigator.wakeLock.request('screen');
+        if (wakeLockSentinel && !isIOSDevice()) {
+          stopCanvasKeepAlive();
+          if (noSleepVideo && !noSleepVideo.paused) noSleepVideo.pause();
+        }
+      } catch (_) {}
     }
 
-    // Check 2: Looping video playback
-    if (noSleepVideo && (noSleepVideo.paused || noSleepVideo.ended)) {
+    if (!wakeLockSentinel && noSleepVideo && (noSleepVideo.paused || noSleepVideo.ended)) {
       noSleepVideo.play().catch(() => {});
     }
 
-    // Check 3: Canvas compositor keep-alive
-    if (!isCanvasActive) {
-      startCanvasKeepAlive();
-    }
-
     updateWakeStatusUI(isAwake());
-  }, 3000);
+  }, 5000);
 }
 
 function stopWakeWatchdog() {
@@ -206,28 +175,24 @@ function stopWakeWatchdog() {
   }
 }
 
-// Audio Keep-Alive for iOS WebKit media thread persistence
+// Audio Keep-Alive for iOS WebKit media thread persistence (only engaged on iOS during live play)
 let audioKeepAliveNode = null;
 
 export function enableAudioKeepAlive() {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !isIOSDevice()) return;
   const ctx = getAudioContext();
   if (!ctx) return;
-
-  if (ctx.state === 'suspended') {
-    ctx.resume().catch(() => {});
-  }
 
   if (!audioKeepAliveNode) {
     try {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      gain.gain.value = 0.00001; // Silent carrier to hold iOS audio/media thread active
+      gain.gain.value = 0.00001;
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
       audioKeepAliveNode = osc;
-    } catch (e) {}
+    } catch (_) {}
   }
 }
 
@@ -236,61 +201,56 @@ export function disableAudioKeepAlive() {
     try {
       audioKeepAliveNode.stop();
       audioKeepAliveNode.disconnect();
-    } catch (e) {}
+    } catch (_) {}
     audioKeepAliveNode = null;
   }
 }
 
-// 1. DUAL-LAYER SCREEN WAKE LOCK API (Native + iOS Video Assertion)
+// Battery-Smart Screen Wake Lock API (Native first; fallback layers only when needed)
 export async function requestWakeLock() {
-  isWakeLockRequested = true;
+  if (!isWakeLockRequested) {
+    updateWakeStatusUI(false);
+    return false;
+  }
+
   let nativeSuccess = false;
   let videoSuccess = false;
 
-  // Layer 1: Native Screen Wake Lock API
+  // Layer 1: Native Screen Wake Lock API (0% CPU/GPU battery overhead)
   if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
-    try {
-      wakeLockSentinel = await navigator.wakeLock.request('screen');
+    if (wakeLockSentinel) {
       nativeSuccess = true;
-      updateWakeStatusUI(true);
-
-      wakeLockSentinel.addEventListener('release', () => {
-        wakeLockSentinel = null;
-        if (isWakeLockRequested) {
-          if (isVideoPlaying) {
-            updateWakeStatusUI(true);
-          } else {
+    } else {
+      try {
+        wakeLockSentinel = await navigator.wakeLock.request('screen');
+        nativeSuccess = true;
+        wakeLockSentinel.addEventListener('release', () => {
+          wakeLockSentinel = null;
+          if (isWakeLockRequested && typeof document !== 'undefined' && document.visibilityState === 'visible') {
             playFallbackVideo();
+          } else if (!isWakeLockRequested) {
+            updateWakeStatusUI(false);
           }
-        } else {
-          updateWakeStatusUI(false);
-        }
-      });
-    } catch (err) {
-      // Expected on iOS when called outside of transient user activation or in Low Power Mode
-      console.warn('Native Wake Lock request rejected/failed:', err?.name || err);
+        });
+      } catch (err) {
+        console.warn('Native Wake Lock unavailable/rejected:', err?.name || err);
+      }
     }
   }
 
-  // Layer 2: iOS Video Fallback
-  const isIOS = isIOSDevice();
-  if (isIOS || !nativeSuccess) {
+  // Layer 2: iOS / Non-native fallback only when native Wake Lock did not succeed (or on older iOS)
+  if (!nativeSuccess) {
     videoSuccess = await playFallbackVideo();
+    if (!videoSuccess) {
+      startCanvasKeepAlive();
+    }
+    startWakeWatchdog();
+  } else {
+    stopCanvasKeepAlive();
   }
-
-  // Layer 3: Foreground Video Canvas Keep-Alive (WebKit Compositor Engine)
-  startCanvasKeepAlive();
-
-  // Layer 4: Web Audio Carrier & Watchdog Monitoring
-  enableAudioKeepAlive();
-  startWakeWatchdog();
 
   const active = nativeSuccess || videoSuccess || isCanvasActive;
-  if (active) {
-    updateWakeStatusUI(true);
-  } else if (!isWakeLockRequested) {
-    updateWakeStatusUI(false);
-  }
+  updateWakeStatusUI(active || isWakeLockRequested);
   return active;
 }
 
@@ -300,16 +260,12 @@ async function playFallbackVideo() {
     if (!video) return false;
     video.muted = true;
     video.defaultMuted = true;
-    if (video.ended) {
-      video.currentTime = 0;
-    }
+    if (video.ended) video.currentTime = 0;
     const playPromise = video.play();
-    if (playPromise !== undefined) {
-      await playPromise;
-    }
+    if (playPromise !== undefined) await playPromise;
     isVideoPlaying = !video.paused;
     return isVideoPlaying;
-  } catch (err) {
+  } catch (_) {
     isVideoPlaying = false;
     return false;
   }
@@ -317,6 +273,7 @@ async function playFallbackVideo() {
 
 export async function releaseWakeLock() {
   isWakeLockRequested = false;
+  savePrefs({ wakeLockEnabled: false });
   stopWakeWatchdog();
   stopCanvasKeepAlive();
   disableAudioKeepAlive();
@@ -324,9 +281,7 @@ export async function releaseWakeLock() {
   if (wakeLockSentinel) {
     try {
       await wakeLockSentinel.release();
-    } catch (err) {
-      console.warn('Wake Lock release failed:', err);
-    }
+    } catch (_) {}
     wakeLockSentinel = null;
   }
 
@@ -334,10 +289,9 @@ export async function releaseWakeLock() {
     try {
       noSleepVideo.pause();
       noSleepVideo.currentTime = 0;
-    } catch (err) {}
+    } catch (_) {}
   }
   isVideoPlaying = false;
-
   updateWakeStatusUI(false);
 }
 
@@ -345,12 +299,19 @@ export function isAwake() {
   return !!wakeLockSentinel || isVideoPlaying || isCanvasActive;
 }
 
+export function isWakeLockEnabled() {
+  return isWakeLockRequested;
+}
+
 export function toggleWakeLock() {
-  if (isAwake()) {
+  if (isWakeLockRequested) {
     releaseWakeLock();
   } else {
+    isWakeLockRequested = true;
+    savePrefs({ wakeLockEnabled: true });
     requestWakeLock();
   }
+  hapticFeedback('tap');
 }
 
 export function updateWakeStatusUI(isActive) {
@@ -366,7 +327,7 @@ export function updateWakeStatusUI(isActive) {
     btn.className = 'flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-900 border border-emerald-500/50 cursor-pointer shadow-sm active:scale-95 transition shrink-0';
     btn.innerHTML = `
       <span class="text-xs font-black text-emerald-400 font-mono-sport tracking-wider">ON</span>
-      <span class="w-8 h-4.5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end transition-colors shadow-inner">
+      <span class="w-8 h-5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end transition-colors shadow-inner">
         <span class="w-3.5 h-3.5 rounded-full bg-slate-950 shadow-md"></span>
       </span>
     `;
@@ -374,34 +335,27 @@ export function updateWakeStatusUI(isActive) {
     btn.className = 'flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-900 border border-slate-700/60 cursor-pointer shadow-sm active:scale-95 transition shrink-0';
     btn.innerHTML = `
       <span class="text-xs font-bold text-slate-400 font-mono-sport tracking-wider">OFF</span>
-      <span class="w-8 h-4.5 bg-slate-800 border border-slate-700 rounded-full p-0.5 flex items-center justify-start transition-colors">
+      <span class="w-8 h-5 bg-slate-800 border border-slate-700 rounded-full p-0.5 flex items-center justify-start transition-colors">
         <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm"></span>
       </span>
     `;
   }
 }
 
-// Global user interaction listener to satisfy iOS Safari transient user gesture requirements
 export function rearmWakeLock() {
   if (!isWakeLockRequested) return;
   if (!wakeLockSentinel && typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
     navigator.wakeLock.request('screen').then(s => {
       wakeLockSentinel = s;
+      stopCanvasKeepAlive();
       updateWakeStatusUI(true);
       s.addEventListener('release', () => {
         wakeLockSentinel = null;
-        if (isWakeLockRequested) rearmWakeLock();
       });
     }).catch(() => {});
-  }
-  if (!isVideoPlaying && noSleepVideo) {
+  } else if (!wakeLockSentinel && !isVideoPlaying && noSleepVideo) {
     noSleepVideo.play().catch(() => {});
   }
-  if (!isCanvasActive) {
-    startCanvasKeepAlive();
-  }
-  enableAudioKeepAlive();
-  updateWakeStatusUI(isAwake());
 }
 
 export function bindUserInteractions() {
@@ -409,46 +363,51 @@ export function bindUserInteractions() {
   hasBoundInteractions = true;
 
   const onUserGesture = () => {
-    if (isWakeLockRequested) {
+    const now = Date.now();
+    if (now - lastGestureCheckTime < 2000) return;
+    lastGestureCheckTime = now;
+
+    if (isWakeLockRequested && !wakeLockSentinel) {
       rearmWakeLock();
-      if (!isAwake()) {
-        requestWakeLock();
-      }
     }
-    getAudioContext();
+    if (!isAudioMuted) {
+      getAudioContext();
+    }
   };
 
-  ['touchstart', 'touchend', 'pointerdown', 'click'].forEach((evt) => {
-    window.addEventListener(evt, onUserGesture, { capture: true, passive: true });
-  });
+  window.addEventListener('pointerdown', onUserGesture, { capture: true, passive: true });
 
-  // Re-acquire Wake Lock when switching back to app/tab
-  document.addEventListener('visibilitychange', async () => {
+  document.addEventListener('visibilitychange', () => {
     if (isWakeLockRequested && document.visibilityState === 'visible') {
-      await requestWakeLock();
+      requestWakeLock();
     }
   });
 }
 
-// Auto-bind on module load in browser environments
 if (typeof window !== 'undefined') {
   bindUserInteractions();
 }
 
-// 2. HAPTIC VIBRATION API
-let isAudioMuted = false;
-
+// 2. AUDIO & HAPTIC CONTROLS
 export function isAudioEnabled() {
   return !isAudioMuted;
 }
 
+export function syncHardwarePrefsUI() {
+  updateSoundStatusUI(!isAudioMuted);
+  updateWakeStatusUI(isWakeLockRequested);
+}
+
 export function toggleAudioMute() {
   isAudioMuted = !isAudioMuted;
+  savePrefs({ audioMuted: isAudioMuted });
   updateSoundStatusUI(!isAudioMuted);
   if (!isAudioMuted) {
     getAudioContext();
     hapticFeedback('tap');
     playWhistleTone('short');
+  } else {
+    hapticFeedback('tap');
   }
   return !isAudioMuted;
 }
@@ -477,7 +436,7 @@ export function updateSoundStatusUI(isEnabled) {
     btn.className = 'flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-900 border border-emerald-500/50 cursor-pointer shadow-sm active:scale-95 transition shrink-0';
     btn.innerHTML = `
       <span class="text-xs font-black text-emerald-400 font-mono-sport tracking-wider">ON</span>
-      <span class="w-8 h-4.5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end transition-colors shadow-inner">
+      <span class="w-8 h-5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end transition-colors shadow-inner">
         <span class="w-3.5 h-3.5 rounded-full bg-slate-950 shadow-md"></span>
       </span>
     `;
@@ -485,24 +444,29 @@ export function updateSoundStatusUI(isEnabled) {
     btn.className = 'flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-900 border border-slate-700/60 cursor-pointer shadow-sm active:scale-95 transition shrink-0';
     btn.innerHTML = `
       <span class="text-xs font-bold text-slate-400 font-mono-sport tracking-wider">OFF</span>
-      <span class="w-8 h-4.5 bg-slate-800 border border-slate-700 rounded-full p-0.5 flex items-center justify-start transition-colors">
+      <span class="w-8 h-5 bg-slate-800 border border-slate-700 rounded-full p-0.5 flex items-center justify-start transition-colors">
         <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm"></span>
       </span>
     `;
   }
 }
 
-// 2. HAPTIC VIBRATION API
 export function hapticFeedback(type = 'tap') {
   if (typeof navigator === 'undefined' || !navigator.vibrate) return;
 
   try {
     switch (type) {
+      case 'selection':
+        navigator.vibrate(15);
+        break;
       case 'tap':
         navigator.vibrate(25);
         break;
       case 'success':
         navigator.vibrate([40, 30, 40]);
+        break;
+      case 'warning':
+        navigator.vibrate([60, 40, 60]);
         break;
       case 'alert':
         navigator.vibrate([80, 50, 80, 50, 120]);
@@ -517,13 +481,11 @@ export function hapticFeedback(type = 'tap') {
         navigator.vibrate(250);
         break;
     }
-  } catch (e) {
-    // Graceful fallback for non-supporting browsers
-  }
+  } catch (_) {}
 }
 
-// 3. WEB AUDIO API SYNTHESIZER (No external MP3 files required!)
-export function playWhistleTone(type = 'short') {
+// 3. WEB AUDIO API SYNTHESIZER (Coach-Safe Sideline Chimes + Official Pea Whistle)
+export function playWhistleTone(type = 'short', options = {}) {
   if (isAudioMuted) return;
 
   try {
@@ -531,9 +493,37 @@ export function playWhistleTone(type = 'short') {
     if (!ctx) return;
 
     const now = ctx.currentTime;
+    const isCoachMode = !options.forceWhistle && typeof window !== 'undefined' && typeof window.getAppMode === 'function' && window.getAppMode() === 'coach';
+
+    function playChimeNotes(freqs, spacing = 0.14, noteDur = 0.28, peakGain = 0.22) {
+      freqs.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * spacing);
+        gain.gain.setValueAtTime(0.001, now + idx * spacing);
+        gain.gain.linearRampToValueAtTime(peakGain, now + idx * spacing + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * spacing + noteDur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * spacing);
+        osc.stop(now + idx * spacing + noteDur + 0.03);
+      });
+    }
+
+    // In Coach / Spectator Mode, never blast a referee pea whistle on the touchline (prevents confusing players!)
+    if (isCoachMode && ['short', 'double', 'target_reached', 'full_time_whistle'].includes(type)) {
+      if (type === 'short') {
+        playChimeNotes([587.33, 880], 0.11, 0.22, 0.18);
+      } else if (type === 'double') {
+        playChimeNotes([783.99, 659.25, 523.25], 0.15, 0.3, 0.2);
+      } else {
+        playChimeNotes([523.25, 659.25, 783.99, 1046.5], 0.14, 0.32, 0.22);
+      }
+      return;
+    }
 
     function createPeaWhistleBurst(startTime, duration) {
-      // Dual oscillator pea whistle effect (approx 2400Hz + 2800Hz with slight vibrato)
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -546,7 +536,6 @@ export function playWhistleTone(type = 'short') {
       osc2.frequency.setValueAtTime(2850, startTime);
       osc2.frequency.linearRampToValueAtTime(2700, startTime + duration);
 
-      // Envelope
       gain.gain.setValueAtTime(0.001, startTime);
       gain.gain.linearRampToValueAtTime(0.25, startTime + 0.03);
       gain.gain.linearRampToValueAtTime(0.2, startTime + duration - 0.04);
@@ -568,40 +557,15 @@ export function playWhistleTone(type = 'short') {
       createPeaWhistleBurst(now, 0.22);
       createPeaWhistleBurst(now + 0.32, 0.35);
     } else if (type === 'target_reached' || type === 'full_time_whistle') {
-      // Distinct referee whistle blast: Long - Short - Long
       createPeaWhistleBurst(now, 0.35);
       createPeaWhistleBurst(now + 0.45, 0.18);
       createPeaWhistleBurst(now + 0.72, 0.55);
     } else if (type === 'warning') {
-      // 1-minute warning two-tone melodic chime (880Hz -> 1174Hz)
-      [880, 1174.66].forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.18);
-        gain.gain.setValueAtTime(0.001, now + idx * 0.18);
-        gain.gain.linearRampToValueAtTime(0.25, now + idx * 0.18 + 0.03);
-        gain.exponentialRampToValueAtTime(0.001, now + idx * 0.18 + 0.32);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + idx * 0.18);
-        osc.stop(now + idx * 0.18 + 0.35);
-      });
+      playChimeNotes([880, 1174.66], 0.18, 0.32, 0.25);
     } else if (type === 'triple_chime') {
-      // Pleasant melodic chime for halfway substitution alert
-      [523.25, 659.25, 783.99].forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.15);
-        gain.gain.setValueAtTime(0.001, now + idx * 0.15);
-        gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.15 + 0.02);
-        gain.exponentialRampToValueAtTime(0.001, now + idx * 0.15 + 0.3);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + idx * 0.15);
-        osc.stop(now + idx * 0.15 + 0.35);
-      });
+      playChimeNotes([523.25, 659.25, 783.99], 0.15, 0.3, 0.2);
+    } else if (type === 'chime_ready') {
+      playChimeNotes([659.25, 880, 1046.5], 0.13, 0.28, 0.22);
     }
   } catch (err) {
     console.warn('Audio synthesis error:', err);

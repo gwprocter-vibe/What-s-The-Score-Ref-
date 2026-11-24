@@ -8,10 +8,8 @@ import * as report from './report.js';
 import * as lockMode from './lockMode.js';
 import * as storage from './storage.js';
 
-// PWA Install Prompt
 let deferredPrompt = null;
 
-// Dual-Match Session State Architecture
 function createDefaultMatchState(id = 1) {
   return {
     id,
@@ -36,10 +34,13 @@ function createDefaultMatchState(id = 1) {
       halfTimeScores: { home: null, away: null },
       kickoffTeam: 'home',
       kickoffChosen: false,
+      coachTeam: score.getCoachTeam(),
       isPowerPlayDismissed: false,
+      wasPowerPlayActive: false,
+      isPowerPlayEndedAlertActive: false,
       isPausedGoalAlertActive: false,
       goals: [],
-      coachNotes: { potm: null, notes: '', moments: [] },
+      coachNotes: { potm: null, notes: '', moments: [], rotation: score.createDefaultRotation() },
       teams: {
         home: { name: 'Home Team', color: '#f43f5e', border: 'border-rose-500/70', roster: score.createDefaultRoster() },
         away: { name: 'Away Team', color: '#2563eb', border: 'border-blue-500/70', roster: score.createDefaultRoster() }
@@ -71,24 +72,290 @@ function saveActiveMatchSnapshot() {
   };
 }
 
-function persistState() {
+export function persistState() {
   if (isRestoringState) return;
   saveActiveMatchSnapshot();
   storage.saveSessionState(sessionState);
 }
+window.persistSessionState = persistState;
 
+export function hasActiveMatchInProgress() {
+  const m1 = sessionState.matches[1];
+  const m2 = sessionState.matches[2];
+  return [m1, m2].some(m => {
+    if (!m) return false;
+    const t = m.timer || {};
+    const s = m.score || {};
+    if (t.currentPeriod === 'Full Time') return false;
+    return (t.timerSeconds > 0) || Boolean(t.hasHalfStarted) || (t.currentPeriod === '2nd Half') || (s.homeScore > 0) || (s.awayScore > 0);
+  });
+}
+
+// ---------------- Season Match History Archive ----------------
+export function archiveMatchById(matchId) {
+  saveActiveMatchSnapshot();
+  const m = sessionState.matches[matchId];
+  if (!m || !m.score) return;
+
+  const s = m.score;
+  const t = m.timer || {};
+  const hasAnyActivity = (s.homeScore > 0) || (s.awayScore > 0) || (t.timerSeconds > 0) || (t.currentPeriod === 'Full Time') || ((s.coachNotes?.moments || []).length > 0);
+  if (!hasAnyActivity) return;
+
+  const prefs = storage.loadPrefs();
+  let h1H = 0, h1A = 0, h2H = 0, h2A = 0;
+  (s.goals || []).forEach(g => {
+    if (g.period === '1st Half') {
+      if (g.team === 'home') h1H++; else h1A++;
+    } else {
+      if (g.team === 'home') h2H++; else h2A++;
+    }
+  });
+
+  storage.saveMatchToHistory({
+    matchNum: matchId,
+    home: s.teams?.home?.name || 'Home Team',
+    away: s.teams?.away?.name || 'Away Team',
+    homeColor: s.teams?.home?.color || '#f43f5e',
+    awayColor: s.teams?.away?.color || '#2563eb',
+    homeScore: s.homeScore || 0,
+    awayScore: s.awayScore || 0,
+    half1: `${h1H}-${h1A}`,
+    half2: `${h2H}-${h2A}`,
+    goals: (s.goals || []).map(g => ({ ...g })),
+    potm: s.coachNotes?.potm ? { ...s.coachNotes.potm } : null,
+    momentsCount: (s.coachNotes?.moments || []).length,
+    notes: s.coachNotes?.notes || '',
+    pitch: prefs.pitchVenue || '',
+    ref: prefs.refName || '',
+    durationMin: Math.round((t.targetHalfSeconds || 900) / 60)
+  });
+  updateHistoryCountBadge();
+}
+
+export function archiveActiveMatchToHistory() {
+  archiveMatchById(sessionState.activeMatchId);
+}
+window.archiveActiveMatchToHistory = archiveActiveMatchToHistory;
+
+function updateHistoryCountBadge() {
+  const badge = document.getElementById('quickToolsHistoryBadge');
+  if (!badge) return;
+  const count = storage.loadMatchHistory().length;
+  badge.innerText = count > 0 ? `${count} SAVED` : 'ARCHIVE';
+}
+
+export function openMatchHistoryModal() {
+  renderMatchHistoryModal();
+  window.openModal('matchHistoryModal');
+}
+window.openMatchHistoryModal = openMatchHistoryModal;
+
+export function renderMatchHistoryModal() {
+  const listEl = document.getElementById('matchHistoryList');
+  const countEl = document.getElementById('matchHistoryCountBadge');
+  const clearBtn = document.getElementById('clearHistoryBtn');
+  const items = storage.loadMatchHistory();
+
+  if (countEl) countEl.innerText = `${items.length} Match${items.length === 1 ? '' : 'es'}`;
+  if (clearBtn) clearBtn.classList.toggle('hidden', items.length === 0);
+  if (!listEl) return;
+
+  if (items.length === 0) {
+    listEl.innerHTML = `
+      <div class="text-center py-8 px-4 text-slate-500 text-xs space-y-1.5">
+        <div class="text-2xl">🏆</div>
+        <div class="font-bold text-slate-300">No archived matches yet</div>
+        <p class="text-[11px] text-slate-500">Completed matches are automatically saved here at Full Time so you never lose past results or POTM winners.</p>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = items.map(item => {
+    const safeHome = score.escapeHtml(item.home);
+    const safeAway = score.escapeHtml(item.away);
+    const safeDate = score.escapeHtml(item.dateStr || '');
+    const potmLabel = item.potm ? `#${item.potm.number}${item.potm.initials ? ' ' + score.escapeHtml(item.potm.initials) : ''}` : '';
+    return `
+      <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+        <div class="flex items-center justify-between text-[10px] text-slate-400">
+          <span class="font-bold uppercase tracking-wider text-emerald-400">Match ${item.matchNum || 1} • ${safeDate}</span>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="copyHistoryEntrySummary('${score.escapeHtml(item.archiveId)}')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold cursor-pointer transition" title="Copy summary">Copy</button>
+            <button type="button" onclick="deleteHistoryEntry('${score.escapeHtml(item.archiveId)}')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-rose-950 text-slate-500 hover:text-rose-400 font-bold cursor-pointer transition" title="Delete">✕</button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <span class="font-bold text-xs text-white truncate flex-1">${safeHome}</span>
+          <span class="font-mono-sport font-black text-base text-amber-300 px-2.5 py-0.5 rounded-lg bg-slate-900 border border-slate-800 shrink-0">${item.homeScore} - ${item.awayScore}</span>
+          <span class="font-bold text-xs text-white truncate flex-1 text-right">${safeAway}</span>
+        </div>
+        <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-900 flex-wrap gap-1">
+          <span>1H: <strong class="text-slate-300">${score.escapeHtml(item.half1 || '0-0')}</strong> • 2H: <strong class="text-slate-300">${score.escapeHtml(item.half2 || '0-0')}</strong></span>
+          <div class="flex items-center gap-1.5">
+            ${potmLabel ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">⭐ ${potmLabel}</span>` : ''}
+            ${item.momentsCount > 0 ? `<span class="text-slate-400">📋 ${item.momentsCount}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+export function copyHistoryEntrySummary(archiveId) {
+  const item = storage.loadMatchHistory().find(x => x.archiveId === archiveId);
+  if (!item) return;
+  let txt = `⚽ ${item.dateStr} — Match ${item.matchNum}: ${item.home} ${item.homeScore} - ${item.awayScore} ${item.away} (1H: ${item.half1}, 2H: ${item.half2})`;
+  if (item.potm) {
+    txt += `\n⭐ POTM: #${item.potm.number}${item.potm.initials ? ' ' + item.potm.initials : ''}`;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).catch(() => {});
+  }
+  hardware.hapticFeedback('success');
+  score.showMatchToast('Archived match summary copied!', '📋', 2200);
+}
+window.copyHistoryEntrySummary = copyHistoryEntrySummary;
+
+export function deleteHistoryEntry(archiveId) {
+  storage.deleteMatchFromHistory(archiveId);
+  hardware.hapticFeedback('tap');
+  updateHistoryCountBadge();
+  renderMatchHistoryModal();
+}
+window.deleteHistoryEntry = deleteHistoryEntry;
+
+export function clearAllHistory() {
+  storage.clearMatchHistory();
+  hardware.hapticFeedback('success');
+  updateHistoryCountBadge();
+  renderMatchHistoryModal();
+}
+window.clearAllHistory = clearAllHistory;
+
+// ---------------- Ref <-> Coach Match Sync (Share & Import) ----------------
+export function openMatchSyncModal() {
+  saveActiveMatchSnapshot();
+  const activeId = sessionState.activeMatchId;
+  const data = report.getMatchDataForScope(activeId);
+  const code = storage.encodeMatchSyncCode(data);
+  const codeEl = document.getElementById('matchSyncExportCode');
+  const labelEl = document.getElementById('matchSyncActiveLabel');
+  const importInput = document.getElementById('matchSyncImportInput');
+
+  if (codeEl) codeEl.value = code;
+  if (labelEl) labelEl.innerText = `Match ${activeId}: ${data.home} ${data.homeScore} - ${data.awayScore} ${data.away}`;
+  if (importInput) importInput.value = '';
+
+  window.openModal('matchSyncModal');
+}
+window.openMatchSyncModal = openMatchSyncModal;
+
+export function copyMatchSyncCode() {
+  const codeEl = document.getElementById('matchSyncExportCode');
+  if (!codeEl || !codeEl.value) return;
+  const shareUrl = `${window.location.origin}${window.location.pathname}?sync=${encodeURIComponent(codeEl.value)}`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareUrl).catch(() => {});
+  }
+  hardware.hapticFeedback('success');
+  score.showMatchToast('Sync link copied! Send to Coach or Ref', '🔗', 2600);
+}
+window.copyMatchSyncCode = copyMatchSyncCode;
+
+export function shareMatchSyncNative() {
+  const codeEl = document.getElementById('matchSyncExportCode');
+  if (!codeEl || !codeEl.value) return;
+  const data = report.getMatchDataForScope(sessionState.activeMatchId);
+  const shareUrl = `${window.location.origin}${window.location.pathname}?sync=${encodeURIComponent(codeEl.value)}`;
+  const title = `Sync Match ${data.id}: ${data.home} ${data.homeScore}-${data.awayScore} ${data.away}`;
+
+  if (navigator.share) {
+    navigator.share({
+      title,
+      text: `${title} — Tap link to load official match timeline in What's The Score Ref:`,
+      url: shareUrl
+    }).catch(() => {});
+  } else {
+    copyMatchSyncCode();
+  }
+}
+window.shareMatchSyncNative = shareMatchSyncNative;
+
+export function applyImportedMatchSync(decoded) {
+  if (!decoded) {
+    score.showMatchToast('Invalid sync code or link', '⚠️', 2600);
+    return false;
+  }
+
+  if (timer.getTimerState().isTimerRunning) {
+    timer.pauseTimer();
+  }
+
+  const targetMatchId = decoded.matchId === 2 ? 2 : 1;
+  const existingTeams = sessionState.matches[targetMatchId]?.score?.teams;
+  const fresh = createDefaultMatchState(targetMatchId);
+  fresh.timer.targetHalfSeconds = decoded.targetMinutes * 60;
+  fresh.timer.currentPeriod = decoded.period === '1st Half' || decoded.period === '2nd Half' ? decoded.period : 'Full Time';
+  fresh.timer.firstHalfEnded = fresh.timer.currentPeriod !== '1st Half';
+
+  fresh.score.homeScore = decoded.homeScore;
+  fresh.score.awayScore = decoded.awayScore;
+  fresh.score.goals = decoded.goals;
+  fresh.score.teams.home = {
+    name: decoded.homeName,
+    color: decoded.homeColor,
+    border: 'border-rose-500/70',
+    roster: existingTeams?.home?.roster || score.createDefaultRoster()
+  };
+  fresh.score.teams.away = {
+    name: decoded.awayName,
+    color: decoded.awayColor,
+    border: 'border-blue-500/70',
+    roster: existingTeams?.away?.roster || score.createDefaultRoster()
+  };
+
+  sessionState.matches[targetMatchId] = fresh;
+  sessionState.activeMatchId = targetMatchId;
+
+  isRestoringState = true;
+  try {
+    timer.restoreTimerState(fresh.timer);
+    score.restoreScoreState(fresh.score);
+  } finally {
+    isRestoringState = false;
+  }
+
+  updateTabBadges();
+  persistState();
+  hardware.hapticFeedback('success');
+  window.closeModal('matchSyncModal');
+  score.showMatchToast(`✓ Synced Match ${targetMatchId}: ${decoded.homeName} ${decoded.homeScore}-${decoded.awayScore} ${decoded.awayName}`, '✅', 3500);
+  return true;
+}
+
+export function importMatchSyncFromInput() {
+  const input = document.getElementById('matchSyncImportInput');
+  if (!input || !input.value.trim()) {
+    score.showMatchToast('Paste a sync link or WTSR1 code first', 'ℹ️', 2200);
+    return;
+  }
+  const decoded = storage.decodeMatchSyncCode(input.value.trim());
+  applyImportedMatchSync(decoded);
+}
+window.importMatchSyncFromInput = importMatchSyncFromInput;
+
+// ---------------- Tab Badges & Session Coordination ----------------
 export function getMatchBadgeScore(match) {
   if (!match) return 'TBC';
-
   const timerState = match.timer || {};
   const scoreState = match.score || { homeScore: 0, awayScore: 0, goals: [] };
 
-  // 1. At the end of a match, score should have "FT" after it
   if (timerState.currentPeriod === 'Full Time') {
     return `${scoreState.homeScore} - ${scoreState.awayScore} FT`;
   }
 
-  // 2. When a match has not started, it shouldn't give a score and just say "TBC"
   const hasStarted = (timerState.timerSeconds > 0) ||
                     Boolean(timerState.isTimerRunning) ||
                     Boolean(timerState.hasHalfStarted) ||
@@ -96,11 +363,7 @@ export function getMatchBadgeScore(match) {
                     (scoreState.goals && scoreState.goals.length > 0) ||
                     (scoreState.homeScore > 0 || scoreState.awayScore > 0);
 
-  if (!hasStarted) {
-    return 'TBC';
-  }
-
-  // 3. Match in progress
+  if (!hasStarted) return 'TBC';
   return `${scoreState.homeScore} - ${scoreState.awayScore}`;
 }
 window.getMatchBadgeScore = getMatchBadgeScore;
@@ -108,58 +371,26 @@ window.getMatchBadgeScore = getMatchBadgeScore;
 export function updateTabBadges() {
   saveActiveMatchSnapshot();
 
-  const m1 = sessionState.matches[1];
-  const m2 = sessionState.matches[2];
-
-  const m1Score = getMatchBadgeScore(m1);
-  const m2Score = getMatchBadgeScore(m2);
-
   const b1 = document.getElementById('tabMatch1Badge');
   const b2 = document.getElementById('tabMatch2Badge');
-  if (b1) b1.innerText = m1Score;
-  if (b2) b2.innerText = m2Score;
-
-  if (score && typeof score.renderGoalTimeline === 'function') {
-    score.renderGoalTimeline();
-  }
+  if (b1) b1.innerText = getMatchBadgeScore(sessionState.matches[1]);
+  if (b2) b2.innerText = getMatchBadgeScore(sessionState.matches[2]);
 
   const btn1 = document.getElementById('tabMatch1Btn');
   const btn2 = document.getElementById('tabMatch2Btn');
 
+  const activeTabCls = 'py-1.5 px-2.5 sm:py-2 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md bg-emerald-500 text-slate-950 border-2 border-emerald-300 active:scale-[0.98]';
+  const inactiveTabCls = 'py-1.5 px-2.5 sm:py-2 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition cursor-pointer bg-slate-900 text-slate-400 border border-slate-700 hover:text-white active:scale-[0.98]';
+
   if (sessionState.activeMatchId === 1) {
-    if (btn1) {
-      btn1.className = 'py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md bg-emerald-500 text-slate-950 border-2 border-emerald-300';
-    }
-    if (btn2) {
-      btn2.className = 'py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition cursor-pointer bg-slate-900 text-slate-400 border border-slate-700 hover:text-white';
-    }
+    if (btn1) btn1.className = activeTabCls;
+    if (btn2) btn2.className = inactiveTabCls;
   } else {
-    if (btn2) {
-      btn2.className = 'py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md bg-emerald-500 text-slate-950 border-2 border-emerald-300';
-    }
-    if (btn1) {
-      btn1.className = 'py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition cursor-pointer bg-slate-900 text-slate-400 border border-slate-700 hover:text-white';
-    }
+    if (btn2) btn2.className = activeTabCls;
+    if (btn1) btn1.className = inactiveTabCls;
   }
-
-  // Update modal reset context
-  const resetTitle = document.getElementById('confirmResetTitle');
-  const resetDesc = document.getElementById('confirmResetDesc');
-  const resetConfirmBtnText = document.getElementById('confirmResetConfirmBtnText');
-  if (resetTitle) resetTitle.innerText = `Reset Match ${sessionState.activeMatchId}?`;
-  if (resetDesc) resetDesc.innerText = `Are you sure you want to reset all scores, goal history, and match clocks for Match ${sessionState.activeMatchId} back to 00:00?`;
-  if (resetConfirmBtnText) resetConfirmBtnText.innerText = `YES, RESET MATCH ${sessionState.activeMatchId}`;
-
-  updateHandoverBannerUI();
 }
 window.updateTabBadges = updateTabBadges;
-
-export function updateHandoverBannerUI() {
-  const banner = document.getElementById('match1HandoverBanner');
-  if (!banner) return;
-  banner.classList.add('hidden');
-}
-window.updateHandoverBannerUI = updateHandoverBannerUI;
 
 let handoverToastTimeout = null;
 export function showHandoverToast(msg) {
@@ -192,12 +423,18 @@ export function showReportToast(msg = 'Copied to clipboard!') {
 window.showReportToast = showReportToast;
 
 export function saveMatch1AndPrepareMatch2() {
-  // 1. If outgoing timer is running, safely pause it
   if (timer.getTimerState().isTimerRunning) {
     timer.pauseTimer();
   }
 
-  // 2. Ensure Match 1 is cleanly finalised at Full Time if not already
+  // Warn if Match 2 already has goals recorded
+  const existingM2 = sessionState.matches[2];
+  if (existingM2?.score && (existingM2.score.homeScore > 0 || existingM2.score.awayScore > 0)) {
+    if (!window.confirm('Match 2 already has goals recorded. Overwrite Match 2 with a fresh 0-0 scorecard?')) {
+      return;
+    }
+  }
+
   if (sessionState.activeMatchId === 1) {
     const tState = timer.getTimerState();
     if (tState.currentPeriod !== 'Full Time') {
@@ -205,32 +442,30 @@ export function saveMatch1AndPrepareMatch2() {
         score.finaliseHalfScore();
         timer.setFirstHalfEnded(true);
       }
-      timer.setPeriod('Full Time');
+      // Cleanly finalise without flashing reportModal or overlapping whistles!
+      timer.setPeriod('Full Time', { openReport: false, silent: true });
     }
   }
 
-  // 3. Snapshot Match 1 into local storage state
   saveActiveMatchSnapshot();
+  archiveMatchById(1);
 
-  // 4. Extract team names & colors from Match 1 to retain for Match 2
   const m1ScoreState = sessionState.matches[1]?.score || score.getScoreState();
   const retainedTeams = JSON.parse(JSON.stringify(m1ScoreState.teams || {
-    home: { name: 'Home Team', color: '#f43f5e', border: 'border-rose-500/70' },
-    away: { name: 'Away Team', color: '#2563eb', border: 'border-blue-500/70' }
+    home: { name: 'Home Team', color: '#f43f5e', border: 'border-rose-500/70', roster: score.createDefaultRoster() },
+    away: { name: 'Away Team', color: '#2563eb', border: 'border-blue-500/70', roster: score.createDefaultRoster() }
   }));
-
+  const retainedCoachTeam = m1ScoreState.coachTeam || score.getCoachTeam();
   const m1TargetSec = sessionState.matches[1]?.timer?.targetHalfSeconds || timer.getTargetHalfSeconds() || 15 * 60;
 
-  // 5. Cleanly configure Match 2 with fresh timer & scoreboard, but retained teams
   const freshMatch2 = createDefaultMatchState(2);
   freshMatch2.timer.targetHalfSeconds = m1TargetSec;
   freshMatch2.score.teams = retainedTeams;
+  freshMatch2.score.coachTeam = retainedCoachTeam;
+  freshMatch2.score.coachNotes.rotation = score.createDefaultRotation(retainedTeams[retainedCoachTeam]?.roster || []);
   sessionState.matches[2] = freshMatch2;
-
-  // 6. Switch active session to Match 2
   sessionState.activeMatchId = 2;
 
-  // 7. Restore fresh Match 2 state safely inside guard
   isRestoringState = true;
   try {
     timer.restoreTimerState(sessionState.matches[2].timer);
@@ -239,50 +474,35 @@ export function saveMatch1AndPrepareMatch2() {
     isRestoringState = false;
   }
 
-  // 8. Snapshot Match 2 and persist session to local storage
   saveActiveMatchSnapshot();
   persistState();
-
-  // 9. Update tab badges & UI
   updateTabBadges();
 
-  // 10. Close report and confirmation modals if open
-  if (typeof window.closeModal === 'function') {
-    window.closeModal('reportModal');
-    window.closeModal('confirmEndHalfModal');
-    window.closeModal('confirmResetModal');
-  }
+  window.closeModal('reportModal');
+  window.closeModal('confirmEndHalfModal');
+  window.closeModal('confirmResetModal');
 
-  // 11. Referee audio & haptic feedback
   hardware.playWhistleTone('short');
   hardware.hapticFeedback('success');
-
-  // 12. Show friendly confirmation toast
-  showHandoverToast('Match 1 Saved! Match 2 Ready (Team names preserved).');
+  showHandoverToast('Match 1 Saved & Archived! Match 2 Ready.');
 }
 window.saveMatch1AndPrepareMatch2 = saveMatch1AndPrepareMatch2;
 
 export function switchMatchTab(matchId) {
   if (matchId === sessionState.activeMatchId) return;
 
-  // 1. Snapshot outgoing match
   saveActiveMatchSnapshot();
-
-  // If timer of outgoing match is running, safely pause it
   if (timer.getTimerState().isTimerRunning) {
     timer.pauseTimer();
   }
 
-  // 2. Switch active ID
   sessionState.activeMatchId = matchId;
-
-  // 3. Restore target match
   let target = sessionState.matches[matchId];
   if (!target) {
     target = createDefaultMatchState(matchId);
-    // If switching to Match 2 and it is uninitialized, inherit team names/colors from Match 1
     if (matchId === 2 && sessionState.matches[1]?.score?.teams) {
       target.score.teams = JSON.parse(JSON.stringify(sessionState.matches[1].score.teams));
+      target.score.coachTeam = sessionState.matches[1].score.coachTeam || score.getCoachTeam();
     }
     sessionState.matches[matchId] = target;
   }
@@ -295,40 +515,60 @@ export function switchMatchTab(matchId) {
     isRestoringState = false;
   }
 
-  // 4. Update tab styles and badges
   updateTabBadges();
-
-  // 5. Persist session
   persistState();
-
   hardware.hapticFeedback('tap');
 }
 window.switchMatchTab = switchMatchTab;
 
-// Global Modal Helpers (Available on window for onclick attributes)
+// ---------------- Global Modal Coordinator ----------------
+const ALL_MODAL_IDS = [
+  'timelineModal',
+  'coachMomentsModal',
+  'coachNotesModal',
+  'squadRotationModal',
+  'reportModal',
+  'sharePickerModal',
+  'coinModal',
+  'prematchModal',
+  'rulesModal',
+  'teamEditModal',
+  'goalAttributionModal',
+  'squadInitialsModal',
+  'confirmResetModal',
+  'confirmResetHalfModal',
+  'confirmEndHalfModal',
+  'confirmConcludedGoalModal',
+  'confirmConcludedScoreRemovalModal',
+  'matchCardModal',
+  'matchCardFullscreenModal',
+  'instructionsModal',
+  'roleSelectModal',
+  'matchHistoryModal',
+  'matchSyncModal',
+  'installAppModal',
+  'quickToolsDrawer'
+];
+
 window.openModal = function(id) {
   const modal = document.getElementById(id);
-  if (modal) {
-    modal.classList.remove('hidden');
-    hardware.hapticFeedback('tap');
-    if (id === 'rulesModal') {
-      if (typeof window.switchRulesTab === 'function') {
-        window.switchRulesTab('quick');
-      }
-      const openCards = modal.querySelectorAll('details[open]');
-      openCards.forEach(c => { c.open = false; });
-    }
-    if (id === 'instructionsModal') {
-      const mode = (typeof score !== 'undefined' && score.getAppMode) ? score.getAppMode() : (window.getAppMode ? window.getAppMode() : 'referee');
-      if (typeof window.switchInstructionsTab === 'function') {
-        window.switchInstructionsTab(mode === 'coach' ? 'coach' : 'ref');
-      }
-    }
-    if (id === 'roleSelectModal') {
-      if (typeof window.updateRoleSelectModalUI === 'function') {
-        window.updateRoleSelectModalUI();
-      }
-    }
+  if (!modal) return;
+
+  modal.classList.remove('hidden');
+  hardware.hapticFeedback('tap');
+
+  if (id === 'rulesModal') {
+    rules.resetRulesModalView();
+  } else if (id === 'prematchModal') {
+    prematch.updatePrematchUI(score.teams.home?.name, score.teams.away?.name);
+  } else if (id === 'instructionsModal') {
+    const mode = score.getAppMode();
+    switchInstructionsTab(mode === 'coach' ? 'coach' : 'ref');
+  } else if (id === 'roleSelectModal') {
+    updateRoleSelectModalUI();
+  } else if (id === 'quickToolsDrawer') {
+    updateHistoryCountBadge();
+    hardware.syncHardwarePrefsUI();
   }
 };
 
@@ -337,173 +577,156 @@ window.closeModal = function(id) {
     if (document.activeElement && typeof document.activeElement.blur === 'function') {
       document.activeElement.blur();
     }
-    if (window.getSelection) {
-      window.getSelection()?.removeAllRanges();
-    }
+    window.getSelection?.()?.removeAllRanges();
   }
   const modal = document.getElementById(id);
   if (modal) modal.classList.add('hidden');
 };
 
-// Expose Core Functions to Window for HTML event binding
+// Expose Core Functions to Window
 window.toggleTimer = timer.toggleTimer;
 window.startTimer = timer.startTimer;
 window.pauseTimer = timer.pauseTimer;
-window.catchUpTime = timer.catchUpTime;
 window.catchUpAllStoppage = timer.catchUpAllStoppage;
 window.resetHalf = timer.resetHalf;
+window.startHalfTimeBreak = timer.startHalfTimeBreak;
+window.dismissHalfTimeBreak = timer.dismissHalfTimeBreak;
+window.startCoolDownTimer = timer.startCoolDownTimer;
+window.cancelCoolDownTimer = timer.cancelCoolDownTimer;
+window.toggleCoolDownTimer = timer.toggleCoolDownTimer;
+
 window.setHalfDuration = function(minutes) {
   timer.setTargetHalfMinutes(minutes);
   saveActiveMatchSnapshot();
   persistState();
   hardware.hapticFeedback('tap');
 };
-window.onHalfDurationChanged = function(min) {
+window.onHalfDurationChanged = function() {
   saveActiveMatchSnapshot();
   persistState();
 };
+
 window.openMatchCardModal = report.openMatchCardModal;
 window.openFullMatchCardImage = report.openFullMatchCardImage;
 window.downloadMatchCard = report.downloadMatchCard;
 window.shareMatchCard = report.shareMatchCard;
+
 window.promptResetMatch = function() {
   updateTabBadges();
   const title = document.getElementById('confirmResetTitle');
   const desc = document.getElementById('confirmResetDesc');
   const confirmBtnText = document.getElementById('confirmResetConfirmBtnText');
   if (title) title.innerText = 'Reset Both Matches?';
-  if (desc) desc.innerText = 'Are you sure you want to reset all scores, timers, and goal history for both Match 1 and Match 2 back to 00:00?';
+  if (desc) desc.innerText = 'Reset clocks, scores, and timelines for Match 1 & Match 2 back to 00:00? (Team names, colours & squad rosters are kept.)';
   if (confirmBtnText) confirmBtnText.innerText = 'YES, RESET BOTH MATCHES';
 
-  if (window.openModal) {
-    window.openModal('confirmResetModal');
-  } else {
-    const modal = document.getElementById('confirmResetModal');
-    if (modal) {
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-  }
+  window.openModal('confirmResetModal');
   hardware.hapticFeedback('warning');
 };
+
+// Fixed: Preserves customized team names, kit colours, rosters & half duration across BOTH matches and returns cleanly to Match 1!
 window.executeResetMatch = function(scope = 'both') {
+  saveActiveMatchSnapshot();
+
   if (scope === 'both') {
-    // Retain customized team names, colors, and squad rosters
-    const homeName = sessionState.matches[1]?.score?.teams?.home?.name;
-    const awayName = sessionState.matches[1]?.score?.teams?.away?.name;
-    const homeColor = sessionState.matches[1]?.score?.teams?.home?.color;
-    const awayColor = sessionState.matches[1]?.score?.teams?.away?.color;
-    const homeBorder = sessionState.matches[1]?.score?.teams?.home?.border;
-    const awayBorder = sessionState.matches[1]?.score?.teams?.away?.border;
-    const homeRoster = sessionState.matches[1]?.score?.teams?.home?.roster;
-    const awayRoster = sessionState.matches[1]?.score?.teams?.away?.roster;
+    archiveMatchById(1);
+    archiveMatchById(2);
+
+    const activeSource = sessionState.matches[1]?.score?.teams || score.getScoreState().teams;
+    const retainedTeams = JSON.parse(JSON.stringify(activeSource));
+    const retainedCoachTeam = score.getCoachTeam();
+    const retainedTargetSec = timer.getTargetHalfSeconds() || 15 * 60;
 
     sessionState.matches[1] = createDefaultMatchState(1);
     sessionState.matches[2] = createDefaultMatchState(2);
 
-    if (homeName) {
-      sessionState.matches[1].score.teams.home.name = homeName;
-      sessionState.matches[2].score.teams.home.name = homeName;
-    }
-    if (awayName) {
-      sessionState.matches[1].score.teams.away.name = awayName;
-      sessionState.matches[2].score.teams.away.name = awayName;
-    }
-    if (homeColor) {
-      sessionState.matches[1].score.teams.home.color = homeColor;
-      sessionState.matches[1].score.teams.home.border = homeBorder;
-      sessionState.matches[2].score.teams.home.color = homeColor;
-      sessionState.matches[2].score.teams.home.border = homeBorder;
-    }
-    if (awayColor) {
-      sessionState.matches[1].score.teams.away.color = awayColor;
-      sessionState.matches[1].score.teams.away.border = awayBorder;
-      sessionState.matches[2].score.teams.away.color = awayColor;
-      sessionState.matches[2].score.teams.away.border = awayBorder;
-    }
-    if (homeRoster && homeRoster.length > 0) {
-      sessionState.matches[1].score.teams.home.roster = JSON.parse(JSON.stringify(homeRoster));
-      sessionState.matches[2].score.teams.home.roster = JSON.parse(JSON.stringify(homeRoster));
-    }
-    if (awayRoster && awayRoster.length > 0) {
-      sessionState.matches[1].score.teams.away.roster = JSON.parse(JSON.stringify(awayRoster));
-      sessionState.matches[2].score.teams.away.roster = JSON.parse(JSON.stringify(awayRoster));
+    [1, 2].forEach(id => {
+      sessionState.matches[id].timer.targetHalfSeconds = retainedTargetSec;
+      sessionState.matches[id].score.teams = JSON.parse(JSON.stringify(retainedTeams));
+      sessionState.matches[id].score.coachTeam = retainedCoachTeam;
+      sessionState.matches[id].score.coachNotes.rotation = score.createDefaultRotation(retainedTeams[retainedCoachTeam]?.roster || []);
+    });
+
+    sessionState.activeMatchId = 1;
+
+    isRestoringState = true;
+    try {
+      timer.resetMatchTimer();
+      timer.setTargetHalfMinutes(Math.round(retainedTargetSec / 60));
+      score.restoreScoreState(sessionState.matches[1].score);
+    } finally {
+      isRestoringState = false;
     }
 
-    timer.resetMatchTimer();
-    score.resetScoreState();
-    if (typeof prematch.resetPlayerCounts === 'function') prematch.resetPlayerCounts();
-    if (typeof prematch.resetChecklist === 'function') prematch.resetChecklist();
+    prematch.resetPlayerCounts();
+    prematch.resetChecklist();
     dismissFirstHalfMustEndToast();
     storage.clearSessionState();
     persistState();
   } else {
-    // Retain team names if already customised
-    const currentTeams = sessionState.matches[sessionState.activeMatchId]?.score?.teams;
-    const fresh = createDefaultMatchState(sessionState.activeMatchId);
-    if (currentTeams) {
-      fresh.score.teams = JSON.parse(JSON.stringify(currentTeams));
+    archiveActiveMatchToHistory();
+    const activeId = sessionState.activeMatchId;
+    const currentTeams = sessionState.matches[activeId]?.score?.teams || score.getScoreState().teams;
+    const retainedCoachTeam = score.getCoachTeam();
+    const retainedTargetSec = timer.getTargetHalfSeconds() || 15 * 60;
+
+    const fresh = createDefaultMatchState(activeId);
+    fresh.timer.targetHalfSeconds = retainedTargetSec;
+    fresh.score.teams = JSON.parse(JSON.stringify(currentTeams));
+    fresh.score.coachTeam = retainedCoachTeam;
+    fresh.score.coachNotes.rotation = score.createDefaultRotation(currentTeams[retainedCoachTeam]?.roster || []);
+    sessionState.matches[activeId] = fresh;
+
+    isRestoringState = true;
+    try {
+      timer.resetMatchTimer();
+      timer.setTargetHalfMinutes(Math.round(retainedTargetSec / 60));
+      score.restoreScoreState(fresh.score);
+    } finally {
+      isRestoringState = false;
     }
-    sessionState.matches[sessionState.activeMatchId] = fresh;
-    timer.resetMatchTimer();
-    score.restoreScoreState(fresh.score);
-    if (typeof prematch.resetPlayerCounts === 'function') prematch.resetPlayerCounts();
-    if (typeof prematch.resetChecklist === 'function') prematch.resetChecklist();
+
     dismissFirstHalfMustEndToast();
     persistState();
   }
+
   updateTabBadges();
-  if (window.closeModal) {
-    window.closeModal('confirmResetModal');
-  } else {
-    const modal = document.getElementById('confirmResetModal');
-    if (modal) modal.classList.add('hidden');
-  }
+  window.closeModal('confirmResetModal');
   hardware.hapticFeedback('success');
 };
+
 window.resetMatch = function(force = false) {
-  if (force) {
-    window.executeResetMatch('both');
-  } else {
-    window.promptResetMatch();
-  }
+  if (force) window.executeResetMatch('both');
+  else window.promptResetMatch();
 };
 
 export function promptResetHalf() {
   const tState = timer.getTimerState();
-  const period = tState.currentPeriod || 'Current Half';
+  const period = tState.currentPeriod === 'Full Time' ? '2nd Half' : (tState.currentPeriod || 'Current Half');
   const title = document.getElementById('confirmResetHalfTitle');
   const desc = document.getElementById('confirmResetHalfDesc');
-  if (title) title.innerText = `Reset ${period} & Scores?`;
-  if (desc) desc.innerText = `Are you sure you want to reset the clock and scores for this match back to 00:00 and 0-0?`;
-  
-  if (window.openModal) {
-    window.openModal('confirmResetHalfModal');
+
+  if (period === '2nd Half') {
+    if (title) title.innerText = 'Reset 2nd Half Only?';
+    if (desc) desc.innerText = 'Reset the 2nd Half clock to 00:00 and clear 2nd Half goals? (1st Half goals & half-time score will be kept!)';
   } else {
-    const modal = document.getElementById('confirmResetHalfModal');
-    if (modal) {
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
+    if (title) title.innerText = 'Reset 1st Half Clock & Scores?';
+    if (desc) desc.innerText = 'Reset the 1st Half clock back to 00:00 and clear 1st Half goals?';
   }
+
+  window.openModal('confirmResetHalfModal');
   hardware.hapticFeedback('warning');
 }
 window.promptResetHalf = promptResetHalf;
 
+// Fixed: Resetting 2nd Half now preserves 1st Half goals & half-time score!
 export function executeResetHalf() {
-  const modal = document.getElementById('confirmResetHalfModal');
-  if (modal) modal.classList.add('hidden');
-
-  // Retain custom team names
-  const currentTeams = sessionState.matches[sessionState.activeMatchId]?.score?.teams;
-  const fresh = createDefaultMatchState(sessionState.activeMatchId);
-  if (currentTeams) {
-    fresh.score.teams = JSON.parse(JSON.stringify(currentTeams));
-  }
-  sessionState.matches[sessionState.activeMatchId] = fresh;
+  window.closeModal('confirmResetHalfModal');
+  const beforePeriod = timer.getTimerState().currentPeriod;
+  const periodToClear = (beforePeriod === '2nd Half' || beforePeriod === 'Full Time') ? '2nd Half' : '1st Half';
 
   timer.resetHalf();
-  score.restoreScoreState(fresh.score);
+  score.resetCurrentHalfGoals(periodToClear);
   dismissFirstHalfMustEndToast();
   updateTabBadges();
   persistState();
@@ -514,14 +737,14 @@ window.executeResetHalf = executeResetHalf;
 export function promptEndHalf() {
   const tState = timer.getTimerState();
   if (tState && tState.isTimerRunning) {
-    return; // Block ending half while clock is running
+    score.showMatchToast('Pause the clock first to end half', '⏱️', 2200);
+    hardware.hapticFeedback('warning');
+    return;
   }
 
   const current = tState.currentPeriod;
   if (current === 'Full Time') {
-    if (typeof window.openReportModal === 'function') {
-      window.openReportModal();
-    }
+    report.openReportModal();
     return;
   }
 
@@ -531,27 +754,20 @@ export function promptEndHalf() {
 
   if (current === '1st Half') {
     if (title) title.innerText = 'End 1st Half?';
-    if (desc) desc.innerText = 'Finalise score for the 1st half and advance to 2nd half?';
+    if (desc) desc.innerText = 'Finalise 1st half score, start the 5:00 half-time break timer, and advance to 2nd half?';
     if (btnText) btnText.innerText = 'YES, END 1ST HALF';
   } else if (current === '2nd Half') {
     if (title) title.innerText = 'End Match (Full Time)?';
-    if (desc) desc.innerText = 'Finalise the 2nd half and finish match at Full Time?';
+    if (desc) desc.innerText = 'Finalise the 2nd half, archive match result, and finish at Full Time?';
     if (btnText) btnText.innerText = 'YES, FINISH MATCH (FULL TIME)';
   }
 
-  const modal = document.getElementById('confirmEndHalfModal');
-  if (modal) {
-    modal.classList.remove('hidden');
-    hardware.hapticFeedback('tap');
-  } else if (window.confirm(current === '1st Half' ? 'End 1st Half and finalise half-time score?' : 'Finish match at Full Time?')) {
-    executeEndHalf();
-  }
+  window.openModal('confirmEndHalfModal');
 }
 window.promptEndHalf = promptEndHalf;
 
 export function executeEndHalf() {
-  const modal = document.getElementById('confirmEndHalfModal');
-  if (modal) modal.classList.add('hidden');
+  window.closeModal('confirmEndHalfModal');
   endHalf();
 }
 window.executeEndHalf = executeEndHalf;
@@ -559,33 +775,25 @@ window.executeEndHalf = executeEndHalf;
 export function endHalf() {
   const tState = timer.getTimerState();
   const current = tState.currentPeriod;
-  const sState = score.getScoreState();
 
   if (current === 'Full Time') {
-    if (typeof window.openReportModal === 'function') {
-      window.openReportModal();
-    }
+    report.openReportModal();
     return;
   }
 
   if (current === '1st Half') {
-    // 1. Finalise score for 1st half
     score.finaliseHalfScore();
-
-    // 2. Referee double whistle & haptic feedback
     hardware.playWhistleTone('double');
     hardware.hapticFeedback('long');
 
-    // 3. Mark 1st half as ended & switch period to 2nd Half
     timer.setFirstHalfEnded(true);
     timer.prepareSecondHalf();
     timer.setPeriod('2nd Half');
+    timer.startHalfTimeBreak(5 * 60);
 
-    // 4. Update tab badges and persist session
     updateTabBadges();
     persistState();
   } else if (current === '2nd Half') {
-    // Ending 2nd half finishes the match (Full Time)
     timer.finishMatch();
   }
 }
@@ -596,35 +804,19 @@ export function showFirstHalfMustEndPrompt() {
   const toast = document.getElementById('firstHalfMustEndToast');
   if (toast) {
     toast.classList.remove('hidden');
-    // Scroll toast into view if needed
-    try {
-      toast.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    } catch (e) {}
+    try { toast.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
   }
   hardware.hapticFeedback('alert');
 }
 window.showFirstHalfMustEndPrompt = showFirstHalfMustEndPrompt;
 
 export function dismissFirstHalfMustEndToast() {
-  const toast = document.getElementById('firstHalfMustEndToast');
-  if (toast) {
-    toast.classList.add('hidden');
-  }
+  document.getElementById('firstHalfMustEndToast')?.classList.add('hidden');
 }
 window.dismissFirstHalfMustEndToast = dismissFirstHalfMustEndToast;
 
-export function dismissPausedGoalToast() {
-  const toast = document.getElementById('pausedGoalToast');
-  if (toast) {
-    toast.classList.add('hidden');
-    hardware.hapticFeedback('tap');
-  }
-}
-window.dismissPausedGoalToast = dismissPausedGoalToast;
-
+// Window Bindings for HTML attributes
 window.resetMatchTimer = timer.resetMatchTimer;
-window.nextPeriod = timer.nextPeriod;
-window.nextHalf = timer.nextPeriod;
 window.setPeriod = timer.setPeriod;
 window.setFirstHalfEnded = timer.setFirstHalfEnded;
 window.isFirstHalfEnded = timer.isFirstHalfEnded;
@@ -633,7 +825,6 @@ window.dismissSubBanner = timer.dismissSubBanner;
 window.dismissOneMinuteBanner = timer.dismissOneMinuteBanner;
 window.triggerSubReminder = timer.triggerSubReminder;
 window.triggerOneMinuteAlert = timer.triggerOneMinuteAlert;
-window.catchUpAllStoppage = timer.catchUpAllStoppage;
 window.dismissForgotResumeAlert = timer.dismissForgotResumeAlert;
 window.dismissPausedGoalToast = score.dismissPausedGoalToast;
 window.resumeFromToast = score.resumeFromToast;
@@ -650,6 +841,7 @@ window.undoLastGoal = score.undoLastGoal;
 window.removeGoal = score.removeGoal;
 window.resetScoreState = score.resetScoreState;
 window.dismissPowerPlayBanner = score.dismissPowerPlayBanner;
+window.dismissPowerPlayEndedBanner = score.dismissPowerPlayEndedBanner;
 window.openConcludedGoalModal = score.openConcludedGoalModal;
 window.setConcludedGoalPeriod = score.setConcludedGoalPeriod;
 window.getTargetHalfSeconds = timer.getTargetHalfSeconds;
@@ -662,11 +854,11 @@ window.executeConcludedGoalRemoval = score.executeConcludedGoalRemoval;
 
 window.setAppMode = function(mode) {
   score.setAppMode(mode);
+  storage.savePrefs({ hasCompletedRoleOnboarding: true });
   persistState();
 };
 window.getAppMode = score.getAppMode;
 window.toggleAppMode = score.toggleAppMode;
-window.showAppModeToast = score.showAppModeToast;
 window.restoreScoreState = score.restoreScoreState;
 window.setKickoffTeam = score.setKickoffTeam;
 window.toggleKickoffTeam = score.toggleKickoffTeam;
@@ -687,9 +879,6 @@ window.setSkipAssistStep = score.setSkipAssistStep;
 window.getSkipAssistStep = score.getSkipAssistStep;
 
 window.openMatchNotesModal = score.openMatchNotesModal;
-window.selectMomentTag = score.selectMomentTag;
-window.cancelMomentTagSelection = score.cancelMomentTagSelection;
-window.recordMomentForPlayer = score.recordMomentForPlayer;
 window.setCoachPotm = score.setCoachPotm;
 window.setCoachNotesText = score.setCoachNotesText;
 window.addCoachMoment = score.addCoachMoment;
@@ -711,6 +900,13 @@ window.toggleInlineNotesDrawer = score.toggleInlineNotesDrawer;
 window.renderTouchlineBarUI = score.renderTouchlineBarUI;
 window.toggleFullTimeMomentTags = score.toggleFullTimeMomentTags;
 
+// Squad Rotation Bindings
+window.openSquadRotationModal = score.openSquadRotationModal;
+window.togglePlayerOnPitch = score.togglePlayerOnPitch;
+window.setActiveGoalkeeper = score.setActiveGoalkeeper;
+window.rotateBenchPlayersIn = score.rotateBenchPlayersIn;
+window.resetSquadRotation = score.resetSquadRotation;
+
 window.getCoachTeam = score.getCoachTeam;
 window.setCoachTeam = score.setCoachTeam;
 window.toggleCoachTeam = score.toggleCoachTeam;
@@ -728,30 +924,27 @@ window.teams = score.teams;
 window.toggleEditTeamCoachRole = score.toggleEditTeamCoachRole;
 
 window.renderTeamRosterEditor = score.renderTeamRosterEditor;
-window.editRosterPlayerModal = score.editRosterPlayerModal;
-window.openAddRosterPlayerModal = score.openAddRosterPlayerModal;
-window.saveRosterPlayer = score.saveRosterPlayer;
-window.removeRosterPlayer = score.removeRosterPlayer;
 window.resetRosterToDefault = score.resetRosterToDefault;
 
 window.openEditTeamModal = score.openEditTeamModal;
 window.editTeamModal = score.openEditTeamModal;
 window.onLeagueTeamSelected = score.onLeagueTeamSelected;
-window.setPresetTeamName = score.setPresetTeamName;
 window.selectKitColor = score.selectKitColor;
 window.saveTeamChanges = score.saveTeamChanges;
-window.onPrematchSelect = score.onPrematchSelect;
-window.swapTeams = score.swapTeams;
 
 window.flipCoin = prematch.flipCoin;
 window.adjustPlayer = prematch.adjustPlayer;
+window.setBothTeams5v5 = prematch.setBothTeams5v5;
 window.resetPlayerCounts = prematch.resetPlayerCounts;
 window.resetChecklist = prematch.resetChecklist;
 window.getPlayerCounts = prematch.getPlayerCounts;
+window.updatePrematchUI = prematch.updatePrematchUI;
 
 window.switchRuleTab = rules.switchRulesTab;
 window.switchRulesTab = rules.switchRulesTab;
 window.filterRulesTopic = rules.filterRulesTopic;
+window.searchRules = rules.searchRules;
+window.clearRulesSearch = rules.clearRulesSearch;
 window.scrollToRuleSection = rules.scrollToRuleSection;
 
 export function switchInstructionsTab(tab) {
@@ -761,67 +954,48 @@ export function switchInstructionsTab(tab) {
   const coachContent = document.getElementById('instructionsCoachContent');
 
   if (tab === 'ref') {
-    if (refBtn) {
-      refBtn.className = 'flex-1 py-2 rounded-lg bg-emerald-500 text-slate-950 font-black transition shadow flex items-center justify-center gap-1.5 cursor-pointer';
-    }
-    if (coachBtn) {
-      coachBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 font-bold cursor-pointer';
-    }
-    if (refContent) refContent.classList.remove('hidden');
-    if (coachContent) coachContent.classList.add('hidden');
+    if (refBtn) refBtn.className = 'flex-1 py-2 rounded-lg bg-emerald-500 text-slate-950 font-black transition shadow flex items-center justify-center gap-1.5 cursor-pointer';
+    if (coachBtn) coachBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 font-bold cursor-pointer';
+    refContent?.classList.remove('hidden');
+    coachContent?.classList.add('hidden');
   } else {
-    if (coachBtn) {
-      coachBtn.className = 'flex-1 py-2 rounded-lg bg-amber-500 text-slate-950 font-black transition shadow flex items-center justify-center gap-1.5 cursor-pointer';
-    }
-    if (refBtn) {
-      refBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 font-bold cursor-pointer';
-    }
-    if (coachContent) coachContent.classList.remove('hidden');
-    if (refContent) refContent.classList.add('hidden');
+    if (coachBtn) coachBtn.className = 'flex-1 py-2 rounded-lg bg-amber-500 text-slate-950 font-black transition shadow flex items-center justify-center gap-1.5 cursor-pointer';
+    if (refBtn) refBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 font-bold cursor-pointer';
+    coachContent?.classList.remove('hidden');
+    refContent?.classList.add('hidden');
   }
 }
 window.switchInstructionsTab = switchInstructionsTab;
 
-// Touchline Role Selection Modal Handlers (Prompted on App Open)
 export function updateRoleSelectModalUI() {
-  const currentMode = (typeof score !== 'undefined' && score.getAppMode) ? score.getAppMode() : (window.getAppMode ? window.getAppMode() : 'referee');
+  const currentMode = score.getAppMode();
   const refBtn = document.getElementById('roleSelectModalRefBtn');
   const coachBtn = document.getElementById('roleSelectModalCoachBtn');
   const refBadge = document.getElementById('roleModalRefBadge');
   const coachBadge = document.getElementById('roleModalCoachBadge');
 
   if (currentMode === 'coach') {
-    if (coachBtn) {
-      coachBtn.classList.add('ring-2', 'ring-amber-400', 'bg-amber-950/40');
-      coachBtn.classList.remove('border-amber-500/50');
-      coachBtn.classList.add('border-amber-400');
-    }
+    coachBtn?.classList.add('ring-2', 'ring-amber-400', 'bg-amber-950/40', 'border-amber-400');
+    coachBtn?.classList.remove('border-amber-500/50');
     if (coachBadge) {
       coachBadge.textContent = 'CURRENT';
       coachBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 shadow-sm';
     }
-    if (refBtn) {
-      refBtn.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-950/40', 'border-emerald-400');
-      refBtn.classList.add('border-emerald-500/50');
-    }
+    refBtn?.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-950/40', 'border-emerald-400');
+    refBtn?.classList.add('border-emerald-500/50');
     if (refBadge) {
       refBadge.textContent = 'OFFICIAL';
       refBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
     }
   } else {
-    if (refBtn) {
-      refBtn.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-950/40');
-      refBtn.classList.remove('border-emerald-500/50');
-      refBtn.classList.add('border-emerald-400');
-    }
+    refBtn?.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-950/40', 'border-emerald-400');
+    refBtn?.classList.remove('border-emerald-500/50');
     if (refBadge) {
       refBadge.textContent = 'CURRENT';
       refBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-400 text-slate-950 shadow-sm';
     }
-    if (coachBtn) {
-      coachBtn.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-950/40', 'border-amber-400');
-      coachBtn.classList.add('border-amber-500/50');
-    }
+    coachBtn?.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-950/40', 'border-amber-400');
+    coachBtn?.classList.add('border-amber-500/50');
     if (coachBadge) {
       coachBadge.textContent = 'TOUCHLINE';
       coachBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40';
@@ -831,58 +1005,34 @@ export function updateRoleSelectModalUI() {
 window.updateRoleSelectModalUI = updateRoleSelectModalUI;
 
 export function selectAppRole(mode) {
-  if (typeof score !== 'undefined' && score.setAppMode) {
-    score.setAppMode(mode);
-  } else if (typeof window.setAppMode === 'function') {
-    window.setAppMode(mode);
-  }
-  
-  if (typeof hardware !== 'undefined' && hardware.hapticFeedback) {
-    hardware.hapticFeedback('success');
-  } else if (typeof window.hapticFeedback === 'function') {
-    window.hapticFeedback('success');
-  }
-
-  if (typeof window.closeModal === 'function') {
-    window.closeModal('roleSelectModal');
-  }
+  storage.savePrefs({ hasCompletedRoleOnboarding: true });
+  score.setAppMode(mode);
+  hardware.hapticFeedback('success');
+  window.closeModal('roleSelectModal');
 
   if (mode === 'referee') {
-    if (typeof window.closeModal === 'function') {
-      window.closeModal('squadInitialsModal');
-    }
+    window.closeModal('squadInitialsModal');
   } else if (mode === 'coach') {
-    if (typeof score !== 'undefined' && score.checkCoachSquadPrompt) {
-      score.checkCoachSquadPrompt();
-    } else if (typeof window.checkCoachSquadPrompt === 'function') {
-      window.checkCoachSquadPrompt();
-    }
+    score.checkCoachSquadPrompt();
   }
 }
 window.selectAppRole = selectAppRole;
 
 export function checkOpenRoleModalOnLaunch() {
-  // If timer is running or interval is active, do not block the active match
-  if (typeof timer !== 'undefined' && timer.getTimerState) {
-    const timerState = timer.getTimerState();
-    if (timerState && timerState.isTimerRunning) return;
-  }
+  if (hasActiveMatchInProgress()) return;
+  const prefs = storage.loadPrefs();
+  if (prefs.hasCompletedRoleOnboarding) return;
 
-  // Ensure squadInitialsModal is never open when role selection is presented
-  if (typeof window.closeModal === 'function') {
-    window.closeModal('squadInitialsModal');
-  }
-  
+  window.closeModal('squadInitialsModal');
   updateRoleSelectModalUI();
-  if (typeof window.openModal === 'function') {
-    window.openModal('roleSelectModal');
-  }
+  window.openModal('roleSelectModal');
 }
 window.checkOpenRoleModalOnLaunch = checkOpenRoleModalOnLaunch;
 
 window.openReportModal = report.openReportModal;
 window.updateReportUI = report.updateReportUI;
 window.updateReportText = report.updateReportText;
+window.onReportMetaInputChanged = report.onReportMetaInputChanged;
 window.getActiveReportText = report.getActiveReportText;
 window.generateReportText = report.generateReportText;
 window.copyReportToClipboard = report.copyReportToClipboard;
@@ -921,7 +1071,7 @@ export function updateSunlightUI(isSun) {
     toggleContrastBtn.className = 'flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-900 border border-amber-400/70 cursor-pointer shadow-sm active:scale-95 transition shrink-0';
     toggleContrastBtn.innerHTML = `
       <span class="text-xs font-black text-amber-300 font-mono-sport tracking-wider">ON</span>
-      <span class="w-8 h-4.5 bg-amber-400 rounded-full p-0.5 flex items-center justify-end transition-colors shadow-inner">
+      <span class="w-8 h-5 bg-amber-400 rounded-full p-0.5 flex items-center justify-end transition-colors shadow-inner">
         <span class="w-3.5 h-3.5 rounded-full bg-slate-950 shadow-md"></span>
       </span>
     `;
@@ -929,7 +1079,7 @@ export function updateSunlightUI(isSun) {
     toggleContrastBtn.className = 'flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-900 border border-slate-700/60 cursor-pointer shadow-sm active:scale-95 transition shrink-0';
     toggleContrastBtn.innerHTML = `
       <span class="text-xs font-bold text-slate-400 font-mono-sport tracking-wider">OFF</span>
-      <span class="w-8 h-4.5 bg-slate-800 border border-slate-700 rounded-full p-0.5 flex items-center justify-start transition-colors">
+      <span class="w-8 h-5 bg-slate-800 border border-slate-700 rounded-full p-0.5 flex items-center justify-start transition-colors">
         <span class="w-3.5 h-3.5 rounded-full bg-slate-400 shadow-sm"></span>
       </span>
     `;
@@ -938,40 +1088,31 @@ export function updateSunlightUI(isSun) {
 window.updateSunlightUI = updateSunlightUI;
 
 export function toggleSunlightMode(forceState = null) {
-  if (forceState !== null) {
-    sessionState.isSunlightMode = Boolean(forceState);
-  } else {
-    sessionState.isSunlightMode = !sessionState.isSunlightMode;
-  }
+  sessionState.isSunlightMode = forceState !== null ? Boolean(forceState) : !sessionState.isSunlightMode;
   const isSun = sessionState.isSunlightMode;
 
-  if (isSun) {
-    document.documentElement.classList.add('sunlight-mode');
-    document.body.classList.add('sunlight-mode');
-  } else {
-    document.documentElement.classList.remove('sunlight-mode');
-    document.body.classList.remove('sunlight-mode');
-  }
+  document.documentElement.classList.toggle('sunlight-mode', isSun);
+  document.body.classList.toggle('sunlight-mode', isSun);
 
   updateSunlightUI(isSun);
-
-  // Force re-apply kit visuals to ensure proper synchronization
   try {
     score.applyTeamVisuals('home');
     score.applyTeamVisuals('away');
-  } catch (e) {}
+  } catch (_) {}
 
   hardware.hapticFeedback('tap');
   persistState();
 }
 window.toggleSunlightMode = toggleSunlightMode;
 
-// Auto-save on timer ticks, period changes, and score updates
+// Throttled Persistence on 1Hz Timer Ticks & Events
+let lastStorageSaveSec = -1;
 timer.registerTimerTickCallback((sec) => {
-  persistState();
-  if (sec === 1) {
-    updateTabBadges();
+  if (Math.abs(sec - lastStorageSaveSec) >= 2 || sec <= 1) {
+    lastStorageSaveSec = sec;
+    persistState();
   }
+  if (sec === 1) updateTabBadges();
   score.renderRefereeHelperBar();
 });
 timer.registerPeriodChangeCallback(() => {
@@ -985,120 +1126,117 @@ score.registerScoreChangeCallback(() => {
   hardware.rearmWakeLock();
 });
 
+// Flush immediately on pagehide / backgrounding
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => persistState());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') persistState();
+  });
+}
+
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
-
-  // Setup long press logic for reset buttons (short press ignored, long press 1.5s opens confirmation modal)
+  // Visual Hold-Progress Bar + Short-Tap Hint for Reset Buttons
   function setupLongPress(elementId, callback, duration = 1500) {
     const el = document.getElementById(elementId);
     if (!el) return;
-    
+
+    el.classList.add('relative', 'overflow-hidden');
+    let fillBar = el.querySelector('.hold-progress-fill');
+    if (!fillBar) {
+      fillBar = document.createElement('span');
+      fillBar.className = 'hold-progress-fill';
+      el.insertBefore(fillBar, el.firstChild);
+    }
+
     let pressTimer = null;
     let isPressed = false;
+    let didComplete = false;
+    let pressStartedAt = 0;
     let startX = 0;
     let startY = 0;
 
     function start(e) {
-      if (e.type === 'mousedown' && e.button !== 0) return;
+      if (e.button !== undefined && e.button !== 0) return;
       isPressed = true;
-      
-      if (e.touches && e.touches[0]) {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-      } else {
-        startX = e.clientX;
-        startY = e.clientY;
-      }
-      
-      // Visual feedback for holding
-      el.style.transition = `transform ${duration}ms linear, background-color ${duration}ms linear`;
-      el.style.transform = 'scale(0.92)';
-      
-      if (el.classList.contains('bg-red-600')) {
-        el.dataset.origBg = el.style.backgroundColor;
-        el.style.backgroundColor = '#991b1b'; // darker red
-      } else {
-        el.dataset.origBg = el.style.backgroundColor;
-        el.style.backgroundColor = '#1e293b'; // slate-800
-      }
+      didComplete = false;
+      pressStartedAt = Date.now();
+      startX = e.clientX || 0;
+      startY = e.clientY || 0;
+
+      el.style.transform = 'scale(0.96)';
+      fillBar.style.transition = `width ${duration}ms linear`;
+      fillBar.style.width = '100%';
+      hardware.hapticFeedback('selection');
 
       pressTimer = setTimeout(() => {
         if (!isPressed) return;
         isPressed = false;
-        
-        // Reset visual feedback
-        el.style.transition = '';
-        el.style.transform = '';
-        if (el.dataset.origBg !== undefined) {
-          el.style.backgroundColor = el.dataset.origBg;
-        }
-
-        if (hardware && hardware.hapticFeedback) hardware.hapticFeedback('warning');
-        
+        didComplete = true;
+        resetVisuals();
+        hardware.hapticFeedback('warning');
         callback(e);
       }, duration);
     }
 
     function move(e) {
       if (!isPressed) return;
-      let curX = 0, curY = 0;
-      if (e.touches && e.touches[0]) {
-        curX = e.touches[0].clientX;
-        curY = e.touches[0].clientY;
-      } else {
-        curX = e.clientX;
-        curY = e.clientY;
-      }
-      const dist = Math.hypot(curX - startX, curY - startY);
-      if (dist > 15) {
-        cancel(e);
+      if (Math.hypot((e.clientX || 0) - startX, (e.clientY || 0) - startY) > 15) {
+        cancel();
       }
     }
 
-    function cancel(e) {
+    function resetVisuals() {
+      el.style.transform = '';
+      fillBar.style.transition = 'width 0.12s ease-out';
+      fillBar.style.width = '0%';
+    }
+
+    function end() {
+      if (!isPressed) return;
+      const heldMs = Date.now() - pressStartedAt;
+      cancel();
+      if (!didComplete && heldMs < duration - 80) {
+        score.showMatchToast('Hold button for 1.5s to reset', '🔒', 1800);
+      }
+    }
+
+    function cancel() {
       if (!isPressed && !pressTimer) return;
       isPressed = false;
       if (pressTimer) {
         clearTimeout(pressTimer);
         pressTimer = null;
       }
-      
-      // Reset visual feedback
-      el.style.transition = 'transform 0.15s ease, background-color 0.15s ease';
-      el.style.transform = '';
-      if (el.dataset.origBg !== undefined) {
-        el.style.backgroundColor = el.dataset.origBg;
-      }
+      resetVisuals();
     }
 
-    el.addEventListener('mousedown', start);
-    el.addEventListener('touchstart', start, {passive: true});
-    el.addEventListener('mousemove', move);
-    el.addEventListener('touchmove', move, {passive: true});
-    el.addEventListener('mouseup', cancel);
-    el.addEventListener('mouseleave', cancel);
-    el.addEventListener('touchend', cancel);
-    el.addEventListener('touchcancel', cancel);
-    el.addEventListener('contextmenu', (e) => { e.preventDefault(); });
+    el.addEventListener('pointerdown', start);
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointerleave', cancel);
+    el.addEventListener('pointercancel', cancel);
+    el.addEventListener('contextmenu', (e) => e.preventDefault());
     el.addEventListener('click', (e) => {
-      // Short press does not put up the window
       e.preventDefault();
       e.stopPropagation();
     });
   }
 
-  setupLongPress('resetHalfBtn', () => { window.promptResetHalf(); }, 1500);
-  setupLongPress('resetMatchBtn', () => { window.promptResetMatch(); }, 1500);
+  setupLongPress('resetHalfBtn', () => window.promptResetHalf(), 1500);
+  setupLongPress('resetMatchBtn', () => window.promptResetMatch(), 1500);
 
-  // 1. Initialize fixture dropdowns and timer UI
+  // Initialize modules
   timer.initTimer();
   score.initPrematchDropdowns();
+  prematch.initPrematchState();
+  hardware.syncHardwarePrefsUI();
   score.applyTeamVisuals('home');
   score.applyTeamVisuals('away');
   score.renderGoalTimeline();
   score.setupKickoffLongPress();
 
-  // 2. Load saved session if present
+  // Load saved session
   const saved = storage.loadSessionState();
   if (saved && saved.matches) {
     if (saved.activeMatchId) sessionState.activeMatchId = saved.activeMatchId;
@@ -1117,7 +1255,6 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
-    // Restore active match
     const activeState = sessionState.matches[sessionState.activeMatchId] || sessionState.matches[1];
     isRestoringState = true;
     try {
@@ -1136,36 +1273,129 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSunlightUI(false);
   }
 
-  // 3. Update Tab Badges & Highlights & App Mode
+  // Check for incoming ?sync=... URL parameter from Ref/Coach Touchline Sync
+  let importedViaUrl = false;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const syncParam = params.get('sync');
+    if (syncParam) {
+      const decoded = storage.decodeMatchSyncCode(syncParam);
+      if (decoded && applyImportedMatchSync(decoded)) {
+        importedViaUrl = true;
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
+  } catch (_) {}
+
   updateTabBadges();
   score.updateAppModeUI();
+  prematch.updatePrematchUI(score.teams.home?.name, score.teams.away?.name);
+  report.syncReportMetaInputsFromPrefs();
+  updateHistoryCountBadge();
 
-  // 4. Acquire Screen Wake Lock
-  hardware.requestWakeLock();
+  // Request wake lock if enabled
+  if (hardware.isWakeLockEnabled()) {
+    hardware.requestWakeLock();
+  }
 
-  // 5. Register PWA Service Worker (100% Offline caching)
+  // Register Service Worker safely (no forced mid-match reload!)
   if ('serviceWorker' in navigator) {
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let refreshing = false;
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || refreshing) return;
+      // Never force-reload in the middle of an active match!
+      if (hasActiveMatchInProgress()) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
     navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
       .then((reg) => {
-        console.log('Service Worker registered successfully:', reg.scope);
-        // Force update check
-        reg.update().catch(() => {});
+        if (!hasActiveMatchInProgress()) {
+          reg.update().catch(() => {});
+        }
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !hasActiveMatchInProgress()) {
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          }
+        });
       })
       .catch((err) => console.warn('Service Worker registration failed:', err));
   }
 
-  // 5b. PWA Home Screen Install Button
+  // PWA Home Screen Install Prompt
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     updateInstallButton();
   });
-
   updateInstallButton();
 
-  // 6. Desktop Keyboard Shortcuts (Helpful when refereeing or testing)
+  // Close non-destructive modals when clicking dark backdrop
+  const BACKDROP_DISMISSIBLE_MODALS = [
+    'timelineModal',
+    'coachMomentsModal',
+    'coachNotesModal',
+    'squadRotationModal',
+    'reportModal',
+    'sharePickerModal',
+    'coinModal',
+    'prematchModal',
+    'rulesModal',
+    'teamEditModal',
+    'squadInitialsModal',
+    'matchCardModal',
+    'matchCardFullscreenModal',
+    'instructionsModal',
+    'matchHistoryModal',
+    'matchSyncModal',
+    'installAppModal',
+    'quickToolsDrawer'
+  ];
+  BACKDROP_DISMISSIBLE_MODALS.forEach(id => {
+    const m = document.getElementById(id);
+    if (m) {
+      m.addEventListener('click', (e) => {
+        if (e.target === m) window.closeModal(id);
+      });
+    }
+  });
+
+  // Desktop Keyboard Shortcuts (Guarded against Field Lock & open inputs)
   document.addEventListener('keydown', (e) => {
-    if (['input', 'textarea', 'select'].includes(document.activeElement?.tagName?.toLowerCase())) return;
+    if (document.body?.classList.contains('screen-locked')) return;
+    if (['input', 'textarea', 'select'].includes(document.activeElement?.tagName?.toLowerCase())) {
+      if (e.key === 'Escape') {
+        document.activeElement.blur();
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      for (const id of ALL_MODAL_IDS) {
+        const m = document.getElementById(id);
+        if (m && !m.classList.contains('hidden')) {
+          window.closeModal(id);
+          return;
+        }
+      }
+      return;
+    }
+
+    // Suppress main HUD shortcuts while any modal is open
+    const anyModalOpen = ALL_MODAL_IDS.some(id => {
+      const m = document.getElementById(id);
+      return m && !m.classList.contains('hidden');
+    });
+    if (anyModalOpen) return;
 
     if (e.code === 'Space') {
       e.preventDefault();
@@ -1180,40 +1410,23 @@ document.addEventListener('DOMContentLoaded', () => {
       switchMatchTab(1);
     } else if (e.key === '2') {
       switchMatchTab(2);
-    } else if (e.key === 'Escape') {
-      window.closeModal('confirmResetModal');
-      window.closeModal('timelineModal');
-      window.closeModal('reportModal');
-      window.closeModal('sharePickerModal');
-      window.closeModal('rulesModal');
-      window.closeModal('prematchModal');
-      window.closeModal('teamEditModal');
-      window.closeModal('installAppModal');
-      window.closeModal('goalAttributionModal');
-      window.closeModal('rosterPlayerEditModal');
-      window.closeModal('matchNotesModal');
-      window.closeModal('coachMomentsModal');
-      window.closeModal('coachNotesModal');
     }
   });
 
-  // 7. Auto-fit Header Title for maximum responsive single-line display
+  // Auto-fit Header Title
   if (typeof window.fitHeaderTitle === 'function') {
     window.fitHeaderTitle();
     const container = document.getElementById('headerTitleContainer');
     if (window.ResizeObserver && container) {
       new ResizeObserver(() => window.fitHeaderTitle()).observe(container);
     }
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => window.fitHeaderTitle());
-    }
+    document.fonts?.ready?.then(() => window.fitHeaderTitle());
   }
 
-  // 8. Pitch-Side Launch Splash Screen
-  initSplashScreen();
+  // Launch Splash Screen Coordinator (skip splash if resuming active match or importing sync link!)
+  initSplashScreen(importedViaUrl || hasActiveMatchInProgress());
 });
 
-// PWA Install Button Helpers
 function updateInstallButton() {
   const btn = document.getElementById('installPwaBtn');
   const badge = document.getElementById('installBtnBadge');
@@ -1232,67 +1445,58 @@ function updateInstallButton() {
 function installPwaApp() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted PWA install');
-      }
+    deferredPrompt.userChoice.then(() => {
       deferredPrompt = null;
       updateInstallButton();
     });
   } else {
-    // iOS / unsupported browser – show manual instructions
     window.openModal('installAppModal');
   }
 }
 window.installPwaApp = installPwaApp;
 
-// Pitch-Side Splash Screen Coordinator
-function initSplashScreen() {
+function initSplashScreen(skipImmediately = false) {
   const splash = document.getElementById('splashScreen');
   if (!splash) {
-    setTimeout(() => {
-      if (typeof window.checkOpenRoleModalOnLaunch === 'function') {
-        window.checkOpenRoleModalOnLaunch();
-      }
-    }, 200);
+    if (!skipImmediately) {
+      setTimeout(() => checkOpenRoleModalOnLaunch(), 150);
+    }
+    return;
+  }
+
+  if (skipImmediately) {
+    splash.dataset.dismissed = 'true';
+    splash.remove();
     return;
   }
 
   const bar = document.getElementById('splashProgressBar');
   if (bar) {
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       bar.style.width = '100%';
-    }, 50);
+    });
   }
 
   window.dismissSplash = function() {
-    if (splash.dataset.dismissed) return;
+    if (!splash || splash.dataset.dismissed) return;
     splash.dataset.dismissed = 'true';
     splash.classList.add('opacity-0', 'pointer-events-none');
     setTimeout(() => {
-      splash.style.display = 'none';
-      if (typeof window.checkOpenRoleModalOnLaunch === 'function') {
-        window.checkOpenRoleModalOnLaunch();
-      }
-    }, 400);
+      splash.remove();
+      checkOpenRoleModalOnLaunch();
+    }, 350);
   };
 
-  // Smooth auto-dismiss after 1.8 seconds
-  setTimeout(() => {
-    window.dismissSplash();
-  }, 1800);
+  setTimeout(() => window.dismissSplash(), 1200);
 }
+
 window.dismissSplash = function() {
   const splash = document.getElementById('splashScreen');
-  if (splash) {
-    if (splash.dataset.dismissed) return;
-    splash.dataset.dismissed = 'true';
-    splash.classList.add('opacity-0', 'pointer-events-none');
-    setTimeout(() => { 
-      splash.style.display = 'none';
-      if (typeof window.checkOpenRoleModalOnLaunch === 'function') {
-        window.checkOpenRoleModalOnLaunch();
-      }
-    }, 400);
-  }
+  if (!splash || splash.dataset.dismissed) return;
+  splash.dataset.dismissed = 'true';
+  splash.classList.add('opacity-0', 'pointer-events-none');
+  setTimeout(() => {
+    splash.remove();
+    checkOpenRoleModalOnLaunch();
+  }, 350);
 };

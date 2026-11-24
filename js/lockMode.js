@@ -3,28 +3,59 @@ import { hapticFeedback } from './hardware.js';
 
 let unlockTimer = null;
 let unlockStartTime = 0;
-let isUnlocked = false;
+let isUnlocking = false;
 
 export function activateLock() {
   const overlay = document.getElementById('pocketLockOverlay');
+  const bar = document.getElementById('unlockProgressFill');
   if (overlay) {
     overlay.classList.remove('hidden');
     document.body?.classList.add('screen-locked');
+    if (bar) {
+      bar.style.width = '0%';
+      bar.style.backgroundColor = '';
+    }
+    isUnlocking = false;
     hapticFeedback('long');
-    isUnlocked = false;
   }
 }
 
-export function startUnlockProgress() {
+function completeUnlock() {
+  clearInterval(unlockTimer);
+  unlockTimer = null;
+  isUnlocking = false;
+  const bar = document.getElementById('unlockProgressFill');
+  if (bar) {
+    bar.style.width = '100%';
+    bar.style.backgroundColor = '#10b981';
+  }
+  hapticFeedback('success');
+
+  // Slight delay absorbs synthetic ghost taps after hold completes
+  setTimeout(() => {
+    const overlay = document.getElementById('pocketLockOverlay');
+    if (overlay) overlay.classList.add('hidden');
+    document.body?.classList.remove('screen-locked');
+    if (bar) {
+      bar.style.width = '0%';
+      bar.style.backgroundColor = '';
+    }
+  }, 160);
+}
+
+export function startUnlockProgress(e) {
+  if (e && e.type === 'mousedown' && e.button !== 0) return;
+  if (isUnlocking) return;
+
+  isUnlocking = true;
   unlockStartTime = Date.now();
   const bar = document.getElementById('unlockProgressFill');
-  const btn = document.getElementById('holdUnlockBtn');
   if (bar) {
     bar.style.width = '0%';
-    bar.style.backgroundColor = ''; // Reset color
+    bar.style.backgroundColor = '';
   }
-  isUnlocked = false;
 
+  hapticFeedback('selection');
   clearInterval(unlockTimer);
   unlockTimer = setInterval(() => {
     const elapsed = Date.now() - unlockStartTime;
@@ -32,27 +63,20 @@ export function startUnlockProgress() {
     if (bar) bar.style.width = `${pct}%`;
 
     if (pct >= 100) {
-      clearInterval(unlockTimer);
-      isUnlocked = true;
-      if (bar) bar.style.backgroundColor = '#10b981'; // Green for unlocked
-      hapticFeedback('success');
+      completeUnlock();
     }
-  }, 50);
+  }, 40);
 }
 
 export function cancelUnlockProgress() {
+  if (!isUnlocking && !unlockTimer) return;
+  isUnlocking = false;
   clearInterval(unlockTimer);
+  unlockTimer = null;
+
   const bar = document.getElementById('unlockProgressFill');
-  
-  if (isUnlocked) {
-    isUnlocked = false;
-    setTimeout(() => {
-      const overlay = document.getElementById('pocketLockOverlay');
-      if (overlay) overlay.classList.add('hidden');
-      document.body?.classList.remove('screen-locked');
-      if (bar) bar.style.backgroundColor = '';
-    }, 150); // delay to absorb synthetic ghost clicks
+  if (bar) {
+    bar.style.width = '0%';
+    bar.style.backgroundColor = '';
   }
-  
-  if (bar) bar.style.width = '0%';
 }

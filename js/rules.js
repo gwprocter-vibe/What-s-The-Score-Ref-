@@ -1,104 +1,138 @@
-// What's The Score Ref - League Rules & Quick Rulings Module
+// What's The Score Ref - League Rules, Topic Filtering & Instant Search Module
 // Harrogate & Wharfedale Junior Friendly League Under-9 Matchday Rules (2026–2027)
+import { hapticFeedback } from './hardware.js';
+
+let activeRuleTab = 'quick';
+let activeRuleTopic = 'all';
+let activeRuleQuery = '';
 
 export function switchRulesTab(tab) {
-  const quickBtn = document.getElementById('tabQuickRules') || document.getElementById('tabQuickRulesBtn');
-  const allBtn = document.getElementById('tabAllRules') || document.getElementById('tabAllRulesBtn');
+  activeRuleTab = tab === 'all' ? 'all' : 'quick';
+  const quickBtn = document.getElementById('tabQuickRules');
+  const allBtn = document.getElementById('tabAllRules');
   const quickContainer = document.getElementById('quickRulesContainer');
   const allContainer = document.getElementById('allRulesContainer');
 
-  if (tab === 'quick') {
-    if (quickBtn) {
-      quickBtn.className = 'flex-1 py-2 rounded-lg bg-amber-500 text-black font-extrabold transition shadow';
-      quickBtn.style.setProperty('background-color', '#f59e0b', 'important');
-      quickBtn.style.setProperty('color', '#020617', 'important');
-      quickBtn.style.setProperty('font-weight', '800', 'important');
-    }
-    if (allBtn) {
-      allBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
-      allBtn.style.setProperty('background-color', 'transparent', 'important');
-      allBtn.style.setProperty('color', '#94a3b8', 'important');
-      allBtn.style.setProperty('font-weight', '700', 'important');
-    }
+  const activeCls = 'flex-1 py-2 rounded-lg bg-amber-500 text-slate-950 font-extrabold transition shadow cursor-pointer';
+  const inactiveCls = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white font-bold transition cursor-pointer';
 
-    if (quickContainer) {
-      quickContainer.classList.remove('hidden');
-      quickContainer.style.setProperty('display', 'block', 'important');
-    }
-    if (allContainer) {
-      allContainer.classList.add('hidden');
-      allContainer.style.setProperty('display', 'none', 'important');
-    }
+  if (activeRuleTab === 'quick') {
+    if (quickBtn) quickBtn.className = activeCls;
+    if (allBtn) allBtn.className = inactiveCls;
+    if (quickContainer) quickContainer.classList.remove('hidden');
+    if (allContainer) allContainer.classList.add('hidden');
   } else {
-    if (allBtn) {
-      allBtn.className = 'flex-1 py-2 rounded-lg bg-amber-500 text-black font-extrabold transition shadow';
-      allBtn.style.setProperty('background-color', '#f59e0b', 'important');
-      allBtn.style.setProperty('color', '#020617', 'important');
-      allBtn.style.setProperty('font-weight', '800', 'important');
-    }
-    if (quickBtn) {
-      quickBtn.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
-      quickBtn.style.setProperty('background-color', 'transparent', 'important');
-      quickBtn.style.setProperty('color', '#94a3b8', 'important');
-      quickBtn.style.setProperty('font-weight', '700', 'important');
-    }
-
-    if (quickContainer) {
-      quickContainer.classList.add('hidden');
-      quickContainer.style.setProperty('display', 'none', 'important');
-    }
-    if (allContainer) {
-      allContainer.classList.remove('hidden');
-      allContainer.style.setProperty('display', 'block', 'important');
-    }
+    if (allBtn) allBtn.className = activeCls;
+    if (quickBtn) quickBtn.className = inactiveCls;
+    if (quickContainer) quickContainer.classList.add('hidden');
+    if (allContainer) allContainer.classList.remove('hidden');
   }
+
+  applyRulesFilters();
 }
 
 export function filterRulesTopic(topic) {
-  try {
-    topic = (topic || 'all').toLowerCase().trim();
+  activeRuleTopic = (topic || 'all').toLowerCase().trim();
+  hapticFeedback('selection');
 
-    const chips = document.querySelectorAll('.rule-filter-chip, [data-topic-filter]');
-    chips.forEach(chip => {
-      const chipTopic = (chip.getAttribute('data-topic-filter') || '').toLowerCase().trim();
-      const isTarget = chipTopic === topic;
-      if (isTarget) {
-        chip.className = 'rule-filter-chip shrink-0 px-2.5 py-1 rounded-full text-xs font-black bg-amber-500 text-slate-950 shadow transition cursor-pointer';
-        chip.style.setProperty('background-color', '#f59e0b', 'important');
-        chip.style.setProperty('color', '#020617', 'important');
-        chip.style.setProperty('border-color', '#f59e0b', 'important');
-        chip.style.setProperty('font-weight', '900', 'important');
-        chip.style.setProperty('box-shadow', '0 1px 3px 0 rgba(0, 0, 0, 0.4)', 'important');
-      } else {
-        chip.className = 'rule-filter-chip shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer';
-        chip.style.setProperty('background-color', '#0f172a', 'important');
-        chip.style.setProperty('color', '#94a3b8', 'important');
-        chip.style.setProperty('border-color', '#1e293b', 'important');
-        chip.style.setProperty('font-weight', '700', 'important');
-        chip.style.setProperty('box-shadow', 'none', 'important');
-      }
-    });
+  const chips = document.querySelectorAll('.rule-filter-chip, [data-topic-filter]');
+  chips.forEach(chip => {
+    const chipTopic = (chip.getAttribute('data-topic-filter') || '').toLowerCase().trim();
+    if (chipTopic === activeRuleTopic) {
+      chip.className = 'rule-filter-chip shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-500 text-slate-950 border border-amber-400 shadow transition cursor-pointer';
+    } else {
+      chip.className = 'rule-filter-chip shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer';
+    }
+  });
 
-    const cards = document.querySelectorAll('#quickRulesContainer [data-topic]');
-    cards.forEach(card => {
-      const cardTopic = (card.getAttribute('data-topic') || '').toLowerCase().trim();
-      if (topic === 'all' || cardTopic === topic) {
-        card.classList.remove('hidden');
-        card.style.setProperty('display', 'block', 'important');
-      } else {
-        card.classList.add('hidden');
-        card.style.setProperty('display', 'none', 'important');
-        if (card.tagName.toLowerCase() === 'details') {
-          card.open = false;
-        }
+  // Topic pills apply to Quick Rulings; switch to Quick tab if on All Rules
+  if (activeRuleTab !== 'quick' && activeRuleTopic !== 'all') {
+    switchRulesTab('quick');
+    return;
+  }
+
+  applyRulesFilters();
+}
+
+export function searchRules(query) {
+  activeRuleQuery = (query || '').toLowerCase().trim();
+  const clearBtn = document.getElementById('rulesSearchClearBtn');
+  if (clearBtn) {
+    clearBtn.classList.toggle('hidden', activeRuleQuery.length === 0);
+  }
+  applyRulesFilters();
+}
+
+export function clearRulesSearch() {
+  const input = document.getElementById('rulesSearchInput');
+  if (input) input.value = '';
+  searchRules('');
+}
+
+function applyRulesFilters() {
+  const q = activeRuleQuery;
+
+  // 1. Filter Quick Ruling <details> cards
+  const cards = document.querySelectorAll('#quickRulesContainer details[data-topic]');
+  let visibleQuickCount = 0;
+  cards.forEach(card => {
+    const cardTopic = (card.getAttribute('data-topic') || '').toLowerCase().trim();
+    const topicMatch = activeRuleTopic === 'all' || cardTopic === activeRuleTopic;
+    const textMatch = !q || (card.textContent || '').toLowerCase().includes(q);
+
+    if (topicMatch && textMatch) {
+      card.classList.remove('hidden');
+      visibleQuickCount++;
+      if (q.length >= 2) {
+        card.open = true;
       }
-    });
-  } catch (err) {
-    console.error('filterRulesTopic error:', err);
+    } else {
+      card.classList.add('hidden');
+      card.open = false;
+    }
+  });
+
+  const emptyQuickEl = document.getElementById('quickRulesEmptyState');
+  if (emptyQuickEl) {
+    emptyQuickEl.classList.toggle('hidden', visibleQuickCount > 0);
+  }
+
+  // 2. Filter All Rules sections when searching
+  const sections = document.querySelectorAll('#allRulesContainer > div[id^="ruleSection-"]');
+  let visibleSectionCount = 0;
+  sections.forEach(sec => {
+    const textMatch = !q || (sec.textContent || '').toLowerCase().includes(q);
+    if (textMatch) {
+      sec.classList.remove('hidden');
+      visibleSectionCount++;
+    } else {
+      sec.classList.add('hidden');
+    }
+  });
+
+  const emptyAllEl = document.getElementById('allRulesEmptyState');
+  if (emptyAllEl) {
+    emptyAllEl.classList.toggle('hidden', visibleSectionCount > 0);
   }
 }
 
+export function resetRulesModalView() {
+  activeRuleTopic = 'all';
+  activeRuleQuery = '';
+  const input = document.getElementById('rulesSearchInput');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('rulesSearchClearBtn');
+  if (clearBtn) clearBtn.classList.add('hidden');
+
+  document.querySelectorAll('#quickRulesContainer details[open]').forEach(c => { c.open = false; });
+  filterRulesTopic('all');
+  switchRulesTab('quick');
+}
+
 export function scrollToRuleSection(sectionId) {
+  if (activeRuleTab !== 'all') {
+    switchRulesTab('all');
+  }
   const target = document.getElementById(sectionId);
   if (target) {
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -111,10 +145,12 @@ export function scrollToRuleSection(sectionId) {
 
 export const switchRuleTab = switchRulesTab;
 
-// Expose synchronously to window as well
 if (typeof window !== 'undefined') {
   window.filterRulesTopic = filterRulesTopic;
   window.switchRulesTab = switchRulesTab;
   window.switchRuleTab = switchRulesTab;
+  window.searchRules = searchRules;
+  window.clearRulesSearch = clearRulesSearch;
   window.scrollToRuleSection = scrollToRuleSection;
+  window.resetRulesModalView = resetRulesModalView;
 }

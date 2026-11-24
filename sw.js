@@ -1,11 +1,14 @@
 // What's The Score Ref - 100% Offline Service Worker
-const CACHE_NAME = 'whatsthescoreref-v125';
+const CACHE_NAME = 'whatsthescoreref-v130';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './css/tailwind.min.css',
   './css/style.css',
   './css/high-contrast.css',
+  './fonts/ChakraPetch-SemiBold.woff2',
+  './fonts/ChakraPetch-Bold.woff2',
   './js/app.js',
   './js/timer.js',
   './js/score.js',
@@ -15,16 +18,12 @@ const STATIC_ASSETS = [
   './js/report.js',
   './js/lockMode.js',
   './js/storage.js',
-  './js/tailwind.min.js',
-  './icons/icon.svg',
   './icons/favicon.svg',
   './icons/confused_ref.png',
-  './icons/confused_ref.jpg',
   './icons/apple-touch-icon.png',
   './icons/logo-96.png',
   './icons/logo-192.png',
-  './icons/logo-512.png',
-  './icons/logo-header.png'
+  './icons/logo-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -45,7 +44,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Listen for SKIP_WAITING message from page
+// Listen for SKIP_WAITING message from page (guarded against mid-match reload in app.js)
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
@@ -56,7 +55,8 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
-  const isLocalOrigin = url.origin === self.location.origin;
+  if (url.origin !== self.location.origin) return;
+
   const isCodeAsset = event.request.mode === 'navigate' ||
     url.pathname === '/' ||
     url.pathname.endsWith('/') ||
@@ -65,8 +65,8 @@ self.addEventListener('fetch', (event) => {
     url.pathname.endsWith('.css') ||
     url.pathname.endsWith('manifest.json');
 
-  // Network-first for navigation and local application code so updates are immediately loaded
-  if (isLocalOrigin && isCodeAsset) {
+  // Network-first for navigation and local application code, with query-agnostic offline cache fallback
+  if (isCodeAsset) {
     event.respondWith(
       fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
@@ -76,18 +76,26 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      }).catch(() => {
-        return caches.match(event.request).then((cached) => {
-          return cached || (event.request.mode === 'navigate' ? caches.match('./index.html') : null);
-        });
+      }).catch(async () => {
+        const exactCached = await caches.match(event.request);
+        if (exactCached) return exactCached;
+
+        const ignoreSearchCached = await caches.match(event.request, { ignoreSearch: true });
+        if (ignoreSearchCached) return ignoreSearchCached;
+
+        if (event.request.mode === 'navigate') {
+          const indexCached = await caches.match('./index.html', { ignoreSearch: true });
+          if (indexCached) return indexCached;
+        }
+        return new Response('Offline', { status: 503, statusText: 'Offline' });
       })
     );
     return;
   }
 
-  // All other assets (icons, images, static vendor bundles): cache-first with network fallback
+  // Static binary assets (fonts, icons, images): cache-first with network fallback
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
+    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }
@@ -100,7 +108,7 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch(() => {
-        return new Response('Offline', { status: 503 });
+        return new Response('Offline', { status: 503, statusText: 'Offline' });
       });
     })
   );

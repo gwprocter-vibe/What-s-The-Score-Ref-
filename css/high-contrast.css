@@ -1,40 +1,39 @@
 /* What's The Score Ref - High-Contrast Sunlight Mode Overrides */
-/* Engineered for maximum legibility in direct sunlight on mobile displays */
+/* Engineered for maximum pitch-side legibility in direct glare */
 
-/* 1. Global Reset in Sunlight Mode */
+/* 1. Global Reset */
 html.sunlight-mode,
 body.sunlight-mode {
   background-color: #000000 !important;
   color: #ffffff !important;
 }
 
-/* 2. Top Header & Fixed Navigation */
+/* 2. Top Header & Role Controls */
 body.sunlight-mode header {
-  border-color: #333333 !important;
+  border-color: #444444 !important;
   background-color: #000000 !important;
-}
-body.sunlight-mode #headerLogoImg {
-  border-color: #FFE600 !important;
 }
 body.sunlight-mode header h1 {
   color: #ffffff !important;
 }
+body.sunlight-mode #appModeIndicatorBadge,
+body.sunlight-mode #quickToolsBtn,
 body.sunlight-mode #topFixturesBtn {
   background-color: #000000 !important;
   border: 2px solid #FFE600 !important;
   color: #FFE600 !important;
 }
+body.sunlight-mode #appModeIndicatorBadge span,
+body.sunlight-mode #quickToolsBtn span,
+body.sunlight-mode #quickToolsBtn svg {
+  color: #FFE600 !important;
+}
 
-/* 3. Status Toolbar & Capsules */
+/* 3. Status Toolbar & Switch Pills */
 body.sunlight-mode .titanium-pill {
   background-color: #000000 !important;
   border: 2px solid #FFE600 !important;
   color: #ffffff !important;
-}
-body.sunlight-mode #quickToolsBtn {
-  background-color: #000000 !important;
-  border: 2px solid #FFE600 !important;
-  color: #FFE600 !important;
 }
 body.sunlight-mode #wakeToggleBtn,
 body.sunlight-mode #soundToggleBtn,
@@ -43,15 +42,10 @@ body.sunlight-mode #toggleContrastBtn {
   border: 2px solid #FFE600 !important;
   color: #FFE600 !important;
 }
-
 body.sunlight-mode button[role="switch"][aria-checked="false"] {
-  border-color: #666666 !important;
-  color: #888888 !important;
+  border-color: #777777 !important;
+  color: #bbbbbb !important;
 }
-body.sunlight-mode button[role="switch"][aria-checked="false"] span {
-  color: #888888 !important;
-}
-
 body.sunlight-mode #toggleContrastBtn[aria-checked="true"] {
   background-color: #FFE600 !important;
   border: 2px solid #ffffff !important;
@@ -61,27 +55,13 @@ body.sunlight-mode #toggleContrastBtn[aria-checked="true"] {
 body.sunlight-mode #toggleContrastBtn[aria-checked="true"] span {
   color: #000000 !important;
 }
-body.sunlight-mode #fieldLockBtn {
-  background-color: #000000 !important;
-  border: 2px solid #FFE600 !important;
-  color: #ffffff !important;
-}
-body.sunlight-mode #reportTopBtn {
-  background-color: #000000 !important;
-  border: 2px solid #FFE600 !important;
-  color: #FFE600 !important;
-}
-body.sunlight-mode #quickToolsDrawer .bg-slate-900 {
-  background-color: #000000 !important;
-  border-color: #FFE600 !important;
-}
 
 /* 4. Session Tabs (Match 1 vs Match 2) */
 body.sunlight-mode #tabMatch1Btn,
 body.sunlight-mode #tabMatch2Btn {
   background-color: #000000 !important;
-  border: 2px solid #555555 !important;
-  color: #cccccc !important;
+  border: 2px solid #666666 !important;
+  color: #dddddd !important;
 }
 body.sunlight-mode #tabMatch1Btn[class*="border-emerald"],
 body.sunlight-mode #tabMatch1Btn[class*="bg-emerald"],
@@ -96,51 +76,30 @@ body.sunlight-mode #tabMatch1Badge,
 body.sunlight-mode #tabMatch2Badge {
   background-color: #000000 !important;
   color: #FFE600 !important;
-  border: 1px solid #FFE600 !important;
+  border: 1.5px solid #FFE600 !important;
 }
 
-/* Handover Flow */
-body.sunlight-mode #saveMatch1PrepareMatch2ReportBtn {
-  background: #FFE600 !important;
-  color: #000000 !important;
-  border: 2px solid #ffffff !important;
-  font-weight: 900 !important;
-}
-body.sunlight-mode #saveMatch1PrepareMatch2ReportBtn * {
-  color: #000000 !important;
-}
-body.sunlight-mode #matchHandoverSuccessToast {
-  background-color: #000000 !important;
-  border: 2.5px solid #FFE600 !important;
-}
-
-/* 5. Team Score Cards (Home & Away) - Strict Override of JS Inline Styles */
+/* 5. Team Score Cards & Goal Chips */
 body.sunlight-mode .surface-card,
 body.sunlight-mode .surface-onyx,
 body.sunlight-mode #homeCardContainer,
 body.sunlight-mode #awayCardContainer {
   background-color: #000000 !important;
-  border: 3.5px solid #FFE600 !important;
+  background-image: none !important;
+  border: 3px solid #FFE600 !important;
   box-shadow: none !important;
 }
-
 body.sunlight-mode #homeLabel,
-body.sunlight-mode #awayLabel {
-  color: #ffffff !important;
-  font-weight: 900 !important;
-}
-
+body.sunlight-mode #awayLabel,
 body.sunlight-mode #homeTeamNameDisplay,
 body.sunlight-mode #awayTeamNameDisplay {
   color: #ffffff !important;
-  font-weight: 800 !important;
+  font-weight: 900 !important;
 }
-
 body.sunlight-mode #homeBadgeDot,
 body.sunlight-mode #awayBadgeDot {
   border: 2px solid #FFE600 !important;
 }
-
 body.sunlight-mode #homeScoreDisplay,
 body.sunlight-mode #awayScoreDisplay {
   color: #FFE600 !important;
@@ -148,19 +107,17 @@ body.sunlight-mode #awayScoreDisplay {
   filter: none !important;
   font-weight: 900 !important;
 }
-
-/* 6. Touch Scoring Controls (+ and -) */
-body.sunlight-mode .sunlight-btn-score,
-body.sunlight-mode #homePlusBtn,
-body.sunlight-mode #awayPlusBtn {
-  background-color: #FFE600 !important;
-  color: #000000 !important;
-  border: 3px solid #ffffff !important;
-  font-weight: 900 !important;
-  box-shadow: none !important;
+body.sunlight-mode #homeGoalChips,
+body.sunlight-mode #awayGoalChips {
+  background: #000000 !important;
+  border: 1.5px solid #555555 !important;
 }
-
-body.sunlight-mode .sunlight-btn-sub,
+body.sunlight-mode #homeGoalChips button,
+body.sunlight-mode #awayGoalChips button {
+  background-color: #000000 !important;
+  border: 1.5px solid #FFE600 !important;
+  color: #FFE600 !important;
+}
 body.sunlight-mode button[onclick*="decrementScore"] {
   background-color: #000000 !important;
   color: #ffffff !important;
@@ -168,27 +125,59 @@ body.sunlight-mode button[onclick*="decrementScore"] {
   font-weight: 900 !important;
 }
 
-/* 7. Last Goal 1-Line Ticker */
-body.sunlight-mode #lastGoalTicker,
-body.sunlight-mode #lastGoalTicker * {
-  color: #ffffff !important;
-}
-body.sunlight-mode #tickerTime {
-  color: #FFE600 !important;
-  font-weight: 900 !important;
-}
-body.sunlight-mode #tickerDesc {
-  color: #ffffff !important;
-  font-weight: 800 !important;
-}
-body.sunlight-mode #tickerScore {
-  color: #FFE600 !important;
-  font-weight: 900 !important;
-}
-body.sunlight-mode #tickerCountBadge {
+/* 6. Referee Helper & Alerts Window */
+body.sunlight-mode #refHelperBar {
   background-color: #000000 !important;
+  border: 2.5px solid #FFE600 !important;
+}
+body.sunlight-mode #refHelperHeader span {
   color: #FFE600 !important;
-  border: 1px solid #FFE600 !important;
+}
+body.sunlight-mode #refHelperPrematchBtn,
+body.sunlight-mode #refKickoffHomeBtn,
+body.sunlight-mode #refKickoffAwayBtn {
+  background-color: #000000 !important;
+  border: 2px solid #FFE600 !important;
+  color: #FFE600 !important;
+  font-weight: 900 !important;
+}
+body.sunlight-mode #refHelperOneMinuteAlert,
+body.sunlight-mode #refHelperSubAlert,
+body.sunlight-mode #refHelperPowerPlayAlert,
+body.sunlight-mode #refHelperPowerPlayEndedAlert,
+body.sunlight-mode #refHelperCoolDownAlert,
+body.sunlight-mode #refHelperForgotResumeAlert,
+body.sunlight-mode #refHelperPausedGoalAlert,
+body.sunlight-mode #refHelperKickoffConfirmAlert {
+  background-color: #000000 !important;
+  border: 2px solid #FFE600 !important;
+  color: #ffffff !important;
+}
+
+/* 7. Coach Touchline Quick-Bar */
+body.sunlight-mode #coachTouchlineBar {
+  background-color: #000000 !important;
+  border: 2.5px solid #FFE600 !important;
+}
+body.sunlight-mode #coachTouchlineDefaultRow button {
+  background-color: #000000 !important;
+  border: 2px solid #FFE600 !important;
+}
+body.sunlight-mode #coachTouchlineDefaultRow button span {
+  color: #ffffff !important;
+}
+body.sunlight-mode #coachSquadRotationBtn,
+body.sunlight-mode #coachSquadInitialsBtn,
+body.sunlight-mode #coachMomentsToggleBtn,
+body.sunlight-mode #coachNotesToggleBtn,
+body.sunlight-mode #coachTouchlinePotmBadge {
+  background-color: #000000 !important;
+  border: 1.5px solid #FFE600 !important;
+  color: #FFE600 !important;
+}
+body.sunlight-mode #coachTouchlinePotmPrompt {
+  background: #000000 !important;
+  border: 2.5px solid #FFE600 !important;
 }
 
 /* 8. Digital Match Clock & Controls */
@@ -198,21 +187,23 @@ body.sunlight-mode #mainTimer {
   filter: none !important;
   font-weight: 900 !important;
 }
-
 body.sunlight-mode #halfProgressBar {
   background: #FFE600 !important;
 }
-
 body.sunlight-mode #subMarkerTick div {
   background-color: #ffffff !important;
   box-shadow: 0 0 4px #FFE600 !important;
 }
-
-body.sunlight-mode #stoppageDisplay {
+body.sunlight-mode #stoppageDisplay,
+body.sunlight-mode #overtimeBadge {
   color: #ffffff !important;
-  font-weight: 800 !important;
+  font-weight: 900 !important;
 }
-
+body.sunlight-mode #halfTimeBreakBanner {
+  background-color: #000000 !important;
+  border: 2px solid #FFE600 !important;
+  color: #FFE600 !important;
+}
 body.sunlight-mode #timerToggleBtn {
   background-color: #FFE600 !important;
   color: #000000 !important;
@@ -223,7 +214,6 @@ body.sunlight-mode #timerToggleBtn * {
   color: #000000 !important;
   fill: #000000 !important;
 }
-
 body.sunlight-mode #resetHalfBtn,
 body.sunlight-mode #endHalfBtn {
   border: 2px solid #FFE600 !important;
@@ -231,7 +221,6 @@ body.sunlight-mode #endHalfBtn {
   background-color: #000000 !important;
   font-weight: 800 !important;
 }
-
 body.sunlight-mode #periodBadge {
   border: 2px solid #FFE600 !important;
   background-color: #000000 !important;
@@ -241,15 +230,15 @@ body.sunlight-mode #periodBadge {
 
 /* 9. Bottom Tool Dock */
 body.sunlight-mode footer {
-  border-color: #333333 !important;
+  border-color: #444444 !important;
   background-color: #000000 !important;
 }
-body.sunlight-mode footer button {
+body.sunlight-mode #fieldLockBtn {
   background-color: #000000 !important;
   border: 2px solid #FFE600 !important;
   color: #ffffff !important;
 }
-body.sunlight-mode footer button svg {
+body.sunlight-mode #fieldLockBtn svg {
   color: #FFE600 !important;
   stroke: #FFE600 !important;
 }
@@ -258,13 +247,8 @@ body.sunlight-mode #resetMatchBtn {
   border: 2px solid #ffffff !important;
   color: #ffffff !important;
 }
-body.sunlight-mode #resetMatchBtn svg {
-  color: #ffffff !important;
-  stroke: #ffffff !important;
-}
-
 body.sunlight-mode.zen-mode #fieldLockBtn {
-  background-color: #FFE600 !important;
+  background: #FFE600 !important;
   border: 3px solid #ffffff !important;
   color: #000000 !important;
 }
@@ -273,82 +257,29 @@ body.sunlight-mode.zen-mode #fieldLockBtn svg {
   stroke: #000000 !important;
 }
 
-body.sunlight-mode.zen-mode #matchSessionTabs,
-body.sunlight-mode.zen-mode #resetHalfBtn,
-body.sunlight-mode.zen-mode #resetMatchBtn,
-body.sunlight-mode.zen-mode #endHalfBtn {
-  opacity: 0.18 !important;
-  filter: grayscale(0.85) !important;
-  pointer-events: none !important;
-  user-select: none !important;
-}
-
-body.sunlight-mode.zen-mode .team-pencil,
-body.zen-mode .team-pencil {
-  display: none !important;
-}
-
-body.sunlight-mode.zen-mode .team-edit-btn,
-body.zen-mode .team-edit-btn {
-  pointer-events: none !important;
-  cursor: default !important;
-}
-
-body.sunlight-mode.screen-locked header,
-body.sunlight-mode.screen-locked #matchSessionTabs,
-body.sunlight-mode.screen-locked #timerToggleBtn,
-body.sunlight-mode.screen-locked footer {
-  opacity: 0.15 !important;
-  pointer-events: none !important;
-}
-
-body.sunlight-mode.screen-locked #mainTimer,
-body.sunlight-mode.screen-locked #periodBadge,
-body.sunlight-mode.screen-locked #homeScoreDisplay,
-body.sunlight-mode.screen-locked #awayScoreDisplay,
-body.sunlight-mode.screen-locked #homeTeamNameDisplay,
-body.sunlight-mode.screen-locked #awayTeamNameDisplay,
-body.sunlight-mode.screen-locked #homeCardContainer,
-body.sunlight-mode.screen-locked #awayCardContainer {
-  opacity: 1 !important;
-  filter: none !important;
-}
-
-/* 10. Modals & Dialogs */
-body.sunlight-mode .modal-dialog,
-body.sunlight-mode [class*="modal-dialog"] {
-  background-color: #000000 !important;
-  border: 3px solid #FFE600 !important;
-  color: #ffffff !important;
-}
+/* 10. Modals & Rule Filter Chips */
+body.sunlight-mode #saveMatch1PrepareMatch2ReportBtn,
 body.sunlight-mode #copyFaBtn {
-  background-color: #FFE600 !important;
+  background: #FFE600 !important;
   color: #000000 !important;
   border: 2px solid #ffffff !important;
   font-weight: 900 !important;
 }
+body.sunlight-mode #saveMatch1PrepareMatch2ReportBtn *,
 body.sunlight-mode #copyFaBtn * {
   color: #000000 !important;
-  stroke: #000000 !important;
 }
-body.sunlight-mode #reportFaTabBtn[class*="bg-amber"] {
+body.sunlight-mode .rule-filter-chip {
+  background-color: #000000 !important;
+  border: 1.5px solid #777777 !important;
+  color: #ffffff !important;
+}
+body.sunlight-mode .rule-filter-chip[class*="bg-amber"] {
   background-color: #FFE600 !important;
+  border-color: #ffffff !important;
   color: #000000 !important;
-  border: 2px solid #ffffff !important;
-  font-weight: 900 !important;
 }
-
-/* 11. Generic Sunlight Utility Overrides */
 body.sunlight-mode .sunlight-yellow-text {
   color: #FFE600 !important;
   text-shadow: none !important;
 }
-body.sunlight-mode .sunlight-yellow-bg {
-  background-color: #FFE600 !important;
-  color: #000000 !important;
-  font-weight: 900 !important;
-}
-body.sunlight-mode .sunlight-border {
-  border: 3px solid #FFE600 !important;
-}
-
