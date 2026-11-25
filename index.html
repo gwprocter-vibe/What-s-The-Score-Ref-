@@ -3444,13 +3444,20 @@
 
   <!-- 13. TOUCHLINE TACTICS BOARD FULL-SCREEN MODAL -->
   <div id="tacticsBoardModal" class="hidden fixed inset-0 z-[65] bg-[#07090e] flex flex-col justify-between max-w-md mx-auto px-2.5 py-2 gap-1.5 select-none overflow-hidden">
-    <!-- Row 1: Top Header with Live Half-Time / Match Clock Pill & Export -->
-    <div class="flex items-center justify-between gap-1.5 shrink-0 pb-1 border-b border-slate-800/80">
-      <div class="flex items-center gap-2 min-w-0">
-        <img src="icons/confused_ref.png" alt="" class="w-7 h-7 rounded-lg border border-amber-400/50 object-cover shrink-0">
-        <span class="font-mono-sport font-black text-sm text-white truncate">Tactics</span>
-        <div id="tacticsClockPill" class="px-2 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-slate-300 font-mono-sport font-bold text-[10px] flex items-center gap-1 shrink-0">
-          <svg class="w-3 h-3 text-indigo-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 2.5"></path><path d="M9 2h6"></path></svg>
+    <!-- Row 1: Top Header with 1-Tap Plays/Drills Switch, Live Clock Pill & Export -->
+    <div class="flex items-center justify-between gap-1 shrink-0 pb-1 border-b border-slate-800/80">
+      <div class="flex items-center gap-1.5 min-w-0">
+        <img src="icons/confused_ref.png" alt="" class="w-6 h-6 rounded-lg border border-amber-400/50 object-cover shrink-0">
+        <div id="tacticsQuickModeSwitch" role="group" aria-label="Switch between Match Plays and Training Drills" class="flex items-center bg-slate-950 border border-slate-700/90 rounded-lg p-0.5 shrink-0">
+          <button id="tacticsQuickPlaysBtn" type="button" onclick="setTacticsBoardMode('match')" class="px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 font-mono-sport font-black text-[10px] transition cursor-pointer" title="Switch to Match Plays pitch (tap again to browse Match Plays)">
+            Plays
+          </button>
+          <button id="tacticsQuickDrillsBtn" type="button" onclick="setTacticsBoardMode('training')" class="px-2 py-0.5 rounded-md text-slate-400 hover:text-white font-mono-sport font-bold text-[10px] transition cursor-pointer" title="Switch to Training Drills grass &amp; gear (tap again to browse Drills)">
+            Drills
+          </button>
+        </div>
+        <div id="tacticsClockPill" class="px-1.5 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-slate-300 font-mono-sport font-bold text-[9.5px] flex items-center gap-1 shrink-0">
+          <svg class="w-2.5 h-2.5 text-indigo-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 2.5"></path><path d="M9 2h6"></path></svg>
           <span id="tacticsClockText">1H 00:00</span>
         </div>
       </div>
@@ -3459,10 +3466,10 @@
         <button type="button" onclick="syncTacticsSquad()" class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-300 transition cursor-pointer active:scale-95" title="Re-sync squad initials, GK &amp; kit colour from live match">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
         </button>
-        <button id="tacticsShareVideoBtn" type="button" onclick="shareTacticsVideo()" class="hidden px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400 text-emerald-300 font-mono-sport font-black text-[10px] transition cursor-pointer active:scale-95" title="Export animated move as video clip">
+        <button id="tacticsShareVideoBtn" type="button" onclick="shareTacticsVideo()" class="hidden px-1.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400 text-emerald-300 font-mono-sport font-black text-[10px] transition cursor-pointer active:scale-95" title="Export animated move as video clip">
           Clip
         </button>
-        <button type="button" onclick="shareTacticsPng()" class="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/80 text-amber-300 font-mono-sport font-black text-[10px] transition cursor-pointer active:scale-95" title="Share 1600×2000 HD Tactics PNG">
+        <button type="button" onclick="shareTacticsPng()" class="px-1.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/80 text-amber-300 font-mono-sport font-black text-[10px] transition cursor-pointer active:scale-95" title="Share 1600×2000 HD Tactics PNG">
           Share
         </button>
         <button type="button" onclick="closeTacticsBoard()" class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition cursor-pointer active:scale-95" aria-label="Close Tactics Board">
@@ -3486,6 +3493,12 @@
           <option value="1-2-1">Shape: 1-2-1</option>
         </select>
 
+        <div id="tacticsQuickGearStrip" class="hidden items-center gap-1 shrink-0">
+          <button type="button" onclick="addTacticsGear('cone-amber')" class="px-1.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/60 text-amber-200 font-mono-sport font-bold text-[9.5px] transition cursor-pointer shrink-0" title="Drop Cone on Pitch">+Cone</button>
+          <button type="button" onclick="addTacticsGear('mini-goal')" class="px-1.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-600 text-white font-mono-sport font-bold text-[9.5px] transition cursor-pointer shrink-0" title="Drop Mini-Goal on Pitch">+Goal</button>
+          <button type="button" onclick="addTacticsGear('pole')" class="px-1.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/60 text-emerald-200 font-mono-sport font-bold text-[9.5px] transition cursor-pointer shrink-0" title="Drop Slalom Pole on Pitch">+Pole</button>
+        </div>
+
         <button id="tacticsRetreatBtn" type="button" onclick="toggleTacticsRetreatLine()" class="px-2 py-1 rounded-lg text-[10px] font-black border bg-amber-500/20 border-amber-400 text-amber-300 transition cursor-pointer shrink-0">
           Retreat: ON
         </button>
@@ -3504,8 +3517,8 @@
           Animate
         </button>
 
-        <button type="button" onclick="openTacticsPlaybook()" class="flex-1 py-1 px-2 rounded-lg text-[10px] font-black border bg-purple-500/20 border-purple-400/70 text-purple-200 hover:text-white transition cursor-pointer text-center truncate" title="Open Match Plays &amp; Training Drills Playbook">
-          Playbook
+        <button id="tacticsOpenLibraryBtn" type="button" onclick="openTacticsPlaybook()" class="flex-1 py-1 px-2 rounded-lg text-[10px] font-black border bg-purple-500/20 border-purple-400/70 text-purple-200 hover:text-white transition cursor-pointer text-center truncate" title="Open Match Plays &amp; Training Drills Playbook">
+          Match Plays
         </button>
 
         <button type="button" onclick="clearTacticsLines()" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-bold text-[10px] transition cursor-pointer shrink-0" title="Erase drawn arrows &amp; zones while keeping player positions">

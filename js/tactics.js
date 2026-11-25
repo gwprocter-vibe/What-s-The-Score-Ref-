@@ -681,6 +681,12 @@ export function setTacticsPitchMode(mode) {
   if (!PITCH_MODES[mode] || mode === board.pitchMode) return;
   stopTacticsAnimation();
   pushUndoSnapshot();
+  if (['5v5', '6v6', '7v7'].includes(mode)) {
+    lastMatchPitchMode = mode;
+    playbookTab = 'match';
+  } else if (mode === 'blank') {
+    playbookTab = 'training';
+  }
   board.pitchMode = mode;
   const list = FORMATIONS[mode] || FORMATIONS['5v5'];
   board.formationId = list[0].id;
@@ -1307,9 +1313,14 @@ export function stopTacticsAnimation() {
   }
 }
 
-// ---------------- Two-Tab Playbook (Match Plays vs Training & Gear) ----------------
+let lastMatchPitchMode = '5v5';
+
+// ---------------- Two-Tab Playbook & 1-Tap HUD Mode Switch (Plays vs Drills) ----------------
 function resetPitchForPlaybookCategory(category) {
   pushUndoSnapshot();
+  if (['5v5', '6v6', '7v7'].includes(board.pitchMode)) {
+    lastMatchPitchMode = board.pitchMode;
+  }
   board.customOppCount = 0;
   board.customOppRoster = null;
   board.activeCue = null;
@@ -1324,9 +1335,10 @@ function resetPitchForPlaybookCategory(category) {
     board.retreatLine = false;
     board.oppMode = 'off';
   } else {
-    board.pitchMode = '5v5';
-    board.formationId = '1-2-1';
-    board.retreatLine = true;
+    board.pitchMode = lastMatchPitchMode || '5v5';
+    const list = FORMATIONS[board.pitchMode] || FORMATIONS['5v5'];
+    board.formationId = list[0].id;
+    board.retreatLine = board.pitchMode === '5v5';
     board.oppMode = 'even';
   }
 
@@ -1337,12 +1349,37 @@ function resetPitchForPlaybookCategory(category) {
   });
 }
 
+// 1-Tap Top-Bar Quick Switch between Match Plays and Training Drills!
+// First tap switches the pitch mode & context cleanly; tapping the already-active pill opens its Playbook library!
+export function setTacticsBoardMode(mode) {
+  if (mode !== 'match' && mode !== 'training') return;
+  stopTacticsAnimation();
+  if (playbookTab === mode) {
+    openTacticsPlaybook(mode);
+    return;
+  }
+  playbookTab = mode;
+  playbookTabManuallyChosen = true;
+  resetPitchForPlaybookCategory(mode);
+  hapticFeedback('tap');
+  score.showMatchToast(
+    mode === 'training' ? 'Drills Mode — Blank Grass & Training Props' : `Plays Mode — ${PITCH_MODES[board.pitchMode]?.label || '5v5'} Match Pitch`,
+    mode === 'training' ? '△' : '⚽',
+    1600
+  );
+}
+
 export function openTacticsPlaybook(forcedTab) {
   stopTacticsAnimation();
   let targetTab = playbookTab;
   if (forcedTab === 'match' || forcedTab === 'training') {
+    const changed = targetTab !== forcedTab;
     targetTab = forcedTab;
+    playbookTab = targetTab;
     playbookTabManuallyChosen = true;
+    if (changed) {
+      resetPitchForPlaybookCategory(playbookTab);
+    }
   } else if (!playbookTabManuallyChosen) {
     const ts = timer.getTimerState();
     const ht = timer.getHalfTimeBreakState();
@@ -1354,12 +1391,10 @@ export function openTacticsPlaybook(forcedTab) {
     } else {
       targetTab = 'match';
     }
+    playbookTab = targetTab;
   }
 
-  if (targetTab !== playbookTab) {
-    playbookTab = targetTab;
-    resetPitchForPlaybookCategory(playbookTab);
-  }
+  renderAllUI();
   renderPlaybookModalUI();
   document.getElementById('tacticsPlaybookModal')?.classList.remove('hidden');
   hapticFeedback('tap');
@@ -1667,15 +1702,42 @@ function renderTopControlsUI() {
     pitchSel.value = board.pitchMode;
   }
 
+  const isTrainMode = playbookTab === 'training';
+  const quickPlaysBtn = document.getElementById('tacticsQuickPlaysBtn');
+  const quickDrillsBtn = document.getElementById('tacticsQuickDrillsBtn');
+  if (quickPlaysBtn && quickDrillsBtn) {
+    quickPlaysBtn.className = !isTrainMode
+      ? 'px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 font-mono-sport font-black text-[10px] shadow-sm transition cursor-pointer'
+      : 'px-2 py-0.5 rounded-md text-slate-400 hover:text-white font-mono-sport font-bold text-[10px] transition cursor-pointer';
+    quickDrillsBtn.className = isTrainMode
+      ? 'px-2 py-0.5 rounded-md bg-emerald-400 text-slate-950 font-mono-sport font-black text-[10px] shadow-sm transition cursor-pointer'
+      : 'px-2 py-0.5 rounded-md text-slate-400 hover:text-white font-mono-sport font-bold text-[10px] transition cursor-pointer';
+  }
+
+  const hasFormations = ['5v5', '6v6', '7v7'].includes(board.pitchMode);
   const formSel = document.getElementById('tacticsFormationSelect');
   if (formSel) {
-    const hasFormations = ['5v5', '6v6', '7v7'].includes(board.pitchMode);
     formSel.classList.toggle('hidden', !hasFormations);
     if (hasFormations) {
       const list = FORMATIONS[board.pitchMode] || FORMATIONS['5v5'];
       const validId = list.some(f => f.id === board.formationId) ? board.formationId : list[0].id;
       formSel.innerHTML = list.map(f => `<option value="${f.id}" ${f.id === validId ? 'selected' : ''}>${f.short}</option>`).join('');
     }
+  }
+
+  const quickGearStrip = document.getElementById('tacticsQuickGearStrip');
+  if (quickGearStrip) {
+    const showQuickGear = isTrainMode && !hasFormations;
+    quickGearStrip.classList.toggle('hidden', !showQuickGear);
+    quickGearStrip.classList.toggle('flex', showQuickGear);
+  }
+
+  const openLibBtn = document.getElementById('tacticsOpenLibraryBtn');
+  if (openLibBtn) {
+    openLibBtn.innerText = isTrainMode ? 'Drill Library' : 'Match Plays';
+    openLibBtn.className = isTrainMode
+      ? 'flex-1 py-1 px-2 rounded-lg text-[10px] font-black border bg-emerald-500/20 border-emerald-400/70 text-emerald-200 hover:text-white transition cursor-pointer text-center truncate'
+      : 'flex-1 py-1 px-2 rounded-lg text-[10px] font-black border bg-purple-500/20 border-purple-400/70 text-purple-200 hover:text-white transition cursor-pointer text-center truncate';
   }
 
   const retreatBtn = document.getElementById('tacticsRetreatBtn');

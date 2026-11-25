@@ -1006,6 +1006,7 @@ window.deleteLastTacticsStep = tactics.deleteLastTacticsStep;
 window.toggleTacticsAnimSpeed = tactics.toggleTacticsAnimSpeed;
 window.togglePlayTacticsMove = tactics.togglePlayTacticsMove;
 window.openTacticsPlaybook = tactics.openTacticsPlaybook;
+window.setTacticsBoardMode = tactics.setTacticsBoardMode;
 window.setTacticsPlaybookTab = tactics.setTacticsPlaybookTab;
 window.setTacticsDifficultyFilter = tactics.setTacticsDifficultyFilter;
 window.setTacticsFormatFilter = tactics.setTacticsFormatFilter;
