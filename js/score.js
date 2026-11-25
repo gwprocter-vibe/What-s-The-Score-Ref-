@@ -781,6 +781,7 @@ export function isKickoffChosen() {
 }
 
 let matchToastTimeout = null;
+let matchToastHideTimeout = null;
 
 export function showMatchToast(message, icon = '⚽', duration = 3000) {
   const toast = document.getElementById('matchNotificationToast');
@@ -788,16 +789,24 @@ export function showMatchToast(message, icon = '⚽', duration = 3000) {
   const toastIcon = document.getElementById('matchNotificationToastIcon');
   if (!toast || !toastText) return;
 
+  if (matchToastTimeout) clearTimeout(matchToastTimeout);
+  if (matchToastHideTimeout) clearTimeout(matchToastHideTimeout);
+
   toastText.innerText = message;
   if (toastIcon) toastIcon.innerText = icon;
 
-  toast.classList.remove('opacity-0', '-translate-y-2', 'pointer-events-none');
-  toast.classList.add('opacity-100', 'translate-y-0');
+  toast.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    toast.classList.remove('opacity-0', '-translate-y-2', 'pointer-events-none');
+    toast.classList.add('opacity-100', 'translate-y-0');
+  });
 
-  if (matchToastTimeout) clearTimeout(matchToastTimeout);
   matchToastTimeout = setTimeout(() => {
     toast.classList.remove('opacity-100', 'translate-y-0');
     toast.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
+    matchToastHideTimeout = setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 220);
   }, duration);
 }
 
@@ -1283,11 +1292,15 @@ export function restoreScoreState(state) {
     clearTimeout(matchToastTimeout);
     matchToastTimeout = null;
   }
+  if (matchToastHideTimeout) {
+    clearTimeout(matchToastHideTimeout);
+    matchToastHideTimeout = null;
+  }
 
   const matchToast = document.getElementById('matchNotificationToast');
   if (matchToast) {
     matchToast.classList.remove('opacity-100', 'translate-y-0');
-    matchToast.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
+    matchToast.classList.add('hidden', 'opacity-0', '-translate-y-2', 'pointer-events-none');
   }
   document.getElementById('coachTouchlineToast')?.classList.add('hidden');
 

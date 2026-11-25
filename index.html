@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#07090e">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Score Ref">
 
   <!-- OpenGraph & WhatsApp / Social Link Preview Meta Tags -->
@@ -89,8 +89,8 @@
     </div>
   </div>
 
-  <!-- FLOATING MATCH NOTIFICATION TOAST -->
-  <div id="matchNotificationToast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-200 opacity-0 -translate-y-2 max-w-[90vw] sm:max-w-md w-max px-3.5 py-1.5 rounded-xl bg-slate-900/95 border border-slate-700 shadow-2xl backdrop-blur-md flex items-center gap-2 text-white text-xs font-bold select-none" role="status" aria-live="polite">
+  <!-- FLOATING MATCH NOTIFICATION TOAST (Hidden when inactive & no backdrop-blur near top edge to prevent iOS 26 WebKit progressive blur leak) -->
+  <div id="matchNotificationToast" class="hidden fixed top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-200 opacity-0 -translate-y-2 max-w-[90vw] sm:max-w-md w-max px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl flex items-center gap-2 text-white text-xs font-bold select-none" role="status" aria-live="polite">
     <span id="matchNotificationToastIcon" class="text-sm shrink-0">⚽</span>
     <span id="matchNotificationToastText" class="truncate"></span>
   </div>
