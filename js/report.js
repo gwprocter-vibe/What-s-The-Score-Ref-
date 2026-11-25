@@ -1,6 +1,6 @@
 // What's The Score Ref - Match Report, Share & 2x Retina Match Card Module
 import { hapticFeedback } from './hardware.js';
-import { teams, getScoreState, getAppMode, setCoachPotm, escapeHtml, createDefaultRoster } from './score.js';
+import { teams, getScoreState, getAppMode, setCoachPotm, escapeHtml, createDefaultRoster, getReadableKitTextHex } from './score.js';
 import { getTimerState, getTargetHalfMinutes } from './timer.js';
 import { loadPrefs, savePrefs } from './storage.js';
 
@@ -406,8 +406,14 @@ export function updateReportUI() {
     const cM1Score = document.getElementById('reportCombM1Score');
     const cM2Score = document.getElementById('reportCombM2Score');
 
-    if (cHomeLabel) cHomeLabel.innerText = m1.home;
-    if (cAwayLabel) cAwayLabel.innerText = m1.away;
+    if (cHomeLabel) {
+      cHomeLabel.innerText = m1.home;
+      cHomeLabel.style.color = getReadableKitTextHex(m1.homeColor);
+    }
+    if (cAwayLabel) {
+      cAwayLabel.innerText = m1.away;
+      cAwayLabel.style.color = getReadableKitTextHex(m1.awayColor);
+    }
     if (cAggScore) cAggScore.innerText = `${aggHome} - ${aggAway}`;
     if (cM1Score) cM1Score.innerText = `M1: ${m1.homeScore} - ${m1.awayScore} (${m1.period})`;
     if (cM2Score) cM2Score.innerText = `M2: ${m2.homeScore} - ${m2.awayScore} (${m2.period})`;
@@ -426,8 +432,14 @@ export function updateReportUI() {
     const awayScoreEl = document.getElementById('reportAwayScore');
     const statusEl = document.getElementById('reportMatchStatus');
 
-    if (homeLabel) homeLabel.innerText = data.home;
-    if (awayLabel) awayLabel.innerText = data.away;
+    if (homeLabel) {
+      homeLabel.innerText = data.home;
+      homeLabel.style.color = getReadableKitTextHex(data.homeColor);
+    }
+    if (awayLabel) {
+      awayLabel.innerText = data.away;
+      awayLabel.style.color = getReadableKitTextHex(data.awayColor);
+    }
     if (homeScoreEl) homeScoreEl.innerText = data.homeScore;
     if (awayScoreEl) awayScoreEl.innerText = data.awayScore;
     if (statusEl) statusEl.innerText = data.period === 'Full Time' ? 'FULL TIME' : data.period.toUpperCase();

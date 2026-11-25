@@ -82,8 +82,18 @@ export function updatePrematchUI(homeName, awayName) {
   const awayLabelEl = document.getElementById('prematchAwayPlayersLabel');
   const resolvedHome = homeName || (window.teams?.home?.name) || 'Home';
   const resolvedAway = awayName || (window.teams?.away?.name) || 'Away';
-  if (homeLabelEl) homeLabelEl.innerText = resolvedHome;
-  if (awayLabelEl) awayLabelEl.innerText = resolvedAway;
+  if (homeLabelEl) {
+    homeLabelEl.innerText = resolvedHome;
+    if (window.teams?.home?.color) {
+      homeLabelEl.style.color = window.teams.home.color === '#f8fafc' ? '#f1f5f9' : window.teams.home.color;
+    }
+  }
+  if (awayLabelEl) {
+    awayLabelEl.innerText = resolvedAway;
+    if (window.teams?.away?.color) {
+      awayLabelEl.style.color = window.teams.away.color === '#f8fafc' ? '#f1f5f9' : window.teams.away.color;
+    }
+  }
 
   const homeStatusEl = document.getElementById('homePlayerStatusBadge');
   const awayStatusEl = document.getElementById('awayPlayerStatusBadge');

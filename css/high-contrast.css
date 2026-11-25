@@ -113,6 +113,11 @@ body.sunlight-mode #awayGoalChips {
   background: #000000 !important;
   border: 1.5px solid #555555 !important;
 }
+body.sunlight-mode #homeGoalChips:empty,
+body.sunlight-mode #awayGoalChips:empty {
+  background: transparent !important;
+  border-color: transparent !important;
+}
 body.sunlight-mode #homeGoalChips button,
 body.sunlight-mode #awayGoalChips button {
   background-color: #000000 !important;
@@ -135,6 +140,8 @@ body.sunlight-mode #refHelperHeader span {
   color: #FFE600 !important;
 }
 body.sunlight-mode #refHelperPrematchBtn,
+body.sunlight-mode #refHelperRulesBtn,
+body.sunlight-mode #awayBibsBadge,
 body.sunlight-mode #refKickoffHomeBtn,
 body.sunlight-mode #refKickoffAwayBtn {
   background-color: #000000 !important;
@@ -184,11 +191,30 @@ body.sunlight-mode #coachTouchlinePotmBadge {
 body.sunlight-mode #tacticsBoardModal {
   background-color: #000000 !important;
 }
-body.sunlight-mode #tacticsBoardModal select,
+body.sunlight-mode #tacticsBoardModal select {
+  background-color: #000000 !important;
+  border: 2px solid #FFE600 !important;
+  color: #FFE600 !important;
+}
+body.sunlight-mode #tacticsBoardModal select option {
+  background-color: #000000 !important;
+  color: #FFE600 !important;
+}
 body.sunlight-mode #tacticsBoardModal .tactics-dock-btn {
   background-color: #000000 !important;
-  border-color: #FFE600 !important;
+  border: 2px solid #777777 !important;
   color: #ffffff !important;
+}
+body.sunlight-mode #tacticsBoardModal .tactics-dock-btn[class*="border-emerald"] {
+  background-color: #FFE600 !important;
+  border: 2.5px solid #ffffff !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+body.sunlight-mode #tacticsBoardModal .tactics-dock-btn[class*="border-emerald"] span,
+body.sunlight-mode #tacticsBoardModal .tactics-dock-btn[class*="border-emerald"] svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
 }
 body.sunlight-mode #coachTouchlinePotmPrompt {
   background: #000000 !important;

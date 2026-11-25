@@ -73,14 +73,28 @@ export function createDefaultRotation(roster = []) {
   };
 }
 
-let appMode = 'referee'; // 'referee' | 'coach'
+let appMode = 'referee'; // 'referee' | 'coach' | 'spectator'
 let isPausedGoalAlertActive = false;
 try {
   const savedMode = localStorage.getItem('whatsthescoreref_app_mode');
-  if (savedMode === 'coach' || savedMode === 'referee') {
+  if (savedMode === 'coach' || savedMode === 'referee' || savedMode === 'spectator') {
     appMode = savedMode;
   }
 } catch (_) {}
+
+export function getReadableKitTextHex(hex) {
+  const map = {
+    '#f43f5e': '#fb7185',
+    '#0284c7': '#38bdf8',
+    '#2563eb': '#60a5fa',
+    '#eab308': '#facc15',
+    '#16a34a': '#4ade80',
+    '#ea580c': '#fb923c',
+    '#9333ea': '#c084fc',
+    '#f8fafc': '#f1f5f9'
+  };
+  return map[(hex || '').toLowerCase()] || hex || '#f8fafc';
+}
 
 let coachTeam = 'home'; // 'home' | 'away'
 try {
@@ -357,17 +371,21 @@ export function getAppMode() {
   return appMode;
 }
 
-export function setAppMode(mode) {
-  appMode = mode === 'coach' ? 'coach' : 'referee';
+export function setAppMode(mode, options = {}) {
+  if (mode === 'coach' || mode === 'spectator' || mode === 'referee') {
+    appMode = mode;
+  } else {
+    appMode = 'referee';
+  }
   try {
     localStorage.setItem('whatsthescoreref_app_mode', appMode);
   } catch (_) {}
-  if (appMode === 'referee' && typeof window !== 'undefined' && typeof window.closeModal === 'function') {
+  if (appMode !== 'coach' && typeof window !== 'undefined' && typeof window.closeModal === 'function') {
     window.closeModal('squadInitialsModal');
   }
   updateAppModeUI();
   notifyScoreChange();
-  if (appMode === 'coach') {
+  if (appMode === 'coach' && options.promptSquad !== false && !getTimerState().isTimerRunning) {
     checkCoachSquadPrompt();
   }
 }
@@ -521,10 +539,10 @@ export function renderSquadRotationModal() {
 
   if (pitchCountBadge) {
     const count = rot.onPitch.length;
-    pitchCountBadge.innerText = `${count}/5 On Pitch`;
+    pitchCountBadge.innerText = count > 5 ? `${count} On Pitch (6v5/6v6)` : `${count}/5 On Pitch`;
     pitchCountBadge.className = count === 5
       ? 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono-sport font-black'
-      : (count === 6
+      : (count === 6 || count === 7
           ? 'text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono-sport font-black'
           : 'text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono-sport font-black');
   }
@@ -532,6 +550,8 @@ export function renderSquadRotationModal() {
   const onPitchPlayers = roster.filter(p => rot.onPitch.includes(p.number));
   const benchPlayers = roster.filter(p => !rot.onPitch.includes(p.number));
   const minStints = roster.length > 0 ? Math.min(...roster.map(p => rot.stints[p.number] || 0)) : 0;
+
+  const gkSvg = `<svg class="w-3 h-3 shrink-0 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v4"></path><path d="M14 10V4a2 2 0 0 0-4 0v6"></path><path d="M10 10.5V6a2 2 0 0 0-4 0v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path></svg>`;
 
   if (pitchContainer) {
     if (onPitchPlayers.length === 0) {
@@ -545,13 +565,13 @@ export function renderSquadRotationModal() {
           <div class="p-2 rounded-xl ${isGk ? 'bg-cyan-950/50 border-2 border-cyan-400/70' : 'bg-emerald-950/30 border border-emerald-500/40'} flex items-center justify-between gap-1.5">
             <button type="button" onclick="togglePlayerOnPitch(${p.number})" class="flex-1 text-left min-w-0 cursor-pointer" title="Tap to sub off to bench">
               <div class="font-mono-sport font-black text-xs text-white truncate flex items-center gap-1">
-                ${isGk ? '<span>🧤</span>' : '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>'}
+                ${isGk ? `<span class="text-cyan-300">${gkSvg}</span>` : '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>'}
                 <span>${label}</span>
               </div>
-              <div class="text-[10px] text-slate-400">${stintCount} stint${stintCount === 1 ? '' : 's'} • Tap to sub off</div>
+              <div class="text-[10px] text-slate-400">${stintCount} stint${stintCount === 1 ? '' : 's'} • Tap off</div>
             </button>
-            <button type="button" onclick="setActiveGoalkeeper(${p.number})" class="px-2 py-1 rounded-lg text-[10px] font-black cursor-pointer transition shrink-0 ${isGk ? 'bg-cyan-400 text-slate-950 shadow' : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700'}" title="Set as Goalkeeper">
-              🧤 GK
+            <button type="button" onclick="setActiveGoalkeeper(${p.number})" class="px-2 py-1 rounded-lg text-[10px] font-black cursor-pointer transition shrink-0 flex items-center gap-1 ${isGk ? 'bg-cyan-400 text-slate-950 shadow' : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700'}" title="Set as Goalkeeper">
+              ${gkSvg}<span>GK</span>
             </button>
           </div>
         `;
@@ -573,9 +593,9 @@ export function renderSquadRotationModal() {
             <div class="min-w-0">
               <div class="font-mono-sport font-black text-xs text-slate-200 truncate flex items-center gap-1">
                 <span>${label}</span>
-                ${wasGk ? '<span class="text-[10px]" title="Played GK earlier">🧤</span>' : ''}
+                ${wasGk ? `<span class="text-cyan-400" title="Played GK earlier">${gkSvg}</span>` : ''}
               </div>
-              <div class="text-[10px] ${needsPitchTime ? 'text-amber-400 font-bold' : 'text-slate-500'}">${stintCount === 0 ? '⚡ Needs pitch time!' : `${stintCount} stint${stintCount === 1 ? '' : 's'}`}</div>
+              <div class="text-[10px] ${needsPitchTime ? 'text-amber-400 font-bold' : 'text-slate-500'}">${stintCount === 0 ? 'Needs pitch time' : `${stintCount} stint${stintCount === 1 ? '' : 's'}`}</div>
             </div>
             <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-black shrink-0">+ ON</span>
           </button>
@@ -642,23 +662,25 @@ export function removeCoachMoment(id) {
 export function updateAppModeUI() {
   const refBtn = document.getElementById('appModeRefBtn');
   const coachBtn = document.getElementById('appModeCoachBtn');
+  const specBtn = document.getElementById('appModeSpecBtn');
   const indicator = document.getElementById('appModeIndicatorBadge');
   const drawerBadge = document.getElementById('quickToolsRoleBadge');
   const touchlineBar = document.getElementById('coachTouchlineBar');
 
+  const inactiveCls = 'p-2 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-1 text-center transition cursor-pointer text-slate-400 hover:text-white bg-slate-900 border border-slate-800';
+
+  document.body?.classList.remove('mode-referee', 'mode-coach', 'mode-spectator');
+
   if (appMode === 'coach') {
     document.body?.classList.add('mode-coach');
-    document.body?.classList.remove('mode-referee');
 
-    if (coachBtn) {
-      coachBtn.className = 'p-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition cursor-pointer shadow bg-amber-500 text-slate-950 border border-amber-300';
-    }
-    if (refBtn) {
-      refBtn.className = 'p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition cursor-pointer text-slate-400 hover:text-white bg-slate-900 border border-slate-800';
-    }
+    if (coachBtn) coachBtn.className = 'p-2 rounded-xl font-black text-xs flex flex-col items-center justify-center gap-1 text-center transition cursor-pointer shadow bg-amber-500 text-slate-950 border border-amber-300';
+    if (refBtn) refBtn.className = inactiveCls;
+    if (specBtn) specBtn.className = inactiveCls;
+
     if (indicator) {
       indicator.className = 'h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:border-amber-400';
-      indicator.title = 'Current Role: Coach / Spectator (Tap to toggle)';
+      indicator.title = 'Current Role: Coach (Tap to cycle Ref / Coach / Spectator)';
       indicator.innerHTML = `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><circle cx="12" cy="12" r="3"></circle><line x1="4" y1="12" x2="20" y2="12"></line></svg><span id="appModeIndicatorText">COACH</span>`;
     }
     if (drawerBadge) {
@@ -666,19 +688,33 @@ export function updateAppModeUI() {
       drawerBadge.className = 'px-2 py-0.5 rounded-lg font-black text-[10px] font-mono-sport uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40';
     }
     if (touchlineBar) touchlineBar.classList.remove('hidden');
+  } else if (appMode === 'spectator') {
+    document.body?.classList.add('mode-spectator');
+
+    if (specBtn) specBtn.className = 'p-2 rounded-xl font-black text-xs flex flex-col items-center justify-center gap-1 text-center transition cursor-pointer shadow bg-sky-400 text-slate-950 border border-sky-200';
+    if (refBtn) refBtn.className = inactiveCls;
+    if (coachBtn) coachBtn.className = inactiveCls;
+
+    if (indicator) {
+      indicator.className = 'h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:border-sky-400';
+      indicator.title = 'Current Role: Sideline Spectator (Tap to cycle Ref / Coach / Spectator)';
+      indicator.innerHTML = `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span id="appModeIndicatorText">SPEC</span>`;
+    }
+    if (drawerBadge) {
+      drawerBadge.textContent = 'SPECTATOR';
+      drawerBadge.className = 'px-2 py-0.5 rounded-lg font-black text-[10px] font-mono-sport uppercase bg-sky-500/20 text-sky-300 border border-sky-500/40';
+    }
+    if (touchlineBar) touchlineBar.classList.add('hidden');
   } else {
     document.body?.classList.add('mode-referee');
-    document.body?.classList.remove('mode-coach');
 
-    if (refBtn) {
-      refBtn.className = 'p-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition cursor-pointer shadow bg-emerald-500 text-slate-950 border border-emerald-300';
-    }
-    if (coachBtn) {
-      coachBtn.className = 'p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition cursor-pointer text-slate-400 hover:text-white bg-slate-900 border border-slate-800';
-    }
+    if (refBtn) refBtn.className = 'p-2 rounded-xl font-black text-xs flex flex-col items-center justify-center gap-1 text-center transition cursor-pointer shadow bg-emerald-500 text-slate-950 border border-emerald-300';
+    if (coachBtn) coachBtn.className = inactiveCls;
+    if (specBtn) specBtn.className = inactiveCls;
+
     if (indicator) {
       indicator.className = 'h-8 px-2 rounded-xl text-[10px] font-black uppercase font-mono-sport flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400';
-      indicator.title = 'Current Role: Referee (Tap to toggle)';
+      indicator.title = 'Current Role: Referee (Tap to cycle Ref / Coach / Spectator)';
       indicator.innerHTML = `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="14" r="6"></circle><path d="M9 8h11a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-5"></path></svg><span id="appModeIndicatorText">REF</span>`;
     }
     if (drawerBadge) {
@@ -906,13 +942,39 @@ export function renderRefereeHelperBar() {
   const bar = document.getElementById('refHelperBar');
   if (!bar) return;
 
-  if (appMode !== 'referee') {
+  if (appMode === 'coach') {
     bar.classList.add('hidden');
     return;
   }
   bar.classList.remove('hidden');
 
+  const headerTitleEl = document.getElementById('refHelperTitleText');
+  const specBarContent = document.getElementById('spectatorHelperContent');
   const defaultContent = document.getElementById('refHelperDefaultContent');
+  const countBadge = document.getElementById('refHelperAlertCountBadge');
+
+  // Spectator Mode: clean 1-tap sideline bar (no referee whistles, no squad/scorer nags!)
+  if (appMode === 'spectator') {
+    if (headerTitleEl) headerTitleEl.innerText = 'Sideline Spectator View';
+    countBadge?.classList.add('hidden');
+    defaultContent?.classList.add('hidden');
+    [
+      'refHelperKickoffConfirmAlert',
+      'refHelperPausedGoalAlert',
+      'refHelperOneMinuteAlert',
+      'refHelperSubAlert',
+      'refHelperPowerPlayAlert',
+      'refHelperPowerPlayEndedAlert',
+      'refHelperCoolDownAlert',
+      'refHelperForgotResumeAlert'
+    ].forEach(id => document.getElementById(id)?.classList.add('hidden'));
+    specBarContent?.classList.remove('hidden');
+    updateKickoffBadges();
+    return;
+  }
+
+  if (headerTitleEl) headerTitleEl.innerText = 'Match Alerts & Reminders';
+  specBarContent?.classList.add('hidden');
   const kickoffPrompt = document.getElementById('refHelperKickoffPrompt');
   const idleContent = document.getElementById('refHelperIdleContent');
   const kickoffHomeBtn = document.getElementById('refKickoffHomeBtn');
@@ -940,8 +1002,20 @@ export function renderRefereeHelperBar() {
   const currentPeriod = timerState.currentPeriod || '1st Half';
   const isFT = currentPeriod === 'Full Time';
 
-  if (kickoffHomeBtn) kickoffHomeBtn.innerText = teams.home?.name || 'Home Team';
-  if (kickoffAwayBtn) kickoffAwayBtn.innerText = teams.away?.name || 'Away Team';
+  if (kickoffHomeBtn) {
+    const hHex = getReadableKitTextHex(teams.home?.color);
+    kickoffHomeBtn.innerText = teams.home?.name || 'Home Team';
+    kickoffHomeBtn.style.color = hHex;
+    kickoffHomeBtn.style.borderColor = hHex;
+    kickoffHomeBtn.style.backgroundColor = 'rgba(15, 23, 42, 0.9)';
+  }
+  if (kickoffAwayBtn) {
+    const aHex = getReadableKitTextHex(teams.away?.color);
+    kickoffAwayBtn.innerText = teams.away?.name || 'Away Team';
+    kickoffAwayBtn.style.color = aHex;
+    kickoffAwayBtn.style.borderColor = aHex;
+    kickoffAwayBtn.style.backgroundColor = 'rgba(15, 23, 42, 0.9)';
+  }
 
   const targetMin = Math.round((timerState.targetHalfSeconds || 900) / 60);
   if (periodTargetText) periodTargetText.innerText = `${targetMin}m Target`;
@@ -1076,7 +1150,6 @@ export function renderRefereeHelperBar() {
     idleContent?.classList.toggle('hidden', shouldPromptKickoff);
   }
 
-  const countBadge = document.getElementById('refHelperAlertCountBadge');
   if (countBadge) {
     if (activeAlertCount > 1) {
       countBadge.innerText = `${activeAlertCount} ACTIVE`;
@@ -1175,8 +1248,10 @@ export function getScoreState() {
 }
 
 export function toggleAppMode() {
-  const nextMode = appMode === 'coach' ? 'referee' : 'coach';
-  setAppMode(nextMode);
+  const order = ['referee', 'coach', 'spectator'];
+  const nextMode = order[(order.indexOf(appMode) + 1) % order.length];
+  // Never ambush user with Squad Initials modal when quick-cycling role pill from the top header
+  setAppMode(nextMode, { promptSquad: false });
   return nextMode;
 }
 
@@ -1949,11 +2024,12 @@ export function renderGoalTimeline() {
   if (homeBadgeEl) homeBadgeEl.innerText = homeGoals.length;
   if (awayBadgeEl) awayBadgeEl.innerText = awayGoals.length;
 
+  const ballSvg = `<svg class="w-3 h-3 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polygon points="12 8 15.5 10.5 14.2 14.5 9.8 14.5 8.5 10.5 12 8" fill="currentColor" stroke="none"></polygon></svg>`;
+
   function renderGoalChip(g) {
     const isOG = Boolean(g.isOwnGoal);
     let scorerText = '';
     if (!isOG && g.scorer) {
-      // Fixed: now displays player initials when present!
       scorerText = g.scorer.initials
         ? ` #${g.scorer.number} ${escapeHtml(g.scorer.initials)}`
         : ` #${g.scorer.number}`;
@@ -1961,13 +2037,13 @@ export function renderGoalTimeline() {
     if (isOG) {
       return `
         <button type="button" onclick="openModal('timelineModal')" class="px-2 py-0.5 rounded-lg bg-amber-950/80 border border-amber-500/60 hover:border-amber-400 text-[11px] font-mono-sport font-black text-amber-300 flex items-center gap-1 shrink-0 active:scale-95 transition cursor-pointer shadow-sm" title="Own Goal at ${escapeHtml(g.time)} (Tap to view log)">
-          <span class="text-xs">⚠️</span><span class="tracking-wide">${escapeHtml(g.time)} OG</span>
+          <span class="tracking-wide">${escapeHtml(g.time)} OG</span>
         </button>
       `;
     }
     return `
       <button type="button" onclick="openModal('timelineModal')" class="px-2 py-0.5 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-emerald-400 text-[11px] font-mono-sport font-black text-emerald-300 flex items-center gap-1 shrink-0 active:scale-95 transition cursor-pointer shadow-sm" title="Goal at ${escapeHtml(g.time)}${scorerText} (Tap to view log)">
-        <span class="text-xs">⚽</span><span class="tracking-wide">${escapeHtml(g.time)}${scorerText}</span>
+        ${ballSvg}<span class="tracking-wide">${escapeHtml(g.time)}${scorerText}</span>
       </button>
     `;
   }
@@ -2044,9 +2120,19 @@ export function renderGoalTimeline() {
   }
 }
 
+export function updateKitClashUI() {
+  const isClash = (teams.home?.color || '').toLowerCase() === (teams.away?.color || '').toLowerCase();
+  const bibsBadge = document.getElementById('awayBibsBadge');
+  if (bibsBadge) {
+    bibsBadge.classList.toggle('hidden', !isClash);
+    bibsBadge.classList.toggle('inline-flex', isClash);
+  }
+}
+
 export function applyTeamVisuals(side) {
   const t = teams[side];
   const palette = KIT_PALETTE[t.color] || { hex: t.color, border: t.color };
+  const readableHex = getReadableKitTextHex(palette.hex);
 
   const nameEl = document.getElementById(side + 'TeamNameDisplay');
   if (nameEl) nameEl.innerText = t.name || (side === 'home' ? 'Home Team' : 'Away Team');
@@ -2068,13 +2154,23 @@ export function applyTeamVisuals(side) {
   }
 
   const labelEl = document.getElementById(side + 'Label');
-  if (labelEl) labelEl.style.color = palette.hex === '#f8fafc' ? '#e2e8f0' : palette.hex;
+  if (labelEl) labelEl.style.color = readableHex;
+
+  // Dynamic kit colour on KO badge (replaces hardcoded rose/blue!)
+  const koBadge = document.getElementById(side + 'KickoffBadge');
+  if (koBadge) {
+    koBadge.style.color = readableHex;
+    koBadge.style.borderColor = readableHex;
+    koBadge.style.backgroundColor = 'rgba(15, 23, 42, 0.85)';
+  }
 
   const cardEl = document.getElementById(side + 'CardContainer');
   if (cardEl) {
     cardEl.style.borderColor = palette.border;
     cardEl.style.setProperty('--kit-accent', palette.hex);
   }
+
+  updateKitClashUI();
 }
 
 // Team Customization Modal Handlers
@@ -2196,8 +2292,13 @@ const COLOR_NAMES = {
 
 export function updateSwatchSelection(activeColor) {
   const colorLabel = document.getElementById('selectedColorNameLabel');
+  const otherSide = currentEditingTeam === 'home' ? 'away' : 'home';
+  const otherColor = (teams[otherSide]?.color || '').toLowerCase();
+  const isClash = activeColor && activeColor.toLowerCase() === otherColor;
+
   if (colorLabel && activeColor) {
-    colorLabel.innerText = COLOR_NAMES[activeColor.toLowerCase()] || '';
+    const baseName = COLOR_NAMES[activeColor.toLowerCase()] || '';
+    colorLabel.innerText = isClash ? `${baseName} • Kit Clash (Bibs)` : baseName;
   }
 
   document.querySelectorAll('.kit-swatch-btn').forEach(btn => {

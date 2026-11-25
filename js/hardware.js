@@ -453,6 +453,7 @@ export function updateSoundStatusUI(isEnabled) {
 
 export function hapticFeedback(type = 'tap') {
   if (typeof navigator === 'undefined' || !navigator.vibrate) return;
+  if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
 
   try {
     switch (type) {
@@ -493,7 +494,8 @@ export function playWhistleTone(type = 'short', options = {}) {
     if (!ctx) return;
 
     const now = ctx.currentTime;
-    const isCoachMode = !options.forceWhistle && typeof window !== 'undefined' && typeof window.getAppMode === 'function' && window.getAppMode() === 'coach';
+    const activeRole = typeof window !== 'undefined' && typeof window.getAppMode === 'function' ? window.getAppMode() : 'referee';
+    const isCoachMode = !options.forceWhistle && (activeRole === 'coach' || activeRole === 'spectator');
 
     function playChimeNotes(freqs, spacing = 0.14, noteDur = 0.28, peakGain = 0.22) {
       freqs.forEach((freq, idx) => {

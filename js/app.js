@@ -290,12 +290,17 @@ export function applyImportedMatchSync(decoded) {
     return false;
   }
 
+  saveActiveMatchSnapshot();
   if (timer.getTimerState().isTimerRunning) {
     timer.pauseTimer();
   }
 
   const targetMatchId = decoded.matchId === 2 ? 2 : 1;
-  const existingTeams = sessionState.matches[targetMatchId]?.score?.teams;
+  const existingMatch = sessionState.matches[targetMatchId];
+  const existingScore = existingMatch?.score;
+  const existingTeams = existingScore?.teams;
+  const existingGoals = Array.isArray(existingScore?.goals) ? existingScore.goals : [];
+
   const fresh = createDefaultMatchState(targetMatchId);
   fresh.timer.targetHalfSeconds = decoded.targetMinutes * 60;
   fresh.timer.currentPeriod = decoded.period === '1st Half' || decoded.period === '2nd Half' ? decoded.period : 'Full Time';
@@ -303,7 +308,33 @@ export function applyImportedMatchSync(decoded) {
 
   fresh.score.homeScore = decoded.homeScore;
   fresh.score.awayScore = decoded.awayScore;
-  fresh.score.goals = decoded.goals;
+  // Merge local coach scorer/assist attributions onto matching synced goals!
+  fresh.score.goals = (decoded.goals || []).map((incGoal, idx) => {
+    const matchLocal = existingGoals.find(lg =>
+      lg.team === incGoal.team &&
+      lg.period === incGoal.period &&
+      lg.scoreHome === incGoal.scoreHome &&
+      lg.scoreAway === incGoal.scoreAway
+    ) || existingGoals[idx];
+    if (matchLocal && (matchLocal.scorer || matchLocal.assist || matchLocal.isOwnGoal) && matchLocal.team === incGoal.team) {
+      return {
+        ...incGoal,
+        scorer: incGoal.scorer || matchLocal.scorer || null,
+        assist: incGoal.assist || matchLocal.assist || null,
+        isOwnGoal: Boolean(incGoal.isOwnGoal || matchLocal.isOwnGoal)
+      };
+    }
+    return incGoal;
+  });
+
+  // Preserve Coach Team, Moments, POTM, Notes & Fair-Play Rotation!
+  if (existingScore?.coachTeam) {
+    fresh.score.coachTeam = existingScore.coachTeam;
+  }
+  if (existingScore?.coachNotes) {
+    fresh.score.coachNotes = JSON.parse(JSON.stringify(existingScore.coachNotes));
+  }
+
   fresh.score.teams.home = {
     name: decoded.homeName,
     color: decoded.homeColor,
@@ -395,15 +426,13 @@ window.updateTabBadges = updateTabBadges;
 
 let handoverToastTimeout = null;
 export function showHandoverToast(msg) {
+  // Use floating top match toast so we never expand #clockUnitCard or clip #coachTouchlineBar on 360x640 screens!
+  score.showMatchToast(msg || 'Match 1 Saved & Archived! Match 2 Ready.', '✓', 3500);
   const toast = document.getElementById('matchHandoverSuccessToast');
-  const toastText = document.getElementById('matchHandoverSuccessText');
-  if (toast) {
-    if (toastText && msg) toastText.innerText = msg;
-    toast.classList.remove('hidden');
-    if (handoverToastTimeout) clearTimeout(handoverToastTimeout);
-    handoverToastTimeout = setTimeout(() => {
-      toast.classList.add('hidden');
-    }, 4500);
+  if (toast) toast.classList.add('hidden');
+  if (handoverToastTimeout) {
+    clearTimeout(handoverToastTimeout);
+    handoverToastTimeout = null;
   }
 }
 window.showHandoverToast = showHandoverToast;
@@ -566,7 +595,7 @@ window.openModal = function(id) {
     prematch.updatePrematchUI(score.teams.home?.name, score.teams.away?.name);
   } else if (id === 'instructionsModal') {
     const mode = score.getAppMode();
-    switchInstructionsTab(mode === 'coach' ? 'coach' : 'ref');
+    switchInstructionsTab(mode === 'referee' ? 'ref' : 'coach');
   } else if (id === 'roleSelectModal') {
     updateRoleSelectModalUI();
   } else if (id === 'quickToolsDrawer') {
@@ -785,6 +814,8 @@ export function endHalf() {
   }
 
   if (current === '1st Half') {
+    score.dismissPausedGoalToast();
+    timer.dismissForgotResumeAlert();
     score.finaliseHalfScore();
     hardware.playWhistleTone('double');
     hardware.hapticFeedback('long');
@@ -797,6 +828,8 @@ export function endHalf() {
     updateTabBadges();
     persistState();
   } else if (current === '2nd Half') {
+    score.dismissPausedGoalToast();
+    timer.dismissForgotResumeAlert();
     timer.finishMatch();
   }
 }
@@ -1008,8 +1041,32 @@ export function updateRoleSelectModalUI() {
   const currentMode = score.getAppMode();
   const refBtn = document.getElementById('roleSelectModalRefBtn');
   const coachBtn = document.getElementById('roleSelectModalCoachBtn');
+  const specBtn = document.getElementById('roleSelectModalSpecBtn');
   const refBadge = document.getElementById('roleModalRefBadge');
   const coachBadge = document.getElementById('roleModalCoachBadge');
+  const specBadge = document.getElementById('roleModalSpecBadge');
+
+  // Reset all 3
+  refBtn?.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-950/40', 'border-emerald-400');
+  refBtn?.classList.add('border-emerald-500/50');
+  if (refBadge) {
+    refBadge.textContent = 'OFFICIAL';
+    refBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+  }
+
+  coachBtn?.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-950/40', 'border-amber-400');
+  coachBtn?.classList.add('border-amber-500/50');
+  if (coachBadge) {
+    coachBadge.textContent = 'TOUCHLINE';
+    coachBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40';
+  }
+
+  specBtn?.classList.remove('ring-2', 'ring-sky-400', 'bg-sky-950/40', 'border-sky-400');
+  specBtn?.classList.add('border-sky-500/50');
+  if (specBadge) {
+    specBadge.textContent = 'SIDELINE';
+    specBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40';
+  }
 
   if (currentMode === 'coach') {
     coachBtn?.classList.add('ring-2', 'ring-amber-400', 'bg-amber-950/40', 'border-amber-400');
@@ -1018,11 +1075,12 @@ export function updateRoleSelectModalUI() {
       coachBadge.textContent = 'CURRENT';
       coachBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 shadow-sm';
     }
-    refBtn?.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-950/40', 'border-emerald-400');
-    refBtn?.classList.add('border-emerald-500/50');
-    if (refBadge) {
-      refBadge.textContent = 'OFFICIAL';
-      refBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+  } else if (currentMode === 'spectator') {
+    specBtn?.classList.add('ring-2', 'ring-sky-400', 'bg-sky-950/40', 'border-sky-400');
+    specBtn?.classList.remove('border-sky-500/50');
+    if (specBadge) {
+      specBadge.textContent = 'CURRENT';
+      specBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-sky-400 text-slate-950 shadow-sm';
     }
   } else {
     refBtn?.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-950/40', 'border-emerald-400');
@@ -1031,25 +1089,19 @@ export function updateRoleSelectModalUI() {
       refBadge.textContent = 'CURRENT';
       refBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-400 text-slate-950 shadow-sm';
     }
-    coachBtn?.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-950/40', 'border-amber-400');
-    coachBtn?.classList.add('border-amber-500/50');
-    if (coachBadge) {
-      coachBadge.textContent = 'TOUCHLINE';
-      coachBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40';
-    }
   }
 }
 window.updateRoleSelectModalUI = updateRoleSelectModalUI;
 
 export function selectAppRole(mode) {
   storage.savePrefs({ hasCompletedRoleOnboarding: true });
-  score.setAppMode(mode);
+  score.setAppMode(mode, { promptSquad: false });
   hardware.hapticFeedback('success');
   window.closeModal('roleSelectModal');
 
-  if (mode === 'referee') {
+  if (mode !== 'coach') {
     window.closeModal('squadInitialsModal');
-  } else if (mode === 'coach') {
+  } else {
     score.checkCoachSquadPrompt();
   }
 }

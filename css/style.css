@@ -190,7 +190,8 @@ html.is-ios-standalone body {
   background-image: radial-gradient(125% 85% at 50% 0%, color-mix(in srgb, var(--kit-accent) 16%, #0d111a) 0%, #0d111a 72%);
 }
 
-body.mode-referee #scoreCardsGrid {
+body.mode-referee #scoreCardsGrid,
+body.mode-spectator #scoreCardsGrid {
   height: 235px;
   max-height: 250px;
 }
@@ -222,7 +223,8 @@ html.is-ios-standalone #tacticsBoardModal {
   padding-top: max(47px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
 }
 
-body.mode-referee #refHelperBar {
+body.mode-referee #refHelperBar,
+body.mode-spectator #refHelperBar {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -230,7 +232,8 @@ body.mode-referee #refHelperBar {
   max-height: 130px;
 }
 
-body.mode-referee #clockUnitCard {
+body.mode-referee #clockUnitCard,
+body.mode-spectator #clockUnitCard {
   flex: 0 0 auto;
   min-height: 210px;
 }
@@ -291,6 +294,14 @@ body.mode-coach #clockUnitCard {
   position: relative;
   mask-image: linear-gradient(to right, transparent, black 6px, black calc(100% - 6px), transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, black 6px, black calc(100% - 6px), transparent);
+}
+
+#homeGoalChips:empty,
+#awayGoalChips:empty {
+  background: transparent !important;
+  border-color: transparent !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
 }
 
 @keyframes goalChipsCarousel {
@@ -389,12 +400,20 @@ body.mode-coach #resetMatchBtn {
   }
 
   body.mode-coach #scoreCardsGrid {
-    height: 155px !important;
-    min-height: 150px !important;
-    max-height: 160px !important;
+    height: auto !important;
+    min-height: 138px !important;
+    max-height: 155px !important;
+    flex: 1 1 auto !important;
   }
 
-  body.mode-referee #scoreCardsGrid {
+  #halfTimeBreakBanner {
+    margin-bottom: 4px !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+  }
+
+  body.mode-referee #scoreCardsGrid,
+  body.mode-spectator #scoreCardsGrid {
     height: 170px !important;
     min-height: 165px !important;
     max-height: 175px !important;
@@ -549,7 +568,8 @@ body.mode-coach #resetMatchBtn {
     max-height: 142px !important;
   }
 
-  body.mode-referee #scoreCardsGrid {
+  body.mode-referee #scoreCardsGrid,
+  body.mode-spectator #scoreCardsGrid {
     height: 150px !important;
     min-height: 145px !important;
     max-height: 155px !important;

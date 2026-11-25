@@ -468,9 +468,10 @@ export const BUILTIN_TEMPLATES = [
       retreatLine: false,
       lanesMode: 'off',
       oppMode: 'off',
+      customOppRoster: [{ id: 'o0', label: 'D', isGk: false }],
       steps: [
         {
-          teamPos: { t0: { x: 50, y: 76 }, t1: { x: 22, y: 50 }, t2: { x: 78, y: 50 }, t3: { x: 50, y: 24 }, t4: { x: 86, y: 86 } },
+          teamPos: { t0: { x: 50, y: 76 }, t1: { x: 22, y: 50 }, t2: { x: 78, y: 50 }, t3: { x: 50, y: 24 }, t4: { x: 86, y: 88 } },
           oppPos: { o0: { x: 46, y: 54 } },
           ball: { x: 50, y: 76, attachedTo: 't0' },
           gear: [
@@ -486,7 +487,7 @@ export const BUILTIN_TEMPLATES = [
           customOppCount: 1
         },
         {
-          teamPos: { t0: { x: 50, y: 76 }, t1: { x: 22, y: 50 }, t2: { x: 78, y: 50 }, t3: { x: 50, y: 24 }, t4: { x: 86, y: 86 } },
+          teamPos: { t0: { x: 50, y: 76 }, t1: { x: 22, y: 50 }, t2: { x: 78, y: 50 }, t3: { x: 50, y: 24 }, t4: { x: 86, y: 88 } },
           oppPos: { o0: { x: 36, y: 38 } },
           ball: { x: 50, y: 24, attachedTo: 't3' },
           gear: [
@@ -514,33 +515,37 @@ export const BUILTIN_TEMPLATES = [
       retreatLine: false,
       lanesMode: 'off',
       oppMode: 'off',
+      customOppRoster: [
+        { id: 'o0', label: 'GK', isGk: true },
+        { id: 'o1', label: 'D', isGk: false }
+      ],
       steps: [
         {
-          teamPos: { t0: { x: 50, y: 10 }, t1: { x: 34, y: 74 }, t2: { x: 68, y: 74 }, t3: { x: 14, y: 88 }, t4: { x: 86, y: 88 } },
-          oppPos: { o0: { x: 50, y: 44 } },
-          ball: { x: 34, y: 74, attachedTo: 't1' },
+          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 34, y: 73 }, t2: { x: 68, y: 73 }, t3: { x: 14, y: 88 }, t4: { x: 86, y: 88 } },
+          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 50, y: 42 } },
+          ball: { x: 34, y: 73, attachedTo: 't1' },
           gear: [
             { id: 'g1', kind: 'cone-sky', x: 34, y: 80 },
             { id: 'g2', kind: 'cone-sky', x: 68, y: 80 }
           ],
           drawings: [
-            { type: 'dribble', pts: [{ x: 34, y: 70 }, { x: 44, y: 50 }] },
-            { type: 'run', pts: [{ x: 68, y: 70 }, { x: 66, y: 34 }] }
+            { type: 'dribble', pts: [{ x: 34, y: 69 }, { x: 44, y: 49 }] },
+            { type: 'run', pts: [{ x: 68, y: 69 }, { x: 66, y: 32 }] }
           ],
-          customOppCount: 1
+          customOppCount: 2
         },
         {
-          teamPos: { t0: { x: 50, y: 10 }, t1: { x: 44, y: 48 }, t2: { x: 64, y: 30 }, t3: { x: 14, y: 88 }, t4: { x: 86, y: 88 } },
-          oppPos: { o0: { x: 46, y: 42 } },
-          ball: { x: 64, y: 30, attachedTo: 't2' },
+          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 44, y: 47 }, t2: { x: 64, y: 28 }, t3: { x: 14, y: 88 }, t4: { x: 86, y: 88 } },
+          oppPos: { o0: { x: 52, y: 12 }, o1: { x: 46, y: 41 } },
+          ball: { x: 64, y: 28, attachedTo: 't2' },
           gear: [
             { id: 'g1', kind: 'cone-sky', x: 34, y: 80 },
             { id: 'g2', kind: 'cone-sky', x: 68, y: 80 }
           ],
           drawings: [
-            { type: 'pass', pts: [{ x: 62, y: 26 }, { x: 54, y: 11 }] }
+            { type: 'pass', pts: [{ x: 62, y: 24 }, { x: 55, y: 11 }] }
           ],
-          customOppCount: 1
+          customOppCount: 2
         }
       ]
     })
@@ -555,6 +560,7 @@ let board = {
   lanesMode: 'off', // 'off' | 'lanes' | 'thirds'
   oppMode: 'even',  // 'off' | 'even' | 'powerplay'
   customOppCount: 0,
+  customOppRoster: null,
   activeTool: 'move', // 'move' | 'pass' | 'run' | 'dribble' | 'zone'
   isAnimatorOpen: false,
   animSpeed: 1, // 1 | 0.5
@@ -795,11 +801,15 @@ function ensureStepTokensIntegrity() {
   const oppCount = getOppCountForState();
   const oppDefaults = getDefaultOppCoords(oppCount, Boolean(activeForm?.oppBehindRetreat && board.retreatLine), board.pitchMode);
 
-  board.oppRoster = oppDefaults.map((o, idx) => ({
-    id: `o${idx}`,
-    label: o.label || (idx === 0 ? 'GK' : String(idx + 1)),
-    isGk: Boolean(o.isGk)
-  }));
+  if (Array.isArray(board.customOppRoster) && board.customOppRoster.length === oppCount && board.oppMode === 'off') {
+    board.oppRoster = cloneDeep(board.customOppRoster);
+  } else {
+    board.oppRoster = oppDefaults.map((o, idx) => ({
+      id: `o${idx}`,
+      label: o.label || (idx === 0 ? 'GK' : String(idx + 1)),
+      isGk: Boolean(o.isGk)
+    }));
+  }
 
   board.steps.forEach(step => {
     if (!step.teamPos) step.teamPos = {};
@@ -848,6 +858,7 @@ export function applyFormationToBoard(formationId, options = { recordUndo: true 
   const chosen = list.find(f => f.id === formationId) || list[0];
   board.formationId = chosen.id;
   board.customOppCount = 0;
+  board.customOppRoster = null;
 
   // Ensure teamRoster matches target team size for pitchMode
   const desiredCount = getTeamSizeForMode(board.pitchMode);
@@ -1006,6 +1017,7 @@ export function cycleTacticsOpposition() {
   const next = order[(order.indexOf(board.oppMode) + 1) % order.length];
   board.oppMode = next;
   board.customOppCount = 0;
+  board.customOppRoster = null;
   ensureStepTokensIntegrity();
   hapticFeedback('tap');
   saveWorkingBoard();
@@ -1329,6 +1341,7 @@ export function loadBuiltinTacticsTemplate(templateId) {
   board.lanesMode = built.lanesMode || 'off';
   board.oppMode = built.oppMode || 'off';
   board.customOppCount = built.steps[0]?.customOppCount || 0;
+  board.customOppRoster = built.customOppRoster ? cloneDeep(built.customOppRoster) : null;
 
   adjustRosterCountForPitchMode(getTeamSizeForMode(board.pitchMode));
   board.steps = cloneDeep(built.steps);
@@ -1557,11 +1570,11 @@ function renderBenchStripUI() {
 
   if (hintEl) {
     hintEl.innerText = selectedBenchNumber
-      ? `Tap a pitch player to sub #${selectedBenchNumber} on:`
-      : 'Bench (drag or tap to swap):';
+      ? `Tap pitch player for #${selectedBenchNumber}:`
+      : 'SUBS:';
     hintEl.className = selectedBenchNumber
       ? 'text-[10px] font-black text-amber-300 truncate shrink-0'
-      : 'text-[10px] font-extrabold text-slate-400 uppercase tracking-wide shrink-0';
+      : 'text-[10px] font-black text-slate-400 uppercase tracking-wider shrink-0';
   }
 
   if (board.benchRoster.length === 0) {
@@ -2155,6 +2168,29 @@ function renderSceneOntoContext(ctx, w, h, pad, scene, options = { isSunlight: f
   // 2. Training Gear Props
   (scene.gear || []).forEach(g => drawGearItem(ctx, g, w, h, pad));
 
+  // Single-prop Trash Drop Zone along bottom edge while dragging gear!
+  if (activePointer && activePointer.mode === 'drag' && activePointer.target?.kind === 'gear') {
+    const activeGear = (scene.gear || []).find(item => item.id === activePointer.target.id);
+    const overTrash = activeGear && activeGear.y >= 89;
+    ctx.save();
+    ctx.fillStyle = overTrash ? 'rgba(225, 29, 72, 0.92)' : 'rgba(15, 23, 42, 0.86)';
+    ctx.strokeStyle = overTrash ? '#fda4af' : '#fb7185';
+    ctx.lineWidth = 2;
+    const tzW = Math.min(210, w - 32);
+    const tzH = 26;
+    const tzX = (w - tzW) / 2;
+    const tzY = h - tzH - 8;
+    roundRectPath(ctx, tzX, tzY, tzW, tzH, 9);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 10.5px "Chakra Petch", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(overTrash ? 'RELEASE TO DELETE PROP ✕' : 'DRAG HERE TO REMOVE PROP ✕', w / 2, tzY + tzH / 2 + 0.5);
+    ctx.restore();
+  }
+
   const baseR = (board.pitchMode === 'half' ? 21 : (board.pitchMode === '7v7' ? 16.5 : 18)) * scaleFactor;
   const oppR = baseR * 0.88;
 
@@ -2324,6 +2360,7 @@ function onCanvasPointerDown(e) {
     if (!hit) return; // Explicit Move mode: never draw accidental lines on empty grass!
 
     pushUndoSnapshot();
+    const originPos = (hit.kind === 'team' && step.teamPos?.[hit.id]) ? { ...step.teamPos[hit.id] } : null;
     if (hit.kind === 'ball') {
       step.ball.attachedTo = null;
       step.ball.x = norm.x;
@@ -2333,6 +2370,7 @@ function onCanvasPointerDown(e) {
       pointerId: e.pointerId,
       mode: 'drag',
       target: hit,
+      originPos,
       moved: false
     };
     drawTacticsCanvas();
@@ -2403,7 +2441,54 @@ function onCanvasPointerUp(e) {
   const step = board.steps[board.activeStepIdx];
 
   if (activePointer.mode === 'drag' && step) {
-    // Magnetic Ball Snap when dropping the ball near any player!
+    // 1. Single-prop delete when dragging gear into bottom remove zone
+    if (activePointer.target.kind === 'gear') {
+      const gNow = (step.gear || []).find(item => item.id === activePointer.target.id);
+      if (gNow && gNow.y >= 89) {
+        const delId = activePointer.target.id;
+        board.steps.forEach(s => {
+          s.gear = (s.gear || []).filter(item => item.id !== delId);
+        });
+        hapticFeedback('tap');
+        score.showMatchToast('Prop removed (tap Undo to restore)', '✕', 1600);
+      }
+    }
+
+    // 2. On-pitch Starter <-> Starter / GK Swap when dropping one team player directly onto another!
+    if (activePointer.target.kind === 'team' && activePointer.moved && activePointer.originPos) {
+      const dragId = activePointer.target.id;
+      const dropPos = step.teamPos?.[dragId];
+      if (dropPos) {
+        const overlapMate = board.teamRoster.find(tok => {
+          if (tok.id === dragId) return false;
+          const p = step.teamPos?.[tok.id];
+          return p && Math.hypot(p.x - dropPos.x, p.y - dropPos.y) <= 5.2;
+        });
+        if (overlapMate) {
+          // Restore formation coordinates cleanly and swap player shirt identities!
+          step.teamPos[dragId] = { ...activePointer.originPos };
+          syncAttachedBallPosition(step);
+          const a = board.teamRoster.find(t => t.id === dragId);
+          const b = overlapMate;
+          if (a && b) {
+            const tmpNum = a.number;
+            const tmpInit = a.initials;
+            a.number = b.number;
+            a.initials = b.initials;
+            b.number = tmpNum;
+            b.initials = tmpInit;
+            hapticFeedback('success');
+            if (a.isGk || b.isGk) {
+              const newGk = a.isGk ? a : b;
+              const lbl = newGk.initials ? `#${newGk.number} ${newGk.initials}` : `#${newGk.number}`;
+              score.showMatchToast(`Swapped ${lbl} into Goalkeeper`, '✓', 1800);
+            }
+          }
+        }
+      }
+    }
+
+    // 3. Magnetic Ball Snap when dropping the ball near any player!
     if (activePointer.target.kind === 'ball' && step.ball) {
       let bestId = null;
       let bestDist = 7.5; // Normalized magnetic snap radius (~7.5% of pitch)
