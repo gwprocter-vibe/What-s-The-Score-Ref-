@@ -10,7 +10,7 @@ import { hapticFeedback } from './hardware.js';
 const WORKING_STORAGE_KEY = 'whatsthescoreref_tactics_working_v1';
 const PLAYBOOK_STORAGE_KEY = 'whatsthescoreref_tactics_playbook_v1';
 const MAX_SAVED_BOARDS = 24;
-const MAX_STEPS = 6;
+const MAX_STEPS = 8;
 const MAX_UNDO = 30;
 
 export const PITCH_MODES = {
@@ -529,6 +529,13 @@ function ensureStepTokensIntegrity() {
 
     syncAttachedBallPosition(step);
   });
+
+  board.steps.forEach((step, idx) => {
+    const nextStep = board.steps[idx + 1] || null;
+    (step.drawings || []).forEach(d => {
+      if (d.type === 'pass') bindPassArrowEndpoints(d, step, nextStep);
+    });
+  });
 }
 
 function syncAttachedBallPosition(step) {
@@ -923,10 +930,142 @@ function samplePolylineBetween(startPt, endPt, drawings, allowedTypes, t) {
   return { x: endPt.x, y: endPt.y };
 }
 
+function getTokenPosInScene(scene, tokId) {
+  if (!scene || !tokId) return null;
+  return scene.teamPos?.[tokId] || scene.oppPos?.[tokId] || null;
+}
+
+function findNearestTokenIdInScene(scene, pt, maxDist = 8.5, excludeId = null) {
+  if (!scene || !pt) return null;
+  let bestId = null;
+  let bestD = maxDist;
+  Object.entries(scene.teamPos || {}).forEach(([id, pos]) => {
+    if (id === excludeId) return;
+    const d = Math.hypot(pos.x - pt.x, pos.y - pt.y);
+    if (d < bestD) { bestD = d; bestId = id; }
+  });
+  Object.entries(scene.oppPos || {}).forEach(([id, pos]) => {
+    if (id === excludeId) return;
+    const d = Math.hypot(pos.x - pt.x, pos.y - pt.y);
+    if (d < bestD) { bestD = d; bestId = id; }
+  });
+  return bestId;
+}
+
+// Bind pass arrow endpoints to passer (fromId) and receiver (toId) so pass arrows follow moving players cleanly!
+function bindPassArrowEndpoints(d, stepA, stepB = null) {
+  if (!d || d.type !== 'pass' || !Array.isArray(d.pts) || d.pts.length < 2) return d;
+  const first = d.pts[0];
+  const tip = d.pts[d.pts.length - 1];
+
+  if (d.fromId === undefined) {
+    let fId = null;
+    if (stepA?.ball?.attachedTo) {
+      const hp = getTokenPosInScene(stepA, stepA.ball.attachedTo);
+      if (hp && Math.hypot(first.x - hp.x, first.y - hp.y) <= 13) fId = stepA.ball.attachedTo;
+    }
+    if (!fId) fId = findNearestTokenIdInScene(stepA, first, 8.5, null);
+    d.fromId = fId || null;
+  }
+
+  if (d.toId === undefined) {
+    let tId = null;
+    if (stepB?.ball?.attachedTo && stepB.ball.attachedTo !== d.fromId) {
+      const bPos = getTokenPosInScene(stepB, stepB.ball.attachedTo);
+      const aPos = getTokenPosInScene(stepA, stepB.ball.attachedTo);
+      if ((bPos && Math.hypot(tip.x - bPos.x, tip.y - bPos.y) <= 14) ||
+          (aPos && Math.hypot(tip.x - aPos.x, tip.y - aPos.y) <= 14)) {
+        tId = stepB.ball.attachedTo;
+      }
+    }
+    if (!tId) {
+      const isShotIntoGoalOrSpace = Boolean(stepB && !stepB.ball?.attachedTo);
+      if (!isShotIntoGoalOrSpace) {
+        const candA = findNearestTokenIdInScene(stepA, tip, 8.5, d.fromId);
+        const candB = stepB ? findNearestTokenIdInScene(stepB, tip, 8.5, d.fromId) : null;
+        const cand = candA || candB;
+        if (cand && (!d.fromId || cand[0] === d.fromId[0])) {
+          tId = cand;
+        }
+      }
+    }
+    d.toId = tId || null;
+  }
+  return d;
+}
+
+// Project a pass arrow onto the live positions of its attached passer & receiver tokens in the current frame/scene!
+function projectDrawingOntoScene(d, scene) {
+  if (!d || d.type !== 'pass' || !Array.isArray(d.pts) || d.pts.length < 2) return d;
+  const pStart = d.fromId ? getTokenPosInScene(scene, d.fromId) : null;
+  const pEnd = d.toId ? getTokenPosInScene(scene, d.toId) : null;
+  if (!pStart && !pEnd) return d;
+
+  const rawA = pStart || d.pts[0];
+  const rawB = pEnd || d.pts[d.pts.length - 1];
+  const dist = Math.hypot(rawB.x - rawA.x, rawB.y - rawA.y);
+  if (dist < 0.25) {
+    return { ...d, pts: [{ x: rawA.x, y: rawA.y }, { x: rawB.x, y: rawB.y }] };
+  }
+
+  const trimA = pStart ? Math.min(4.2, dist * 0.34) : 0;
+  const trimB = pEnd ? Math.min(4.2, dist * 0.34) : 0;
+  const ux = (rawB.x - rawA.x) / dist;
+  const uy = (rawB.y - rawA.y) / dist;
+  const newFirst = { x: rawA.x + ux * trimA, y: rawA.y + uy * trimA };
+  const newLast = { x: rawB.x - ux * trimB, y: rawB.y - uy * trimB };
+
+  if (d.pts.length === 2) {
+    return { ...d, pts: [newFirst, newLast] };
+  }
+
+  // Smoothly transform intermediate curve waypoints via 2D similarity transform between newFirst & newLast
+  const oFirst = d.pts[0];
+  const oLast = d.pts[d.pts.length - 1];
+  const oDx = oLast.x - oFirst.x;
+  const oDy = oLast.y - oFirst.y;
+  const oLenSq = oDx * oDx + oDy * oDy;
+  if (oLenSq < 0.25) {
+    return { ...d, pts: [newFirst, newLast] };
+  }
+  const nDx = newLast.x - newFirst.x;
+  const nDy = newLast.y - newFirst.y;
+  const a = (oDx * nDx + oDy * nDy) / oLenSq;
+  const b = (oDx * nDy - oDy * nDx) / oLenSq;
+
+  const mappedPts = d.pts.map((pt, idx) => {
+    if (idx === 0) return newFirst;
+    if (idx === d.pts.length - 1) return newLast;
+    const rx = pt.x - oFirst.x;
+    const ry = pt.y - oFirst.y;
+    return {
+      x: newFirst.x + a * rx - b * ry,
+      y: newFirst.y + b * rx + a * ry
+    };
+  });
+  return { ...d, pts: mappedPts };
+}
+
+if (typeof window !== 'undefined') {
+  window.__getLiveProjectedPassTipForTest = () => {
+    const sc = animRenderOverride || board.steps[board.activeStepIdx];
+    const pass = (sc?.drawings || []).find(item => item.type === 'pass');
+    if (!pass) return null;
+    const proj = projectDrawingOntoScene(pass, sc);
+    return proj.pts[proj.pts.length - 1];
+  };
+}
+
 // Auto-synthesize a final completion step if a user drew pass/run/dribble arrows on their last custom step without adding Step N+1!
 function buildPlaybackSteps(rawSteps) {
   const steps = cloneDeep(rawSteps || []);
   if (steps.length === 0) return steps;
+
+  steps.forEach((st, idx) => {
+    (st.drawings || []).forEach(d => {
+      if (d.type === 'pass') bindPassArrowEndpoints(d, st, steps[idx + 1] || null);
+    });
+  });
 
   const last = steps[steps.length - 1];
   const actionDrawings = (last.drawings || []).filter(d =>
@@ -971,18 +1110,21 @@ function buildPlaybackSteps(rawSteps) {
       : last.ball;
     const lastPass = passArrows[passArrows.length - 1];
     const firstPass = passArrows[0];
-    if (Math.hypot(firstPass.pts[0].x - ballOrigin.x, firstPass.pts[0].y - ballOrigin.y) <= 14) {
+    if (Math.hypot(firstPass.pts[0].x - ballOrigin.x, firstPass.pts[0].y - ballOrigin.y) <= 14 || firstPass.fromId === last.ball.attachedTo) {
       const finalTip = lastPass.pts[lastPass.pts.length - 1];
-      let receiverId = null;
-      let recDist = 7.5;
-      Object.entries(nextStep.teamPos || {}).forEach(([id, pos]) => {
-        const d = Math.hypot(pos.x - finalTip.x, pos.y - finalTip.y);
-        if (d < recDist) { recDist = d; receiverId = id; }
-      });
-      if (receiverId) {
+      let receiverId = lastPass.toId || null;
+      if (!receiverId) {
+        let recDist = 7.5;
+        Object.entries(nextStep.teamPos || {}).forEach(([id, pos]) => {
+          const d = Math.hypot(pos.x - finalTip.x, pos.y - finalTip.y);
+          if (d < recDist) { recDist = d; receiverId = id; }
+        });
+      }
+      const recPos = receiverId ? getTokenPosInScene(nextStep, receiverId) : null;
+      if (receiverId && recPos) {
         nextStep.ball = {
-          x: nextStep.teamPos[receiverId].x,
-          y: nextStep.teamPos[receiverId].y,
+          x: recPos.x,
+          y: recPos.y,
           attachedTo: receiverId
         };
       } else {
@@ -1004,7 +1146,10 @@ function buildPlaybackSteps(rawSteps) {
 
 function interpolateBetweenSteps(stepA, stepB, rawT, showNextStepDrawings = false) {
   const t = easeInOutCubic(clamp(rawT, 0, 1));
-  const aDrawings = stepA.drawings || [];
+  const aDrawings = (stepA.drawings || []).map(d =>
+    d.type === 'pass' ? bindPassArrowEndpoints({ ...d }, stepA, stepB) : d
+  );
+
   const teamPos = {};
   board.teamRoster.forEach(tok => {
     const a = stepA.teamPos?.[tok.id] || { x: 50, y: 50 };
@@ -1029,9 +1174,10 @@ function interpolateBetweenSteps(stepA, stepB, rawT, showNextStepDrawings = fals
     bx = host.x;
     by = host.y;
   } else {
-    const aHost = startBall.attachedTo ? (stepA.teamPos?.[startBall.attachedTo] || stepA.oppPos?.[startBall.attachedTo] || startBall) : startBall;
-    const bHost = endBall.attachedTo ? (stepB.teamPos?.[endBall.attachedTo] || stepB.oppPos?.[endBall.attachedTo] || endBall) : endBall;
-    const sampledBall = samplePolylineBetween(aHost, bHost, aDrawings, ['pass', 'dribble'], t);
+    // Interpolate ball directly between the LIVE moving passer and LIVE moving receiver so it rides along the live pass arrow!
+    const curStartHost = startBall.attachedTo ? (teamPos[startBall.attachedTo] || oppPos[startBall.attachedTo] || startBall) : startBall;
+    const curEndHost = endBall.attachedTo ? (teamPos[endBall.attachedTo] || oppPos[endBall.attachedTo] || endBall) : endBall;
+    const sampledBall = samplePolylineBetween(curStartHost, curEndHost, aDrawings, ['pass', 'dribble'], t);
     bx = sampledBall.x;
     by = sampledBall.y;
     if (rawT >= 0.98 && endBall.attachedTo) attachedTo = endBall.attachedTo;
@@ -1048,10 +1194,10 @@ function interpolateBetweenSteps(stepA, stepB, rawT, showNextStepDrawings = fals
 
 // 4-Beat Teaching Pacing Calculator: Intro Setup Beat -> Smooth Move -> Mid-Step Cue Beat -> Full Final Finish Hold!
 function computePlaybackTimelineMetrics(stepsCount, speed = 1) {
-  const introMs = speed === 0.5 ? 800 : 520;
-  const moveMs = speed === 0.5 ? 2050 : 1280;
-  const midHoldMs = speed === 0.5 ? 720 : 480;
-  const outroHoldMs = speed === 0.5 ? 1500 : 1100;
+  const introMs = speed === 0.5 ? 720 : 460;
+  const moveMs = speed === 0.5 ? 1800 : 1120;
+  const midHoldMs = speed === 0.5 ? 580 : 340;
+  const outroHoldMs = speed === 0.5 ? 1500 : 1150;
   const numTransitions = Math.max(1, stepsCount - 1);
   const totalMs = introMs + numTransitions * moveMs + Math.max(0, numTransitions - 1) * midHoldMs + outroHoldMs;
   return { introMs, moveMs, midHoldMs, outroHoldMs, numTransitions, totalMs };
@@ -1639,10 +1785,11 @@ function renderAnimatorBarUI() {
 
   if (stepsEl) {
     const compact = board.steps.length >= 4;
+    const padCls = board.steps.length >= 5 ? 'px-1.5 py-1 text-[10px]' : 'px-2 py-1 text-[10.5px]';
     let html = board.steps.map((_, idx) => {
       const active = idx === board.activeStepIdx;
       const lbl = compact ? `S${idx + 1}` : `Step ${idx + 1}`;
-      return `<button type="button" onclick="selectTacticsStep(${idx})" class="px-2 py-1 rounded-lg font-mono-sport font-black text-[10.5px] whitespace-nowrap transition cursor-pointer ${active ? 'bg-amber-400 text-slate-950 shadow' : 'bg-slate-900 text-slate-400 border border-slate-700 hover:text-white'}">${lbl}</button>`;
+      return `<button type="button" onclick="selectTacticsStep(${idx})" class="${padCls} rounded-lg font-mono-sport font-black whitespace-nowrap transition cursor-pointer ${active ? 'bg-amber-400 text-slate-950 shadow' : 'bg-slate-900 text-slate-400 border border-slate-700 hover:text-white'}">${lbl}</button>`;
     }).join('');
 
     if (board.steps.length < MAX_STEPS) {
@@ -1735,8 +1882,8 @@ function renderPlaybookModalUI() {
 
   if (builtinHeading) {
     builtinHeading.innerText = isTrain
-      ? 'Academy Session Drills (4-Step Full Animation)'
-      : 'Academy Match Plays by Squad Size (4-Step Full Animation)';
+      ? 'Academy Session Drills (Full Step-by-Step)'
+      : 'Academy Match Plays by Squad Size (Full Step-by-Step)';
   }
   if (savedHeading) {
     savedHeading.innerText = isTrain ? 'My Saved Training Drills' : 'My Saved Match Plays';
@@ -2329,7 +2476,7 @@ function renderSceneOntoContext(ctx, w, h, pad, scene, options = { isSunlight: f
   drawPitchSurfaceAndLines(ctx, w, h, pad, isSunlight);
 
   // 1. Saved Tactical Drawings + Live In-Progress Stroke
-  (scene.drawings || []).forEach(d => drawTacticalStroke(ctx, d, w, h, pad, isSunlight));
+  (scene.drawings || []).forEach(d => drawTacticalStroke(ctx, projectDrawingOntoScene(d, scene), w, h, pad, isSunlight));
   if (activePointer && activePointer.liveDrawing) {
     drawTacticalStroke(ctx, activePointer.liveDrawing, w, h, pad, isSunlight);
   }
@@ -2693,7 +2840,11 @@ function onCanvasPointerUp(e) {
     }
     if (valid) {
       pushUndoSnapshot();
-      step.drawings.push(cloneDeep(ld));
+      const savedStroke = cloneDeep(ld);
+      if (savedStroke.type === 'pass') {
+        bindPassArrowEndpoints(savedStroke, step, board.steps[board.activeStepIdx + 1] || null);
+      }
+      step.drawings.push(savedStroke);
       hapticFeedback('selection');
       saveWorkingBoard();
     }
