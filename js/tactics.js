@@ -1732,6 +1732,9 @@ export function applyFormationToBoard(formationId, options = { recordUndo: true 
   board.customOppCount = 0;
   board.customOppRoster = null;
   board.activeCue = null;
+  board.lanesMode = 'off';
+  board.isAnimatorOpen = false;
+  selectedBenchNumber = null;
 
   // Ensure teamRoster matches target team size for pitchMode
   const desiredCount = getTeamSizeForMode(board.pitchMode);
@@ -1747,7 +1750,6 @@ export function applyFormationToBoard(formationId, options = { recordUndo: true 
     isGk: Boolean(o.isGk)
   }));
 
-  const currentGear = board.steps[board.activeStepIdx]?.gear || [];
   const teamPos = {};
   board.teamRoster.forEach((tok, idx) => {
     const pt = chosen.coords[idx] || { x: 50, y: 50 };
@@ -1764,11 +1766,12 @@ export function applyFormationToBoard(formationId, options = { recordUndo: true 
   const ballHostId = `t${Math.min(ballHostIdx, board.teamRoster.length - 1)}`;
   const hostPt = teamPos[ballHostId] || { x: 50, y: 50 };
 
+  // Clean pitch: never carry leftover training cones/poles/mini-goals across formations or pitches!
   board.steps = [{
     teamPos,
     oppPos,
     ball: { x: hostPt.x, y: hostPt.y, attachedTo: ballHostId },
-    gear: cloneDeep(currentGear),
+    gear: [],
     drawings: []
   }];
   board.activeStepIdx = 0;
@@ -1851,7 +1854,10 @@ export function setTacticsPitchMode(mode) {
   board.pitchMode = mode;
   const list = FORMATIONS[mode] || FORMATIONS['5v5'];
   board.formationId = list[0].id;
-  if (mode === '5v5') board.retreatLine = true;
+  board.retreatLine = mode === '5v5';
+  board.oppMode = mode === 'blank' ? 'off' : 'even';
+  board.lanesMode = 'off';
+  board.isAnimatorOpen = false;
   hapticFeedback('tap');
   applyFormationToBoard(board.formationId, { recordUndo: false });
 }
@@ -1919,9 +1925,13 @@ export function undoTacticsAction() {
 export function clearTacticsLines() {
   stopTacticsAnimation();
   const step = board.steps[board.activeStepIdx];
-  if (!step || !step.drawings || step.drawings.length === 0) return;
+  const hasDrawings = Boolean(step && step.drawings && step.drawings.length > 0);
+  const hasGear = board.steps.some(s => s.gear && s.gear.length > 0);
+  if (!hasDrawings && !hasGear && !board.activeCue) return;
   pushUndoSnapshot();
-  step.drawings = [];
+  if (step) step.drawings = [];
+  board.steps.forEach(s => { s.gear = []; });
+  board.activeCue = null;
   hapticFeedback('tap');
   saveWorkingBoard();
   renderAllUI();
@@ -2154,22 +2164,57 @@ export function stopTacticsAnimation() {
 }
 
 // ---------------- Two-Tab Playbook (Match Plays vs Training & Gear) ----------------
+function resetPitchForPlaybookCategory(category) {
+  pushUndoSnapshot();
+  board.customOppCount = 0;
+  board.customOppRoster = null;
+  board.activeCue = null;
+  board.lanesMode = 'off';
+  board.isAnimatorOpen = false;
+  board.activeTool = 'move';
+  selectedBenchNumber = null;
+
+  if (category === 'training') {
+    board.pitchMode = 'blank';
+    board.formationId = 'drill-diamond';
+    board.retreatLine = false;
+    board.oppMode = 'off';
+  } else {
+    board.pitchMode = '5v5';
+    board.formationId = '1-2-1';
+    board.retreatLine = true;
+    board.oppMode = 'even';
+  }
+
+  applyFormationToBoard(board.formationId, { recordUndo: false });
+  requestAnimationFrame(() => {
+    resizeTacticsCanvas();
+    drawTacticsCanvas();
+  });
+}
+
 export function openTacticsPlaybook(forcedTab) {
   stopTacticsAnimation();
+  let targetTab = playbookTab;
   if (forcedTab === 'match' || forcedTab === 'training') {
-    playbookTab = forcedTab;
+    targetTab = forcedTab;
     playbookTabManuallyChosen = true;
   } else if (!playbookTabManuallyChosen) {
     const ts = timer.getTimerState();
     const ht = timer.getHalfTimeBreakState();
     const hasGearOnPitch = board.steps.some(s => s.gear && s.gear.length > 0);
     if (ts.hasHalfStarted || ht.active) {
-      playbookTab = 'match';
+      targetTab = 'match';
     } else if (board.pitchMode === 'blank' || board.activeCue?.category === 'training' || hasGearOnPitch) {
-      playbookTab = 'training';
+      targetTab = 'training';
     } else {
-      playbookTab = 'match';
+      targetTab = 'match';
     }
+  }
+
+  if (targetTab !== playbookTab) {
+    playbookTab = targetTab;
+    resetPitchForPlaybookCategory(playbookTab);
   }
   renderPlaybookModalUI();
   document.getElementById('tacticsPlaybookModal')?.classList.remove('hidden');
@@ -2178,8 +2223,12 @@ export function openTacticsPlaybook(forcedTab) {
 
 export function setTacticsPlaybookTab(tab) {
   if (tab !== 'match' && tab !== 'training') return;
+  const changed = playbookTab !== tab;
   playbookTab = tab;
   playbookTabManuallyChosen = true;
+  if (changed) {
+    resetPitchForPlaybookCategory(tab);
+  }
   hapticFeedback('tap');
   renderPlaybookModalUI();
 }
@@ -2249,7 +2298,18 @@ export function loadBuiltinTacticsTemplate(templateId) {
   stopTacticsAnimation();
   pushUndoSnapshot();
 
+  // Complete clean slate before hydrating the new Play or Drill!
+  board.steps = [];
+  board.oppRoster = [];
+  board.customOppCount = 0;
+  board.customOppRoster = null;
+  board.activeCue = null;
+  board.lanesMode = 'off';
+  board.retreatLine = false;
+  selectedBenchNumber = null;
+
   const built = tpl.build();
+  playbookTab = tpl.category === 'training' ? 'training' : 'match';
   board.pitchMode = built.pitchMode;
   board.formationId = built.formationId;
   board.retreatLine = Boolean(built.retreatLine);
@@ -2266,7 +2326,13 @@ export function loadBuiltinTacticsTemplate(templateId) {
   };
 
   adjustRosterCountForPitchMode(getTeamSizeForMode(board.pitchMode));
-  board.steps = cloneDeep(built.steps);
+  board.steps = cloneDeep(built.steps).map(s => ({
+    teamPos: s.teamPos || {},
+    oppPos: s.oppPos || {},
+    ball: s.ball || { x: 50, y: 89, attachedTo: 't0' },
+    gear: Array.isArray(s.gear) ? s.gear : [],
+    drawings: Array.isArray(s.drawings) ? s.drawings : []
+  }));
   board.activeStepIdx = 0;
   board.isAnimatorOpen = board.steps.length > 1;
   board.activeTool = 'move';
@@ -2351,7 +2417,16 @@ export function loadSavedPlaybookEntry(entryId) {
   stopTacticsAnimation();
   pushUndoSnapshot();
 
+  // Complete clean slate before hydrating saved Play or Drill!
+  board.steps = [];
+  board.oppRoster = [];
+  board.customOppCount = 0;
+  board.customOppRoster = null;
+  board.activeCue = null;
+  selectedBenchNumber = null;
+
   const snap = cloneDeep(found.snapshot);
+  playbookTab = inferSavedEntryCategory(found);
   board.pitchMode = snap.pitchMode || '5v5';
   board.formationId = snap.formationId || '1-2-1';
   board.retreatLine = Boolean(snap.retreatLine);
