@@ -313,1108 +313,8 @@ function getDefaultOppCoords(count, oppBehindRetreat = false, pitchMode = '5v5')
   ].slice(0, count);
 }
 
-// 18 Academy-Standard Animated Match Plays & Training Drills
-// Grounded in England Football (FA Foundation Phase), UEFA Grassroots, Ajax TIPS, FC Barcelona La Masia & DFB Funino
-// Organised into 2 categories ('match' | 'training') x 3 difficulty tiers ('easy' | 'medium' | 'advanced')
-export const BUILTIN_TEMPLATES = [
-  // =========================================================================
-  // TAB 1: MATCH PLAYS — EASY (Foundation Match Habits & Simple Restarts)
-  // =========================================================================
-  {
-    id: 'tpl-retreat-kick',
-    category: 'match',
-    difficulty: 'easy',
-    standard: 'FA Foundation',
-    title: 'Goal Kick: Split & Beat Retreat',
-    tag: '5v5 • 3 Steps',
-    desc: 'Defenders split wide to the box corners while opponents wait behind halfway, creating a safe 3v1 progression.',
-    cue: 'Split wide early — open your body and take your first touch forward!',
-    build: () => ({
-      pitchMode: '5v5',
-      formationId: 'gk-retreat',
-      retreatLine: true,
-      lanesMode: 'lanes',
-      oppMode: 'even',
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 18, y: 78 }, t2: { x: 82, y: 78 }, t3: { x: 50, y: 63 }, t4: { x: 50, y: 46 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 30, y: 25 }, o2: { x: 70, y: 25 }, o3: { x: 35, y: 45 }, o4: { x: 65, y: 45 } },
-          ball: { x: 50, y: 89, attachedTo: 't0' },
-          gear: [],
-          drawings: [
-            { type: 'zone', x1: 8, y1: 54, x2: 32, y2: 84 },
-            { type: 'pass', pts: [{ x: 46, y: 87 }, { x: 22, y: 79 }] },
-            { type: 'run', pts: [{ x: 50, y: 63 }, { x: 40, y: 54 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 88 }, t1: { x: 18, y: 58 }, t2: { x: 78, y: 68 }, t3: { x: 42, y: 52 }, t4: { x: 32, y: 31 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 28, y: 24 }, o2: { x: 66, y: 27 }, o3: { x: 24, y: 50 }, o4: { x: 56, y: 47 } },
-          ball: { x: 18, y: 58, attachedTo: 't1' },
-          gear: [],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 18, y: 74 }, { x: 18, y: 58 }] },
-            { type: 'pass', pts: [{ x: 21, y: 54 }, { x: 31, y: 34 }] },
-            { type: 'run', pts: [{ x: 78, y: 65 }, { x: 64, y: 28 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 86 }, t1: { x: 24, y: 48 }, t2: { x: 64, y: 25 }, t3: { x: 48, y: 42 }, t4: { x: 34, y: 22 } },
-          oppPos: { o0: { x: 48, y: 11 }, o1: { x: 34, y: 22 }, o2: { x: 58, y: 24 }, o3: { x: 28, y: 42 }, o4: { x: 52, y: 40 } },
-          ball: { x: 34, y: 22, attachedTo: 't4' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 38, y: 22 }, { x: 60, y: 24 }] },
-            { type: 'pass', pts: [{ x: 62, y: 21 }, { x: 52, y: 10 }] }
-          ]
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-vcut-kickin',
-    category: 'match',
-    difficulty: 'easy',
-    standard: 'U9 Kick-In Rule',
-    title: 'Touchline Kick-In: V-Cut & Cross',
-    tag: '5v5 • 3 Steps',
-    desc: 'Forward checks toward the ball to pin their marker, then spins down the touchline to square for a 3rd-touch finish.',
-    cue: 'Check in to fake the defender, then sprint into the space behind!',
-    build: () => ({
-      pitchMode: '5v5',
-      formationId: '1-2-1',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'even',
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 54, y: 64 }, t2: { x: 26, y: 50 }, t3: { x: 93, y: 50 }, t4: { x: 74, y: 38 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 36, y: 26 }, o2: { x: 68, y: 24 }, o3: { x: 42, y: 46 }, o4: { x: 74, y: 43 } },
-          ball: { x: 93, y: 50, attachedTo: 't3' },
-          gear: [],
-          drawings: [
-            { type: 'run', pts: [{ x: 74, y: 38 }, { x: 80, y: 44 }, { x: 84, y: 20 }] },
-            { type: 'zone', x1: 74, y1: 12, x2: 94, y2: 30 },
-            { type: 'pass', pts: [{ x: 91, y: 46 }, { x: 85, y: 23 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 88 }, t1: { x: 52, y: 58 }, t2: { x: 38, y: 26 }, t3: { x: 86, y: 44 }, t4: { x: 84, y: 20 } },
-          oppPos: { o0: { x: 52, y: 11 }, o1: { x: 42, y: 24 }, o2: { x: 72, y: 22 }, o3: { x: 46, y: 38 }, o4: { x: 78, y: 34 } },
-          ball: { x: 84, y: 20, attachedTo: 't4' },
-          gear: [],
-          drawings: [
-            { type: 'run', pts: [{ x: 26, y: 46 }, { x: 40, y: 22 }] },
-            { type: 'pass', pts: [{ x: 80, y: 20 }, { x: 44, y: 22 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 88 }, t1: { x: 50, y: 54 }, t2: { x: 44, y: 21 }, t3: { x: 80, y: 38 }, t4: { x: 80, y: 18 } },
-          oppPos: { o0: { x: 52, y: 11 }, o1: { x: 48, y: 20 }, o2: { x: 68, y: 20 }, o3: { x: 48, y: 34 }, o4: { x: 74, y: 28 } },
-          ball: { x: 44, y: 21, attachedTo: 't2' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 45, y: 18 }, { x: 49, y: 9 }] }
-          ]
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-short-corner-2v1',
-    category: 'match',
-    difficulty: 'easy',
-    standard: 'UEFA Set-Piece',
-    title: 'Short Corner 2v1 Overload',
-    tag: 'Half Pitch • 3 Steps',
-    desc: 'Skip hopeful high crosses: sprint short to create a fast 2v1 angle on the edge of the penalty box.',
-    cue: 'Show short at 45 degrees — attack the 2v1 before a second defender arrives!',
-    build: () => ({
-      pitchMode: 'half',
-      formationId: 'half-corner',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'even',
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 88 }, t1: { x: 50, y: 60 }, t2: { x: 92, y: 10 }, t3: { x: 74, y: 24 }, t4: { x: 44, y: 20 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 46, y: 16 }, o2: { x: 66, y: 20 }, o3: { x: 38, y: 28 }, o4: { x: 56, y: 34 } },
-          ball: { x: 92, y: 10, attachedTo: 't2' },
-          gear: [],
-          drawings: [
-            { type: 'run', pts: [{ x: 74, y: 24 }, { x: 78, y: 16 }] },
-            { type: 'pass', pts: [{ x: 89, y: 11 }, { x: 80, y: 15 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 88 }, t1: { x: 50, y: 56 }, t2: { x: 88, y: 22 }, t3: { x: 70, y: 20 }, t4: { x: 40, y: 17 } },
-          oppPos: { o0: { x: 52, y: 10 }, o1: { x: 45, y: 16 }, o2: { x: 74, y: 18 }, o3: { x: 40, y: 26 }, o4: { x: 58, y: 30 } },
-          ball: { x: 70, y: 20, attachedTo: 't3' },
-          gear: [],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 78, y: 16 }, { x: 66, y: 21 }] },
-            { type: 'run', pts: [{ x: 44, y: 20 }, { x: 38, y: 15 }] },
-            { type: 'pass', pts: [{ x: 64, y: 20 }, { x: 42, y: 15 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 88 }, t1: { x: 50, y: 54 }, t2: { x: 82, y: 26 }, t3: { x: 64, y: 22 }, t4: { x: 40, y: 15 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 46, y: 15 }, o2: { x: 68, y: 19 }, o3: { x: 42, y: 24 }, o4: { x: 56, y: 28 } },
-          ball: { x: 40, y: 15, attachedTo: 't4' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 42, y: 13 }, { x: 48, y: 9 }] }
-          ]
-        }
-      ]
-    })
-  },
-
-  // =========================================================================
-  // TAB 1: MATCH PLAYS — MEDIUM (Combinations, Width & Pressing Triggers)
-  // =========================================================================
-  {
-    id: 'tpl-switch-lanes',
-    category: 'match',
-    difficulty: 'medium',
-    standard: 'UEFA Positional',
-    title: 'Switch Play Across 3 Lanes',
-    tag: '5v5 • 3 Lanes',
-    desc: 'Stop swarming the ball: bounce back to the central pivot to unlock the empty far-side lane.',
-    cue: 'Crowded on one wing? Bounce back to the pivot and switch lanes!',
-    build: () => ({
-      pitchMode: '5v5',
-      formationId: '1-2-1',
-      retreatLine: false,
-      lanesMode: 'lanes',
-      oppMode: 'even',
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 50, y: 68 }, t2: { x: 18, y: 52 }, t3: { x: 82, y: 52 }, t4: { x: 50, y: 34 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 25, y: 38 }, o2: { x: 42, y: 46 }, o3: { x: 22, y: 48 }, o4: { x: 56, y: 30 } },
-          ball: { x: 18, y: 52, attachedTo: 't2' },
-          gear: [],
-          drawings: [
-            { type: 'zone', x1: 68, y1: 24, x2: 92, y2: 58 },
-            { type: 'pass', pts: [{ x: 21, y: 55 }, { x: 46, y: 66 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 50, y: 66 }, t2: { x: 22, y: 48 }, t3: { x: 82, y: 44 }, t4: { x: 50, y: 30 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 32, y: 36 }, o2: { x: 46, y: 48 }, o3: { x: 28, y: 48 }, o4: { x: 58, y: 28 } },
-          ball: { x: 50, y: 66, attachedTo: 't1' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 54, y: 64 }, { x: 79, y: 46 }] },
-            { type: 'run', pts: [{ x: 82, y: 40 }, { x: 78, y: 24 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 88 }, t1: { x: 54, y: 58 }, t2: { x: 26, y: 42 }, t3: { x: 78, y: 25 }, t4: { x: 50, y: 21 } },
-          oppPos: { o0: { x: 52, y: 10 }, o1: { x: 40, y: 30 }, o2: { x: 54, y: 38 }, o3: { x: 36, y: 44 }, o4: { x: 66, y: 26 } },
-          ball: { x: 78, y: 25, attachedTo: 't3' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 74, y: 24 }, { x: 54, y: 21 }] },
-            { type: 'pass', pts: [{ x: 50, y: 18 }, { x: 50, y: 10 }] }
-          ]
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-give-go-wall',
-    category: 'match',
-    difficulty: 'medium',
-    standard: 'Ajax DNA',
-    title: 'Central Wall Pass (Give & Go 1-2)',
-    tag: '5v5 • 3 Steps',
-    desc: 'Pass into the striker’s feet to pin the defender, then explode past your marker for the 1-touch return.',
-    cue: 'Pass and sprint immediately — never stand and admire your pass!',
-    build: () => ({
-      pitchMode: '5v5',
-      formationId: '1-2-1',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'even',
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 50, y: 74 }, t2: { x: 24, y: 58 }, t3: { x: 78, y: 56 }, t4: { x: 50, y: 42 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 34, y: 28 }, o2: { x: 66, y: 28 }, o3: { x: 30, y: 48 }, o4: { x: 52, y: 36 } },
-          ball: { x: 24, y: 58, attachedTo: 't2' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 28, y: 56 }, { x: 47, y: 44 }] },
-            { type: 'run', pts: [{ x: 24, y: 54 }, { x: 22, y: 36 }, { x: 34, y: 24 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 48, y: 68 }, t2: { x: 30, y: 32 }, t3: { x: 76, y: 46 }, t4: { x: 50, y: 43 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 38, y: 28 }, o2: { x: 66, y: 28 }, o3: { x: 32, y: 42 }, o4: { x: 50, y: 37 } },
-          ball: { x: 50, y: 43, attachedTo: 't4' },
-          gear: [],
-          drawings: [
-            { type: 'zone', x1: 24, y1: 16, x2: 44, y2: 30 },
-            { type: 'pass', pts: [{ x: 47, y: 40 }, { x: 35, y: 24 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 88 }, t1: { x: 48, y: 64 }, t2: { x: 35, y: 22 }, t3: { x: 68, y: 26 }, t4: { x: 50, y: 38 } },
-          oppPos: { o0: { x: 48, y: 11 }, o1: { x: 40, y: 25 }, o2: { x: 62, y: 26 }, o3: { x: 34, y: 36 }, o4: { x: 50, y: 34 } },
-          ball: { x: 35, y: 22, attachedTo: 't2' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 38, y: 19 }, { x: 47, y: 10 }] }
-          ]
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-diamond-press',
-    category: 'match',
-    difficulty: 'medium',
-    standard: 'FA Out-of-Possession',
-    title: '1-2-1 Curved Press & Touchline Trap',
-    tag: '5v5 • 3 Steps',
-    desc: 'Striker curves their run to block the pass back to GK, trapping the opponent down one touchline to win & counter.',
-    cue: 'Curve your run to cut the switch — lock them onto one sideline!',
-    build: () => ({
-      pitchMode: '5v5',
-      formationId: '1-2-1',
-      retreatLine: true,
-      lanesMode: 'off',
-      oppMode: 'even',
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 50, y: 68 }, t2: { x: 26, y: 52 }, t3: { x: 72, y: 52 }, t4: { x: 50, y: 45 } },
-          oppPos: { o0: { x: 50, y: 11 }, o1: { x: 24, y: 24 }, o2: { x: 76, y: 24 }, o3: { x: 22, y: 42 }, o4: { x: 56, y: 46 } },
-          ball: { x: 24, y: 24, attachedTo: 'o1' },
-          gear: [],
-          drawings: [
-            { type: 'run', pts: [{ x: 50, y: 45 }, { x: 42, y: 28 }, { x: 29, y: 24 }] },
-            { type: 'run', pts: [{ x: 26, y: 52 }, { x: 22, y: 41 }] },
-            { type: 'zone', x1: 10, y1: 18, x2: 36, y2: 46 }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 87 }, t1: { x: 44, y: 60 }, t2: { x: 22, y: 39 }, t3: { x: 64, y: 46 }, t4: { x: 32, y: 25 } },
-          oppPos: { o0: { x: 50, y: 11 }, o1: { x: 20, y: 23 }, o2: { x: 72, y: 26 }, o3: { x: 22, y: 43 }, o4: { x: 54, y: 46 } },
-          ball: { x: 22, y: 39, attachedTo: 't2' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 25, y: 36 }, { x: 44, y: 24 }] },
-            { type: 'run', pts: [{ x: 32, y: 25 }, { x: 46, y: 22 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 86 }, t1: { x: 44, y: 56 }, t2: { x: 26, y: 34 }, t3: { x: 62, y: 32 }, t4: { x: 46, y: 21 } },
-          oppPos: { o0: { x: 50, y: 11 }, o1: { x: 24, y: 24 }, o2: { x: 64, y: 22 }, o3: { x: 26, y: 40 }, o4: { x: 52, y: 40 } },
-          ball: { x: 46, y: 21, attachedTo: 't4' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 47, y: 18 }, { x: 50, y: 10 }] }
-          ]
-        }
-      ]
-    })
-  },
-
-  // =========================================================================
-  // TAB 1: MATCH PLAYS — ADVANCED (Overlaps, Third-Man & Fluid Rotations)
-  // =========================================================================
-  {
-    id: 'tpl-6v6-diamond',
-    category: 'match',
-    difficulty: 'advanced',
-    standard: 'UEFA Tournament',
-    title: '6v6 Wide Overlap & Cut-Back',
-    tag: '6v6 • 3 Steps',
-    desc: 'Winger dribbles inside to pin the defender, opening the touchline corridor for an overlapping runner.',
-    cue: 'Drive inside to pin the full-back — shout "OVER!" at top speed outside!',
-    build: () => ({
-      pitchMode: '6v6',
-      formationId: '1-3-1',
-      retreatLine: false,
-      lanesMode: 'lanes',
-      oppMode: 'even',
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 90 }, t1: { x: 42, y: 74 }, t2: { x: 24, y: 54 }, t3: { x: 54, y: 58 }, t4: { x: 82, y: 54 }, t5: { x: 50, y: 34 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 30, y: 26 }, o2: { x: 70, y: 26 }, o3: { x: 26, y: 42 }, o4: { x: 74, y: 44 }, o5: { x: 50, y: 52 } },
-          ball: { x: 42, y: 74, attachedTo: 't1' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 39, y: 71 }, { x: 26, y: 57 }] },
-            { type: 'run', pts: [{ x: 42, y: 70 }, { x: 14, y: 56 }, { x: 12, y: 26 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 90 }, t1: { x: 13, y: 30 }, t2: { x: 34, y: 42 }, t3: { x: 52, y: 54 }, t4: { x: 76, y: 36 }, t5: { x: 52, y: 24 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 32, y: 25 }, o2: { x: 68, y: 25 }, o3: { x: 30, y: 38 }, o4: { x: 70, y: 40 }, o5: { x: 48, y: 48 } },
-          ball: { x: 34, y: 42, attachedTo: 't2' },
-          gear: [],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 24, y: 52 }, { x: 34, y: 42 }] },
-            { type: 'pass', pts: [{ x: 30, y: 40 }, { x: 15, y: 24 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 15, y: 20 }, t2: { x: 36, y: 36 }, t3: { x: 50, y: 50 }, t4: { x: 66, y: 22 }, t5: { x: 48, y: 20 } },
-          oppPos: { o0: { x: 48, y: 10 }, o1: { x: 30, y: 20 }, o2: { x: 62, y: 22 }, o3: { x: 26, y: 30 }, o4: { x: 66, y: 34 }, o5: { x: 48, y: 44 } },
-          ball: { x: 15, y: 20, attachedTo: 't1' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 19, y: 20 }, { x: 44, y: 20 }] },
-            { type: 'pass', pts: [{ x: 48, y: 17 }, { x: 49, y: 10 }] }
-          ]
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-la-masia-third-man',
-    category: 'match',
-    difficulty: 'advanced',
-    standard: 'La Masia DNA',
-    title: '7v7 Third-Man: Up, Back & Through',
-    tag: '7v7 • 3 Steps',
-    desc: 'Play UP to the dropping striker, lay BACK 1-touch to midfield, and slip THROUGH to the blind-side winger.',
-    cue: 'Up to the striker, back to the midfielder, through to the Third Man!',
-    build: () => ({
-      pitchMode: '7v7',
-      formationId: '2-3-1',
-      retreatLine: false,
-      lanesMode: 'lanes',
-      oppMode: 'even',
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 91 }, t1: { x: 32, y: 74 }, t2: { x: 68, y: 76 }, t3: { x: 18, y: 54 }, t4: { x: 42, y: 55 }, t5: { x: 82, y: 52 }, t6: { x: 52, y: 37 } },
-          oppPos: { o0: { x: 50, y: 9 }, o1: { x: 28, y: 24 }, o2: { x: 52, y: 25 }, o3: { x: 74, y: 25 }, o4: { x: 34, y: 42 }, o5: { x: 64, y: 42 }, o6: { x: 56, y: 60 } },
-          ball: { x: 32, y: 74, attachedTo: 't1' },
-          gear: [],
-          drawings: [
-            { type: 'run', pts: [{ x: 52, y: 33 }, { x: 52, y: 40 }] },
-            { type: 'pass', pts: [{ x: 34, y: 70 }, { x: 50, y: 41 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 91 }, t1: { x: 34, y: 70 }, t2: { x: 66, y: 72 }, t3: { x: 20, y: 48 }, t4: { x: 43, y: 52 }, t5: { x: 80, y: 40 }, t6: { x: 52, y: 40 } },
-          oppPos: { o0: { x: 50, y: 9 }, o1: { x: 28, y: 24 }, o2: { x: 52, y: 30 }, o3: { x: 74, y: 26 }, o4: { x: 38, y: 41 }, o5: { x: 62, y: 42 }, o6: { x: 54, y: 58 } },
-          ball: { x: 52, y: 40, attachedTo: 't6' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 50, y: 44 }, { x: 47, y: 50 }] },
-            { type: 'run', pts: [{ x: 80, y: 40 }, { x: 68, y: 20 }] },
-            { type: 'zone', x1: 58, y1: 14, x2: 78, y2: 28 }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 90 }, t1: { x: 36, y: 66 }, t2: { x: 64, y: 68 }, t3: { x: 24, y: 42 }, t4: { x: 46, y: 50 }, t5: { x: 66, y: 20 }, t6: { x: 48, y: 30 } },
-          oppPos: { o0: { x: 52, y: 10 }, o1: { x: 32, y: 23 }, o2: { x: 52, y: 30 }, o3: { x: 72, y: 24 }, o4: { x: 42, y: 40 }, o5: { x: 58, y: 38 }, o6: { x: 46, y: 54 } },
-          ball: { x: 66, y: 20, attachedTo: 't5' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 49, y: 48 }, { x: 64, y: 23 }] },
-            { type: 'pass', pts: [{ x: 63, y: 18 }, { x: 54, y: 10 }] }
-          ]
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-diamond-rotation',
-    category: 'match',
-    difficulty: 'advanced',
-    standard: 'Total Football',
-    title: 'Fluid 1-2-1 Diamond Rotation',
-    tag: '5v5 • 3 Steps',
-    desc: 'Positions are roles, not statues: left winger pushes high, striker drops into the pocket, pivot steps wide.',
-    cue: 'When a teammate vacates a space, another player rotates to fill the triangle!',
-    build: () => ({
-      pitchMode: '5v5',
-      formationId: '1-2-1',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'even',
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 50, y: 73 }, t2: { x: 22, y: 56 }, t3: { x: 78, y: 56 }, t4: { x: 50, y: 36 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 32, y: 26 }, o2: { x: 68, y: 26 }, o3: { x: 30, y: 48 }, o4: { x: 68, y: 48 } },
-          ball: { x: 50, y: 73, attachedTo: 't1' },
-          gear: [],
-          drawings: [
-            { type: 'run', pts: [{ x: 22, y: 52 }, { x: 22, y: 30 }] },
-            { type: 'run', pts: [{ x: 50, y: 38 }, { x: 50, y: 54 }] },
-            { type: 'zone', x1: 38, y1: 46, x2: 62, y2: 60 }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 89 }, t1: { x: 34, y: 68 }, t2: { x: 24, y: 28 }, t3: { x: 76, y: 42 }, t4: { x: 50, y: 53 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 28, y: 26 }, o2: { x: 68, y: 26 }, o3: { x: 34, y: 42 }, o4: { x: 66, y: 46 } },
-          ball: { x: 50, y: 53, attachedTo: 't4' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 37, y: 66 }, { x: 48, y: 55 }] },
-            { type: 'run', pts: [{ x: 76, y: 40 }, { x: 60, y: 20 }] },
-            { type: 'pass', pts: [{ x: 53, y: 50 }, { x: 59, y: 23 }] }
-          ]
-        },
-        {
-          teamPos: { t0: { x: 50, y: 88 }, t1: { x: 38, y: 62 }, t2: { x: 30, y: 22 }, t3: { x: 59, y: 20 }, t4: { x: 50, y: 46 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 32, y: 22 }, o2: { x: 66, y: 24 }, o3: { x: 38, y: 38 }, o4: { x: 62, y: 40 } },
-          ball: { x: 59, y: 20, attachedTo: 't3' },
-          gear: [],
-          drawings: [
-            { type: 'pass', pts: [{ x: 57, y: 17 }, { x: 52, y: 10 }] }
-          ]
-        }
-      ]
-    })
-  },
-
-  // =========================================================================
-  // TAB 2: TRAINING & GEAR — EASY (Ball Mastery, Passing & Continuous Rondo)
-  // =========================================================================
-  {
-    id: 'tpl-rondo-box',
-    category: 'training',
-    difficulty: 'easy',
-    standard: 'UEFA Warm-Up',
-    title: '4v1 Continuous Rondo Box',
-    tag: 'Blank Grass • 3 Steps',
-    desc: '4 outside players slide along the cone lines to always give 2 diagonal passing options against 1 presser.',
-    cue: 'Slide to offer two angles — open your hips and receive on the back foot!',
-    build: () => ({
-      pitchMode: 'blank',
-      formationId: 'drill-diamond',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'off',
-      customOppRoster: [{ id: 'o0', label: 'D', isGk: false }],
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 78 }, t1: { x: 20, y: 54 }, t2: { x: 80, y: 54 }, t3: { x: 50, y: 22 }, t4: { x: 88, y: 90 } },
-          oppPos: { o0: { x: 46, y: 58 } },
-          ball: { x: 50, y: 78, attachedTo: 't0' },
-          gear: [
-            { id: 'g1', kind: 'cone-amber', x: 20, y: 22 },
-            { id: 'g2', kind: 'cone-amber', x: 80, y: 22 },
-            { id: 'g3', kind: 'cone-amber', x: 20, y: 78 },
-            { id: 'g4', kind: 'cone-amber', x: 80, y: 78 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 46, y: 75 }, { x: 23, y: 56 }] },
-            { type: 'run', pts: [{ x: 50, y: 22 }, { x: 36, y: 22 }] }
-          ],
-          customOppCount: 1
-        },
-        {
-          teamPos: { t0: { x: 38, y: 78 }, t1: { x: 20, y: 54 }, t2: { x: 80, y: 44 }, t3: { x: 36, y: 22 }, t4: { x: 88, y: 90 } },
-          oppPos: { o0: { x: 32, y: 50 } },
-          ball: { x: 20, y: 54, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'cone-amber', x: 20, y: 22 },
-            { id: 'g2', kind: 'cone-amber', x: 80, y: 22 },
-            { id: 'g3', kind: 'cone-amber', x: 20, y: 78 },
-            { id: 'g4', kind: 'cone-amber', x: 80, y: 78 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 22, y: 50 }, { x: 35, y: 26 }] },
-            { type: 'run', pts: [{ x: 80, y: 44 }, { x: 80, y: 34 }] }
-          ],
-          customOppCount: 1
-        },
-        {
-          teamPos: { t0: { x: 50, y: 78 }, t1: { x: 20, y: 42 }, t2: { x: 80, y: 36 }, t3: { x: 36, y: 22 }, t4: { x: 88, y: 90 } },
-          oppPos: { o0: { x: 42, y: 34 } },
-          ball: { x: 80, y: 36, attachedTo: 't2' },
-          gear: [
-            { id: 'g1', kind: 'cone-amber', x: 20, y: 22 },
-            { id: 'g2', kind: 'cone-amber', x: 80, y: 22 },
-            { id: 'g3', kind: 'cone-amber', x: 20, y: 78 },
-            { id: 'g4', kind: 'cone-amber', x: 80, y: 78 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 40, y: 24 }, { x: 76, y: 35 }] }
-          ],
-          customOppCount: 1
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-slalom-gates',
-    category: 'training',
-    difficulty: 'easy',
-    standard: 'Coerver Mastery',
-    title: 'Slalom Poles & Cone Gate Finish',
-    tag: 'Half Pitch • 3 Steps',
-    desc: 'Close-control two-footed weave through slalom poles, burst through the blue gate, and finish low.',
-    cue: 'Tiny touches through the poles, big positive touch through the gate, head up to shoot!',
-    build: () => ({
-      pitchMode: 'half',
-      formationId: 'half-attack',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'off',
-      customOppRoster: [{ id: 'o0', label: 'GK', isGk: true }],
-      steps: [
-        {
-          teamPos: { t0: { x: 12, y: 91 }, t1: { x: 35, y: 76 }, t2: { x: 75, y: 76 }, t3: { x: 35, y: 92 }, t4: { x: 75, y: 92 } },
-          oppPos: { o0: { x: 50, y: 10 } },
-          ball: { x: 35, y: 76, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'pole', x: 35, y: 62 },
-            { id: 'g2', kind: 'pole', x: 35, y: 50 },
-            { id: 'g3', kind: 'pole', x: 35, y: 38 },
-            { id: 'g4', kind: 'cone-sky', x: 28, y: 26 },
-            { id: 'g5', kind: 'cone-sky', x: 43, y: 26 },
-            { id: 'g6', kind: 'ball-extra', x: 82, y: 79 }
-          ],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 35, y: 72 }, { x: 31, y: 62 }, { x: 39, y: 50 }, { x: 33, y: 38 }] }
-          ],
-          customOppCount: 1
-        },
-        {
-          teamPos: { t0: { x: 12, y: 91 }, t1: { x: 36, y: 24 }, t2: { x: 75, y: 76 }, t3: { x: 35, y: 78 }, t4: { x: 75, y: 92 } },
-          oppPos: { o0: { x: 47, y: 11 } },
-          ball: { x: 36, y: 24, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'pole', x: 35, y: 62 },
-            { id: 'g2', kind: 'pole', x: 35, y: 50 },
-            { id: 'g3', kind: 'pole', x: 35, y: 38 },
-            { id: 'g4', kind: 'cone-sky', x: 28, y: 26 },
-            { id: 'g5', kind: 'cone-sky', x: 43, y: 26 },
-            { id: 'g6', kind: 'ball-extra', x: 82, y: 79 }
-          ],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 35, y: 36 }, { x: 36, y: 24 }] },
-            { type: 'pass', pts: [{ x: 39, y: 22 }, { x: 56, y: 10 }] }
-          ],
-          customOppCount: 1
-        },
-        {
-          teamPos: { t0: { x: 12, y: 91 }, t1: { x: 40, y: 20 }, t2: { x: 70, y: 64 }, t3: { x: 35, y: 76 }, t4: { x: 75, y: 84 } },
-          oppPos: { o0: { x: 48, y: 11 } },
-          ball: { x: 57, y: 9, attachedTo: null },
-          gear: [
-            { id: 'g1', kind: 'pole', x: 35, y: 62 },
-            { id: 'g2', kind: 'pole', x: 35, y: 50 },
-            { id: 'g3', kind: 'pole', x: 35, y: 38 },
-            { id: 'g4', kind: 'cone-sky', x: 28, y: 26 },
-            { id: 'g5', kind: 'cone-sky', x: 43, y: 26 },
-            { id: 'g6', kind: 'ball-extra', x: 74, y: 68 }
-          ],
-          drawings: [
-            { type: 'run', pts: [{ x: 40, y: 20 }, { x: 68, y: 52 }] }
-          ],
-          customOppCount: 1
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-diamond-passing',
-    category: 'training',
-    difficulty: 'easy',
-    standard: 'FA Activation',
-    title: 'Diamond Back-Foot Passing & Follow',
-    tag: 'Blank Grass • 3 Steps',
-    desc: 'Unopposed crisp passing circuit: check away from your cone, receive across your body, pass & follow.',
-    cue: 'Check off the cone to create space — back-foot first touch, firm pass, follow!',
-    build: () => ({
-      pitchMode: 'blank',
-      formationId: 'drill-diamond',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'off',
-      customOppRoster: [],
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 84 }, t1: { x: 18, y: 50 }, t2: { x: 82, y: 50 }, t3: { x: 50, y: 18 }, t4: { x: 58, y: 91 } },
-          oppPos: {},
-          ball: { x: 50, y: 84, attachedTo: 't0' },
-          gear: [
-            { id: 'g1', kind: 'cone-lime', x: 50, y: 86 },
-            { id: 'g2', kind: 'cone-lime', x: 22, y: 50 },
-            { id: 'g3', kind: 'cone-lime', x: 78, y: 50 },
-            { id: 'g4', kind: 'cone-lime', x: 50, y: 16 },
-            { id: 'g5', kind: 'ball-extra', x: 64, y: 91 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 46, y: 81 }, { x: 20, y: 54 }] },
-            { type: 'run', pts: [{ x: 50, y: 80 }, { x: 26, y: 56 }] }
-          ],
-          customOppCount: 0
-        },
-        {
-          teamPos: { t0: { x: 22, y: 54 }, t1: { x: 18, y: 46 }, t2: { x: 82, y: 50 }, t3: { x: 50, y: 18 }, t4: { x: 50, y: 84 } },
-          oppPos: {},
-          ball: { x: 18, y: 46, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'cone-lime', x: 50, y: 86 },
-            { id: 'g2', kind: 'cone-lime', x: 22, y: 50 },
-            { id: 'g3', kind: 'cone-lime', x: 78, y: 50 },
-            { id: 'g4', kind: 'cone-lime', x: 50, y: 16 },
-            { id: 'g5', kind: 'ball-extra', x: 56, y: 86 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 21, y: 43 }, { x: 47, y: 20 }] },
-            { type: 'run', pts: [{ x: 22, y: 44 }, { x: 46, y: 24 }] }
-          ],
-          customOppCount: 0
-        },
-        {
-          teamPos: { t0: { x: 18, y: 50 }, t1: { x: 48, y: 20 }, t2: { x: 82, y: 50 }, t3: { x: 76, y: 46 }, t4: { x: 50, y: 84 } },
-          oppPos: {},
-          ball: { x: 82, y: 50, attachedTo: 't2' },
-          gear: [
-            { id: 'g1', kind: 'cone-lime', x: 50, y: 86 },
-            { id: 'g2', kind: 'cone-lime', x: 22, y: 50 },
-            { id: 'g3', kind: 'cone-lime', x: 78, y: 50 },
-            { id: 'g4', kind: 'cone-lime', x: 50, y: 16 },
-            { id: 'g5', kind: 'ball-extra', x: 56, y: 86 }
-          ],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 80, y: 54 }, { x: 56, y: 82 }] }
-          ],
-          customOppCount: 0
-        }
-      ]
-    })
-  },
-
-  // =========================================================================
-  // TAB 2: TRAINING & GEAR — MEDIUM (Overloads, Split Passes & 1v1 Duels)
-  // =========================================================================
-  {
-    id: 'tpl-2v1-overload',
-    category: 'training',
-    difficulty: 'medium',
-    standard: 'Ajax 2v1 DNA',
-    title: '2v1 Finishing Overload',
-    tag: 'Half Pitch • 3 Steps',
-    desc: 'Ball carrier drives straight at the defender to freeze them, then slips the pass to the spare attacker.',
-    cue: 'Drive AT the defender to commit them — release the pass at the last moment!',
-    build: () => ({
-      pitchMode: 'half',
-      formationId: 'half-attack',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'off',
-      customOppRoster: [
-        { id: 'o0', label: 'GK', isGk: true },
-        { id: 'o1', label: 'D', isGk: false }
-      ],
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 34, y: 74 }, t2: { x: 68, y: 74 }, t3: { x: 14, y: 88 }, t4: { x: 86, y: 88 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 50, y: 42 } },
-          ball: { x: 34, y: 74, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'cone-sky', x: 34, y: 81 },
-            { id: 'g2', kind: 'cone-sky', x: 68, y: 81 }
-          ],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 34, y: 70 }, { x: 44, y: 48 }] },
-            { type: 'run', pts: [{ x: 68, y: 70 }, { x: 66, y: 34 }] }
-          ],
-          customOppCount: 2
-        },
-        {
-          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 43, y: 48 }, t2: { x: 66, y: 34 }, t3: { x: 14, y: 88 }, t4: { x: 86, y: 88 } },
-          oppPos: { o0: { x: 50, y: 11 }, o1: { x: 45, y: 40 } },
-          ball: { x: 43, y: 48, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'cone-sky', x: 34, y: 81 },
-            { id: 'g2', kind: 'cone-sky', x: 68, y: 81 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 47, y: 45 }, { x: 63, y: 30 }] },
-            { type: 'zone', x1: 56, y1: 18, x2: 74, y2: 34 }
-          ],
-          customOppCount: 2
-        },
-        {
-          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 42, y: 42 }, t2: { x: 63, y: 24 }, t3: { x: 14, y: 88 }, t4: { x: 86, y: 88 } },
-          oppPos: { o0: { x: 53, y: 11 }, o1: { x: 48, y: 34 } },
-          ball: { x: 63, y: 24, attachedTo: 't2' },
-          gear: [
-            { id: 'g1', kind: 'cone-sky', x: 34, y: 81 },
-            { id: 'g2', kind: 'cone-sky', x: 68, y: 81 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 60, y: 21 }, { x: 46, y: 10 }] }
-          ],
-          customOppCount: 2
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-4v2-split-box',
-    category: 'training',
-    difficulty: 'medium',
-    standard: 'UEFA Overload',
-    title: '4v2 Split-the-Defenders Rondo',
-    tag: 'Blank Grass • 3 Steps',
-    desc: 'Circulate fast around the outside to draw both defenders together, then thread a split pass right between them.',
-    cue: 'Move the ball quickly side-to-side — 3 bonus points for splitting the defenders!',
-    build: () => ({
-      pitchMode: 'blank',
-      formationId: 'drill-diamond',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'off',
-      customOppRoster: [
-        { id: 'o0', label: 'D1', isGk: false },
-        { id: 'o1', label: 'D2', isGk: false }
-      ],
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 80 }, t1: { x: 18, y: 50 }, t2: { x: 82, y: 50 }, t3: { x: 50, y: 20 }, t4: { x: 88, y: 90 } },
-          oppPos: { o0: { x: 42, y: 60 }, o1: { x: 58, y: 46 } },
-          ball: { x: 50, y: 80, attachedTo: 't0' },
-          gear: [
-            { id: 'g1', kind: 'cone-rose', x: 18, y: 20 },
-            { id: 'g2', kind: 'cone-rose', x: 82, y: 20 },
-            { id: 'g3', kind: 'cone-rose', x: 18, y: 80 },
-            { id: 'g4', kind: 'cone-rose', x: 82, y: 80 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 46, y: 77 }, { x: 21, y: 53 }] }
-          ],
-          customOppCount: 2
-        },
-        {
-          teamPos: { t0: { x: 44, y: 80 }, t1: { x: 18, y: 50 }, t2: { x: 82, y: 50 }, t3: { x: 54, y: 20 }, t4: { x: 88, y: 90 } },
-          oppPos: { o0: { x: 32, y: 56 }, o1: { x: 36, y: 40 } },
-          ball: { x: 18, y: 50, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'cone-rose', x: 18, y: 20 },
-            { id: 'g2', kind: 'cone-rose', x: 82, y: 20 },
-            { id: 'g3', kind: 'cone-rose', x: 18, y: 80 },
-            { id: 'g4', kind: 'cone-rose', x: 82, y: 80 }
-          ],
-          drawings: [
-            { type: 'zone', x1: 28, y1: 43, x2: 44, y2: 53 },
-            { type: 'pass', pts: [{ x: 23, y: 50 }, { x: 77, y: 50 }] }
-          ],
-          customOppCount: 2
-        },
-        {
-          teamPos: { t0: { x: 50, y: 80 }, t1: { x: 18, y: 50 }, t2: { x: 82, y: 50 }, t3: { x: 56, y: 20 }, t4: { x: 88, y: 90 } },
-          oppPos: { o0: { x: 52, y: 54 }, o1: { x: 60, y: 42 } },
-          ball: { x: 82, y: 50, attachedTo: 't2' },
-          gear: [
-            { id: 'g1', kind: 'cone-rose', x: 18, y: 20 },
-            { id: 'g2', kind: 'cone-rose', x: 82, y: 20 },
-            { id: 'g3', kind: 'cone-rose', x: 18, y: 80 },
-            { id: 'g4', kind: 'cone-rose', x: 82, y: 80 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 79, y: 46 }, { x: 59, y: 23 }] }
-          ],
-          customOppCount: 2
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-1v1-chase-gate',
-    category: 'training',
-    difficulty: 'medium',
-    standard: 'Ajax 1v1 Duel',
-    title: '1v1 Recovery Chase & Twin Gates',
-    tag: 'Half Pitch • 3 Steps',
-    desc: 'Attacker races toward two colour-coded cone gates with a defender chasing — fake one gate, chop into the other.',
-    cue: 'Scan over your shoulder — sell the fake to one gate and explode through the open gate!',
-    build: () => ({
-      pitchMode: 'half',
-      formationId: 'half-attack',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'off',
-      customOppRoster: [
-        { id: 'o0', label: 'GK', isGk: true },
-        { id: 'o1', label: 'D', isGk: false }
-      ],
-      steps: [
-        {
-          teamPos: { t0: { x: 14, y: 90 }, t1: { x: 50, y: 70 }, t2: { x: 86, y: 90 }, t3: { x: 26, y: 90 }, t4: { x: 74, y: 90 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 50, y: 86 } },
-          ball: { x: 50, y: 70, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'cone-amber', x: 24, y: 38 },
-            { id: 'g2', kind: 'cone-amber', x: 38, y: 38 },
-            { id: 'g3', kind: 'cone-lime', x: 62, y: 38 },
-            { id: 'g4', kind: 'cone-lime', x: 76, y: 38 }
-          ],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 50, y: 66 }, { x: 36, y: 50 }] },
-            { type: 'run', pts: [{ x: 50, y: 82 }, { x: 34, y: 54 }] }
-          ],
-          customOppCount: 2
-        },
-        {
-          teamPos: { t0: { x: 14, y: 90 }, t1: { x: 38, y: 48 }, t2: { x: 86, y: 90 }, t3: { x: 26, y: 90 }, t4: { x: 74, y: 90 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 33, y: 44 } },
-          ball: { x: 38, y: 48, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'cone-amber', x: 24, y: 38 },
-            { id: 'g2', kind: 'cone-amber', x: 38, y: 38 },
-            { id: 'g3', kind: 'cone-lime', x: 62, y: 38 },
-            { id: 'g4', kind: 'cone-lime', x: 76, y: 38 }
-          ],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 40, y: 48 }, { x: 68, y: 34 }] }
-          ],
-          customOppCount: 2
-        },
-        {
-          teamPos: { t0: { x: 14, y: 90 }, t1: { x: 66, y: 28 }, t2: { x: 86, y: 90 }, t3: { x: 26, y: 90 }, t4: { x: 74, y: 90 } },
-          oppPos: { o0: { x: 53, y: 11 }, o1: { x: 50, y: 36 } },
-          ball: { x: 66, y: 28, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'cone-amber', x: 24, y: 38 },
-            { id: 'g2', kind: 'cone-amber', x: 38, y: 38 },
-            { id: 'g3', kind: 'cone-lime', x: 62, y: 38 },
-            { id: 'g4', kind: 'cone-lime', x: 76, y: 38 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 63, y: 25 }, { x: 46, y: 10 }] }
-          ],
-          customOppCount: 2
-        }
-      ]
-    })
-  },
-
-  // =========================================================================
-  // TAB 2: TRAINING & GEAR — ADVANCED (Funino, Transitions & Third-Man Breakout)
-  // =========================================================================
-  {
-    id: 'tpl-funino-4goals',
-    category: 'training',
-    difficulty: 'advanced',
-    standard: 'DFB Funino',
-    title: 'Funino 3v3 Four-Mini-Goal Switch',
-    tag: '4 Mini-Goals • 3 Steps',
-    desc: 'Classic Horst Wein / DFB 3v3 game: draw defenders toward one mini-goal, then switch fast to score in the open goal.',
-    cue: 'Attract defenders to one side — scan early and switch to the unguarded mini-goal!',
-    build: () => ({
-      pitchMode: 'blank',
-      formationId: 'drill-diamond',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'off',
-      customOppRoster: [
-        { id: 'o0', label: 'D1', isGk: false },
-        { id: 'o1', label: 'D2', isGk: false },
-        { id: 'o2', label: 'D3', isGk: false }
-      ],
-      steps: [
-        {
-          teamPos: { t0: { x: 24, y: 46 }, t1: { x: 48, y: 60 }, t2: { x: 78, y: 48 }, t3: { x: 10, y: 94 }, t4: { x: 90, y: 94 } },
-          oppPos: { o0: { x: 24, y: 26 }, o1: { x: 38, y: 34 }, o2: { x: 56, y: 36 } },
-          ball: { x: 24, y: 46, attachedTo: 't0' },
-          gear: [
-            { id: 'g1', kind: 'mini-goal', x: 24, y: 11 },
-            { id: 'g2', kind: 'mini-goal', x: 76, y: 11 },
-            { id: 'g3', kind: 'mini-goal', x: 24, y: 87 },
-            { id: 'g4', kind: 'mini-goal', x: 76, y: 87 },
-            { id: 'g5', kind: 'cone-amber', x: 10, y: 28 },
-            { id: 'g6', kind: 'cone-amber', x: 90, y: 28 }
-          ],
-          drawings: [
-            { type: 'zone', x1: 64, y1: 14, x2: 88, y2: 32 },
-            { type: 'pass', pts: [{ x: 28, y: 49 }, { x: 45, y: 58 }] }
-          ],
-          customOppCount: 3
-        },
-        {
-          teamPos: { t0: { x: 26, y: 36 }, t1: { x: 50, y: 56 }, t2: { x: 76, y: 26 }, t3: { x: 10, y: 94 }, t4: { x: 90, y: 94 } },
-          oppPos: { o0: { x: 24, y: 22 }, o1: { x: 42, y: 36 }, o2: { x: 60, y: 34 } },
-          ball: { x: 50, y: 56, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'mini-goal', x: 24, y: 11 },
-            { id: 'g2', kind: 'mini-goal', x: 76, y: 11 },
-            { id: 'g3', kind: 'mini-goal', x: 24, y: 87 },
-            { id: 'g4', kind: 'mini-goal', x: 76, y: 87 },
-            { id: 'g5', kind: 'cone-amber', x: 10, y: 28 },
-            { id: 'g6', kind: 'cone-amber', x: 90, y: 28 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 54, y: 53 }, { x: 74, y: 29 }] },
-            { type: 'run', pts: [{ x: 78, y: 44 }, { x: 76, y: 24 }] }
-          ],
-          customOppCount: 3
-        },
-        {
-          teamPos: { t0: { x: 30, y: 32 }, t1: { x: 54, y: 48 }, t2: { x: 76, y: 22 }, t3: { x: 10, y: 94 }, t4: { x: 90, y: 94 } },
-          oppPos: { o0: { x: 30, y: 22 }, o1: { x: 50, y: 30 }, o2: { x: 68, y: 24 } },
-          ball: { x: 76, y: 22, attachedTo: 't2' },
-          gear: [
-            { id: 'g1', kind: 'mini-goal', x: 24, y: 11 },
-            { id: 'g2', kind: 'mini-goal', x: 76, y: 11 },
-            { id: 'g3', kind: 'mini-goal', x: 24, y: 87 },
-            { id: 'g4', kind: 'mini-goal', x: 76, y: 87 },
-            { id: 'g5', kind: 'cone-amber', x: 10, y: 28 },
-            { id: 'g6', kind: 'cone-amber', x: 90, y: 28 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 76, y: 19 }, { x: 76, y: 11 }] }
-          ],
-          customOppCount: 3
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-3v2-transition-wave',
-    category: 'training',
-    difficulty: 'advanced',
-    standard: 'UEFA Transition',
-    title: '3v2 Wave + 5-Second Counter-Press',
-    tag: 'Half Pitch • 3 Steps',
-    desc: '3 attackers attack the main goal; if the 2 defenders win it, they counter into 2 halfway mini-goals while attackers hunt it back!',
-    cue: '5-second reaction rule: the instant possession turns over, sprint to hunt in a pack!',
-    build: () => ({
-      pitchMode: 'half',
-      formationId: 'half-attack',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'off',
-      customOppRoster: [
-        { id: 'o0', label: 'GK', isGk: true },
-        { id: 'o1', label: 'D1', isGk: false },
-        { id: 'o2', label: 'D2', isGk: false }
-      ],
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 50, y: 64 }, t2: { x: 22, y: 58 }, t3: { x: 78, y: 58 }, t4: { x: 90, y: 92 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 38, y: 36 }, o2: { x: 62, y: 36 } },
-          ball: { x: 50, y: 64, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'mini-goal', x: 20, y: 88 },
-            { id: 'g2', kind: 'mini-goal', x: 80, y: 88 }
-          ],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 50, y: 60 }, { x: 44, y: 44 }] },
-            { type: 'run', pts: [{ x: 22, y: 54 }, { x: 24, y: 32 }] },
-            { type: 'run', pts: [{ x: 78, y: 54 }, { x: 74, y: 32 }] }
-          ],
-          customOppCount: 3
-        },
-        {
-          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 44, y: 44 }, t2: { x: 24, y: 34 }, t3: { x: 74, y: 36 }, t4: { x: 90, y: 92 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 36, y: 38 }, o2: { x: 60, y: 44 } },
-          ball: { x: 36, y: 38, attachedTo: 'o1' },
-          gear: [
-            { id: 'g1', kind: 'mini-goal', x: 20, y: 88 },
-            { id: 'g2', kind: 'mini-goal', x: 80, y: 88 }
-          ],
-          drawings: [
-            { type: 'dribble', pts: [{ x: 36, y: 42 }, { x: 28, y: 62 }] },
-            { type: 'run', pts: [{ x: 44, y: 46 }, { x: 31, y: 58 }] },
-            { type: 'run', pts: [{ x: 24, y: 38 }, { x: 24, y: 58 }] },
-            { type: 'zone', x1: 18, y1: 50, x2: 40, y2: 68 }
-          ],
-          customOppCount: 3
-        },
-        {
-          teamPos: { t0: { x: 46, y: 88 }, t1: { x: 30, y: 58 }, t2: { x: 22, y: 54 }, t3: { x: 60, y: 46 }, t4: { x: 90, y: 92 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 28, y: 62 }, o2: { x: 54, y: 52 } },
-          ball: { x: 30, y: 58, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'mini-goal', x: 20, y: 88 },
-            { id: 'g2', kind: 'mini-goal', x: 80, y: 88 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 34, y: 55 }, { x: 58, y: 46 }] },
-            { type: 'run', pts: [{ x: 60, y: 42 }, { x: 56, y: 22 }] }
-          ],
-          customOppCount: 3
-        }
-      ]
-    })
-  },
-  {
-    id: 'tpl-third-man-rondo-breakout',
-    category: 'training',
-    difficulty: 'advanced',
-    standard: 'La Masia Breakout',
-    title: 'Rondo Box → Third-Man Breakout',
-    tag: 'Half Pitch • 3 Steps',
-    desc: 'Keep possession in the midfield cone square until the Up-Back-Through trigger releases a runner in on goal.',
-    cue: 'Patience in the rondo — bounce off the top player to break out to goal!',
-    build: () => ({
-      pitchMode: 'half',
-      formationId: 'half-attack',
-      retreatLine: false,
-      lanesMode: 'off',
-      oppMode: 'off',
-      customOppRoster: [
-        { id: 'o0', label: 'GK', isGk: true },
-        { id: 'o1', label: 'D1', isGk: false },
-        { id: 'o2', label: 'D2', isGk: false }
-      ],
-      steps: [
-        {
-          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 50, y: 78 }, t2: { x: 30, y: 62 }, t3: { x: 70, y: 62 }, t4: { x: 50, y: 46 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 44, y: 64 }, o2: { x: 56, y: 56 } },
-          ball: { x: 50, y: 78, attachedTo: 't1' },
-          gear: [
-            { id: 'g1', kind: 'cone-amber', x: 30, y: 46 },
-            { id: 'g2', kind: 'cone-amber', x: 70, y: 46 },
-            { id: 'g3', kind: 'cone-amber', x: 30, y: 78 },
-            { id: 'g4', kind: 'cone-amber', x: 70, y: 78 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 47, y: 75 }, { x: 33, y: 64 }] },
-            { type: 'pass', pts: [{ x: 33, y: 59 }, { x: 48, y: 48 }] }
-          ],
-          customOppCount: 3
-        },
-        {
-          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 48, y: 76 }, t2: { x: 34, y: 58 }, t3: { x: 70, y: 54 }, t4: { x: 50, y: 45 } },
-          oppPos: { o0: { x: 50, y: 10 }, o1: { x: 38, y: 58 }, o2: { x: 50, y: 50 } },
-          ball: { x: 50, y: 45, attachedTo: 't4' },
-          gear: [
-            { id: 'g1', kind: 'cone-amber', x: 30, y: 46 },
-            { id: 'g2', kind: 'cone-amber', x: 70, y: 46 },
-            { id: 'g3', kind: 'cone-amber', x: 30, y: 78 },
-            { id: 'g4', kind: 'cone-amber', x: 70, y: 78 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 47, y: 47 }, { x: 37, y: 56 }] },
-            { type: 'run', pts: [{ x: 70, y: 50 }, { x: 62, y: 22 }] },
-            { type: 'zone', x1: 52, y1: 16, x2: 72, y2: 30 }
-          ],
-          customOppCount: 3
-        },
-        {
-          teamPos: { t0: { x: 50, y: 92 }, t1: { x: 48, y: 74 }, t2: { x: 38, y: 54 }, t3: { x: 60, y: 22 }, t4: { x: 46, y: 34 } },
-          oppPos: { o0: { x: 52, y: 11 }, o1: { x: 40, y: 52 }, o2: { x: 52, y: 38 } },
-          ball: { x: 60, y: 22, attachedTo: 't3' },
-          gear: [
-            { id: 'g1', kind: 'cone-amber', x: 30, y: 46 },
-            { id: 'g2', kind: 'cone-amber', x: 70, y: 46 },
-            { id: 'g3', kind: 'cone-amber', x: 30, y: 78 },
-            { id: 'g4', kind: 'cone-amber', x: 70, y: 78 }
-          ],
-          drawings: [
-            { type: 'pass', pts: [{ x: 41, y: 51 }, { x: 58, y: 25 }] },
-            { type: 'pass', pts: [{ x: 58, y: 19 }, { x: 48, y: 10 }] }
-          ],
-          customOppCount: 3
-        }
-      ]
-    })
-  }
-];
+import { BUILTIN_TEMPLATES } from './tacticsTemplates.js';
+export { BUILTIN_TEMPLATES };
 
 // ---------------- Internal Tactics Engine State ----------------
 let board = {
@@ -1458,6 +358,7 @@ let initialized = false;
 let playbookTab = 'match'; // 'match' | 'training'
 let playbookTabManuallyChosen = false;
 let playbookDifficulty = 'all'; // 'all' | 'easy' | 'medium' | 'advanced'
+let playbookFormatFilter = 'all'; // 'all' | '5v5' | '6v6' | '7v7'
 
 function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
@@ -2055,26 +956,145 @@ function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-function interpolateBetweenSteps(stepA, stepB, rawT) {
+// Sample smoothly along a curved multi-point run/dribble/pass polyline so overlaps, V-cuts & slalom weaves follow the actual drawn curve!
+function samplePolylineBetween(startPt, endPt, drawings, allowedTypes, t) {
+  if (Math.hypot(endPt.x - startPt.x, endPt.y - startPt.y) < 0.5) {
+    return { x: endPt.x, y: endPt.y };
+  }
+  const match = (drawings || []).find(d => {
+    if (!allowedTypes.includes(d.type) || !Array.isArray(d.pts) || d.pts.length < 3) return false;
+    const first = d.pts[0];
+    const last = d.pts[d.pts.length - 1];
+    return Math.hypot(first.x - startPt.x, first.y - startPt.y) <= 10 &&
+           Math.hypot(last.x - endPt.x, last.y - endPt.y) <= 13;
+  });
+
+  if (!match) {
+    return {
+      x: startPt.x + (endPt.x - startPt.x) * t,
+      y: startPt.y + (endPt.y - startPt.y) * t
+    };
+  }
+
+  const waypoints = [startPt, ...match.pts.slice(1, -1), endPt];
+  const segLens = [];
+  let totalLen = 0;
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const len = Math.hypot(waypoints[i + 1].x - waypoints[i].x, waypoints[i + 1].y - waypoints[i].y);
+    segLens.push(len);
+    totalLen += len;
+  }
+  if (totalLen <= 0.001) return { x: endPt.x, y: endPt.y };
+
+  const targetDist = clamp(t, 0, 1) * totalLen;
+  let acc = 0;
+  for (let i = 0; i < segLens.length; i++) {
+    if (acc + segLens[i] >= targetDist || i === segLens.length - 1) {
+      const localT = segLens[i] > 0.0001 ? clamp((targetDist - acc) / segLens[i], 0, 1) : 1;
+      return {
+        x: waypoints[i].x + (waypoints[i + 1].x - waypoints[i].x) * localT,
+        y: waypoints[i].y + (waypoints[i + 1].y - waypoints[i].y) * localT
+      };
+    }
+    acc += segLens[i];
+  }
+  return { x: endPt.x, y: endPt.y };
+}
+
+// Auto-synthesize a final completion step if a user drew pass/run/dribble arrows on their last custom step without adding Step N+1!
+function buildPlaybackSteps(rawSteps) {
+  const steps = cloneDeep(rawSteps || []);
+  if (steps.length === 0) return steps;
+
+  const last = steps[steps.length - 1];
+  const actionDrawings = (last.drawings || []).filter(d =>
+    ['pass', 'run', 'dribble'].includes(d.type) && Array.isArray(d.pts) && d.pts.length >= 2
+  );
+  if (actionDrawings.length === 0) return steps;
+
+  const nextStep = cloneDeep(last);
+  nextStep.drawings = [];
+  let anyMovement = false;
+
+  // Move any player whose token sits near the start of a 'run' or 'dribble' arrow
+  actionDrawings.forEach(d => {
+    if (d.type !== 'run' && d.type !== 'dribble') return;
+    const start = d.pts[0];
+    const tip = d.pts[d.pts.length - 1];
+    let bestTok = null;
+    let bestD = 9.5;
+    Object.entries(last.teamPos || {}).forEach(([id, pos]) => {
+      const dist = Math.hypot(pos.x - start.x, pos.y - start.y);
+      if (dist < bestD) { bestD = dist; bestTok = { group: 'teamPos', id }; }
+    });
+    Object.entries(last.oppPos || {}).forEach(([id, pos]) => {
+      const dist = Math.hypot(pos.x - start.x, pos.y - start.y);
+      if (dist < bestD) { bestD = dist; bestTok = { group: 'oppPos', id }; }
+    });
+    if (bestTok && Math.hypot(tip.x - start.x, tip.y - start.y) > 4) {
+      nextStep[bestTok.group][bestTok.id] = { x: clamp(tip.x, 3, 97), y: clamp(tip.y, 2, 97) };
+      if (d.type === 'dribble' && nextStep.ball?.attachedTo === bestTok.id) {
+        nextStep.ball.x = nextStep[bestTok.group][bestTok.id].x;
+        nextStep.ball.y = nextStep[bestTok.group][bestTok.id].y;
+      }
+      anyMovement = true;
+    }
+  });
+
+  // Move the ball along any final 'pass' arrow starting near the ball!
+  const passArrows = actionDrawings.filter(d => d.type === 'pass');
+  if (passArrows.length > 0 && last.ball) {
+    const ballOrigin = last.ball.attachedTo
+      ? (last.teamPos?.[last.ball.attachedTo] || last.oppPos?.[last.ball.attachedTo] || last.ball)
+      : last.ball;
+    const lastPass = passArrows[passArrows.length - 1];
+    const firstPass = passArrows[0];
+    if (Math.hypot(firstPass.pts[0].x - ballOrigin.x, firstPass.pts[0].y - ballOrigin.y) <= 14) {
+      const finalTip = lastPass.pts[lastPass.pts.length - 1];
+      let receiverId = null;
+      let recDist = 7.5;
+      Object.entries(nextStep.teamPos || {}).forEach(([id, pos]) => {
+        const d = Math.hypot(pos.x - finalTip.x, pos.y - finalTip.y);
+        if (d < recDist) { recDist = d; receiverId = id; }
+      });
+      if (receiverId) {
+        nextStep.ball = {
+          x: nextStep.teamPos[receiverId].x,
+          y: nextStep.teamPos[receiverId].y,
+          attachedTo: receiverId
+        };
+      } else {
+        nextStep.ball = {
+          x: clamp(finalTip.x, 3, 97),
+          y: clamp(finalTip.y, 2, 97),
+          attachedTo: null
+        };
+      }
+      anyMovement = true;
+    }
+  }
+
+  if (anyMovement) {
+    steps.push(nextStep);
+  }
+  return steps;
+}
+
+function interpolateBetweenSteps(stepA, stepB, rawT, showNextStepDrawings = false) {
   const t = easeInOutCubic(clamp(rawT, 0, 1));
+  const aDrawings = stepA.drawings || [];
   const teamPos = {};
   board.teamRoster.forEach(tok => {
     const a = stepA.teamPos?.[tok.id] || { x: 50, y: 50 };
     const b = stepB.teamPos?.[tok.id] || a;
-    teamPos[tok.id] = {
-      x: a.x + (b.x - a.x) * t,
-      y: a.y + (b.y - a.y) * t
-    };
+    teamPos[tok.id] = samplePolylineBetween(a, b, aDrawings, ['run', 'dribble'], t);
   });
 
   const oppPos = {};
   board.oppRoster.forEach(tok => {
     const a = stepA.oppPos?.[tok.id] || { x: 50, y: 30 };
     const b = stepB.oppPos?.[tok.id] || a;
-    oppPos[tok.id] = {
-      x: a.x + (b.x - a.x) * t,
-      y: a.y + (b.y - a.y) * t
-    };
+    oppPos[tok.id] = samplePolylineBetween(a, b, aDrawings, ['run', 'dribble'], t);
   });
 
   const startBall = stepA.ball || { x: 50, y: 50, attachedTo: null };
@@ -2089,8 +1109,9 @@ function interpolateBetweenSteps(stepA, stepB, rawT) {
   } else {
     const aHost = startBall.attachedTo ? (stepA.teamPos?.[startBall.attachedTo] || stepA.oppPos?.[startBall.attachedTo] || startBall) : startBall;
     const bHost = endBall.attachedTo ? (stepB.teamPos?.[endBall.attachedTo] || stepB.oppPos?.[endBall.attachedTo] || endBall) : endBall;
-    bx = aHost.x + (bHost.x - aHost.x) * t;
-    by = aHost.y + (bHost.y - aHost.y) * t;
+    const sampledBall = samplePolylineBetween(aHost, bHost, aDrawings, ['pass', 'dribble'], t);
+    bx = sampledBall.x;
+    by = sampledBall.y;
     if (rawT >= 0.98 && endBall.attachedTo) attachedTo = endBall.attachedTo;
   }
 
@@ -2099,7 +1120,63 @@ function interpolateBetweenSteps(stepA, stepB, rawT) {
     oppPos,
     ball: { x: bx, y: by, attachedTo },
     gear: stepA.gear || [],
-    drawings: rawT < 0.88 ? (stepA.drawings || []) : (stepB.drawings || [])
+    drawings: showNextStepDrawings ? (stepB.drawings || []) : aDrawings
+  };
+}
+
+// 4-Beat Teaching Pacing Calculator: Intro Setup Beat -> Smooth Move -> Mid-Step Cue Beat -> Full Final Finish Hold!
+function computePlaybackTimelineMetrics(stepsCount, speed = 1) {
+  const introMs = speed === 0.5 ? 800 : 520;
+  const moveMs = speed === 0.5 ? 2050 : 1280;
+  const midHoldMs = speed === 0.5 ? 720 : 480;
+  const outroHoldMs = speed === 0.5 ? 1500 : 1100;
+  const numTransitions = Math.max(1, stepsCount - 1);
+  const totalMs = introMs + numTransitions * moveMs + Math.max(0, numTransitions - 1) * midHoldMs + outroHoldMs;
+  return { introMs, moveMs, midHoldMs, outroHoldMs, numTransitions, totalMs };
+}
+
+function evaluatePlaybackFrame(playSteps, elapsed, metrics) {
+  const { introMs, moveMs, midHoldMs, numTransitions } = metrics;
+  if (elapsed <= introMs) {
+    return {
+      uiStepIdx: 0,
+      scene: interpolateBetweenSteps(playSteps[0], playSteps[1], 0, false)
+    };
+  }
+
+  let rem = elapsed - introMs;
+  for (let i = 0; i < numTransitions; i++) {
+    if (rem <= moveMs) {
+      const rawT = clamp(rem / moveMs, 0, 1);
+      return {
+        uiStepIdx: rawT < 0.65 ? i : Math.min(i + 1, board.steps.length - 1),
+        scene: interpolateBetweenSteps(playSteps[i], playSteps[i + 1], rawT, false)
+      };
+    }
+    rem -= moveMs;
+
+    const isLastTransition = i === numTransitions - 1;
+    if (!isLastTransition) {
+      if (rem <= midHoldMs) {
+        return {
+          uiStepIdx: Math.min(i + 1, board.steps.length - 1),
+          scene: interpolateBetweenSteps(playSteps[i], playSteps[i + 1], 1, true)
+        };
+      }
+      rem -= midHoldMs;
+    } else {
+      // Final Outro Hold: keep ball & players resting in their completed final finish positions!
+      return {
+        uiStepIdx: board.steps.length - 1,
+        scene: interpolateBetweenSteps(playSteps[i], playSteps[i + 1], 1, true)
+      };
+    }
+  }
+
+  const lastIdx = numTransitions - 1;
+  return {
+    uiStepIdx: board.steps.length - 1,
+    scene: interpolateBetweenSteps(playSteps[lastIdx], playSteps[lastIdx + 1], 1, true)
   };
 }
 
@@ -2108,18 +1185,19 @@ export function togglePlayTacticsMove() {
     stopTacticsAnimation();
     return;
   }
-  if (board.steps.length < 2) {
+
+  const playSteps = buildPlaybackSteps(board.steps);
+  if (playSteps.length < 2) {
     addTacticsStep();
     score.showMatchToast('Drag players/ball to their Step 2 positions, then tap Play!', '▶️', 2600);
     return;
   }
 
   isAnimating = true;
+  board.isAnimatorOpen = true;
+  board.activeStepIdx = 0;
   hapticFeedback('tap');
-  const transitionMs = board.animSpeed === 0.5 ? 1900 : 1050;
-  const holdMs = 360;
-  const totalSegments = board.steps.length - 1;
-  const segTotalMs = transitionMs + holdMs;
+  const metrics = computePlaybackTimelineMetrics(playSteps.length, board.animSpeed);
   const startedAt = performance.now();
 
   renderAnimatorBarUI();
@@ -2127,9 +1205,8 @@ export function togglePlayTacticsMove() {
   const tick = (now) => {
     if (!isAnimating) return;
     const elapsed = now - startedAt;
-    const segIdx = Math.floor(elapsed / segTotalMs);
 
-    if (segIdx >= totalSegments) {
+    if (elapsed >= metrics.totalMs) {
       isAnimating = false;
       animRafId = null;
       animRenderOverride = null;
@@ -2138,10 +1215,9 @@ export function togglePlayTacticsMove() {
       return;
     }
 
-    const segElapsed = elapsed - segIdx * segTotalMs;
-    const rawT = clamp(segElapsed / transitionMs, 0, 1);
-    board.activeStepIdx = rawT < 0.5 ? segIdx : segIdx + 1;
-    animRenderOverride = interpolateBetweenSteps(board.steps[segIdx], board.steps[segIdx + 1], rawT);
+    const frame = evaluatePlaybackFrame(playSteps, elapsed, metrics);
+    board.activeStepIdx = clamp(frame.uiStepIdx, 0, board.steps.length - 1);
+    animRenderOverride = frame.scene;
 
     renderAnimatorBarUI();
     drawTacticsCanvas();
@@ -2236,6 +1312,13 @@ export function setTacticsPlaybookTab(tab) {
 export function setTacticsDifficultyFilter(diff) {
   if (!['all', 'easy', 'medium', 'advanced'].includes(diff)) return;
   playbookDifficulty = diff;
+  hapticFeedback('tap');
+  renderPlaybookModalUI();
+}
+
+export function setTacticsFormatFilter(fmt) {
+  if (!['all', '5v5', '6v6', '7v7'].includes(fmt)) return;
+  playbookFormatFilter = fmt;
   hapticFeedback('tap');
   renderPlaybookModalUI();
 }
@@ -2628,16 +1711,19 @@ function renderAnimatorBarUI() {
   if (!board.isAnimatorOpen) return;
 
   if (stepsEl) {
+    const compact = board.steps.length >= 4;
     let html = board.steps.map((_, idx) => {
       const active = idx === board.activeStepIdx;
-      return `<button type="button" onclick="selectTacticsStep(${idx})" class="px-2 py-1 rounded-lg font-mono-sport font-black text-[10.5px] transition cursor-pointer ${active ? 'bg-amber-400 text-slate-950 shadow' : 'bg-slate-900 text-slate-400 border border-slate-700 hover:text-white'}">Step ${idx + 1}</button>`;
+      const lbl = compact ? `S${idx + 1}` : `Step ${idx + 1}`;
+      return `<button type="button" onclick="selectTacticsStep(${idx})" class="px-2 py-1 rounded-lg font-mono-sport font-black text-[10.5px] whitespace-nowrap transition cursor-pointer ${active ? 'bg-amber-400 text-slate-950 shadow' : 'bg-slate-900 text-slate-400 border border-slate-700 hover:text-white'}">${lbl}</button>`;
     }).join('');
 
     if (board.steps.length < MAX_STEPS) {
-      html += `<button type="button" onclick="addTacticsStep()" class="px-2 py-1 rounded-lg font-mono-sport font-bold text-[10.5px] bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 cursor-pointer transition">+ Step</button>`;
+      const addLbl = compact ? '+S' : '+ Step';
+      html += `<button type="button" onclick="addTacticsStep()" class="px-2 py-1 rounded-lg font-mono-sport font-bold text-[10.5px] whitespace-nowrap bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 cursor-pointer transition" title="Add animation step">${addLbl}</button>`;
     }
     if (board.steps.length > 1) {
-      html += `<button type="button" onclick="deleteLastTacticsStep()" class="px-1.5 py-1 rounded-lg font-bold text-[10px] bg-slate-900 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-800 cursor-pointer transition" title="Remove last step">✕</button>`;
+      html += `<button type="button" onclick="deleteLastTacticsStep()" class="px-1.5 py-1 rounded-lg font-bold text-[10px] whitespace-nowrap bg-slate-900 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-800 cursor-pointer transition" title="Remove last step">✕</button>`;
     }
     stepsEl.innerHTML = html;
   }
@@ -2722,8 +1808,8 @@ function renderPlaybookModalUI() {
 
   if (builtinHeading) {
     builtinHeading.innerText = isTrain
-      ? 'Academy Session Drills (3-Step Animated)'
-      : 'Academy Match Plays & Set-Pieces (3-Step Animated)';
+      ? 'Academy Session Drills (4-Step Full Animation)'
+      : 'Academy Match Plays by Squad Size (4-Step Full Animation)';
   }
   if (savedHeading) {
     savedHeading.innerText = isTrain ? 'My Saved Training Drills' : 'My Saved Match Plays';
@@ -2732,15 +1818,49 @@ function renderPlaybookModalUI() {
     saveInput.placeholder = isTrain ? 'Name this training drill...' : 'Name this match play...';
   }
 
-  // Render Difficulty Filter Pills with Counts
-  const tabTemplates = BUILTIN_TEMPLATES.filter(t => t.category === playbookTab);
+  const allTabTemplates = BUILTIN_TEMPLATES.filter(t => t.category === playbookTab);
+
+  // Squad Size Filter Bar (Visible on Match Plays tab: All Sizes | 5v5 | 6v6 | 7v7)
+  const fmtBar = document.getElementById('tacticsFormatFilterBar');
+  if (fmtBar) {
+    if (isTrain) {
+      fmtBar.classList.add('hidden');
+    } else {
+      fmtBar.classList.remove('hidden');
+      const fmtCounts = {
+        all: allTabTemplates.length,
+        '5v5': allTabTemplates.filter(t => t.squadFormat === '5v5').length,
+        '6v6': allTabTemplates.filter(t => t.squadFormat === '6v6').length,
+        '7v7': allTabTemplates.filter(t => t.squadFormat === '7v7').length
+      };
+      const fmtPills = [
+        { id: 'all', label: `All (${fmtCounts.all})` },
+        { id: '5v5', label: `5v5 (${fmtCounts['5v5']})` },
+        { id: '6v6', label: `6v6 (${fmtCounts['6v6']})` },
+        { id: '7v7', label: `7v7 (${fmtCounts['7v7']})` }
+      ];
+      fmtBar.innerHTML = fmtPills.map(p => {
+        const isAct = playbookFormatFilter === p.id;
+        const cls = isAct
+          ? 'playbook-diff-chip flex-1 py-1.5 px-1.5 rounded-lg border border-sky-300 bg-sky-400 text-slate-950 font-black text-[10.5px] shadow-sm transition cursor-pointer text-center whitespace-nowrap'
+          : 'playbook-diff-chip flex-1 py-1.5 px-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-[10.5px] transition cursor-pointer text-center whitespace-nowrap';
+        return `<button type="button" onclick="setTacticsFormatFilter('${p.id}')" class="${cls}">${p.label}</button>`;
+      }).join('');
+    }
+  }
+
+  const formatFilteredTemplates = (!isTrain && playbookFormatFilter !== 'all')
+    ? allTabTemplates.filter(t => t.squadFormat === playbookFormatFilter)
+    : allTabTemplates;
+
+  // Render Difficulty Filter Pills with Counts (scoped to active Squad Size!)
   const diffBar = document.getElementById('tacticsDifficultyFilterBar');
   if (diffBar) {
     const counts = {
-      all: tabTemplates.length,
-      easy: tabTemplates.filter(t => t.difficulty === 'easy').length,
-      medium: tabTemplates.filter(t => t.difficulty === 'medium').length,
-      advanced: tabTemplates.filter(t => t.difficulty === 'advanced').length
+      all: formatFilteredTemplates.length,
+      easy: formatFilteredTemplates.filter(t => t.difficulty === 'easy').length,
+      medium: formatFilteredTemplates.filter(t => t.difficulty === 'medium').length,
+      advanced: formatFilteredTemplates.filter(t => t.difficulty === 'advanced').length
     };
     const pills = [
       { id: 'all', label: `All (${counts.all})`, activeCls: 'bg-slate-200 text-slate-950 border-white font-black' },
@@ -2761,8 +1881,8 @@ function renderPlaybookModalUI() {
   const tplList = document.getElementById('tacticsBuiltinTemplatesList');
   if (tplList) {
     const visibleTemplates = playbookDifficulty === 'all'
-      ? tabTemplates
-      : tabTemplates.filter(t => t.difficulty === playbookDifficulty);
+      ? formatFilteredTemplates
+      : formatFilteredTemplates.filter(t => t.difficulty === playbookDifficulty);
 
     const diffBadgeMap = {
       easy: { label: 'EASY', cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' },
@@ -3888,22 +3008,24 @@ export async function shareTacticsVideo() {
     const chunks = [];
     recorder.ondataavailable = (ev) => { if (ev.data && ev.data.size > 0) chunks.push(ev.data); };
 
+    const playSteps = buildPlaybackSteps(board.steps);
+    if (playSteps.length < 2) {
+      shareTacticsPng();
+      return;
+    }
+
     const donePromise = new Promise(resolve => { recorder.onstop = resolve; });
     recorder.start();
 
-    const transitionMs = board.animSpeed === 0.5 ? 1800 : 1050;
-    const holdMs = 400;
-    const segTotalMs = transitionMs + holdMs;
-    const totalMs = (board.steps.length - 1) * segTotalMs + 350;
+    const metrics = computePlaybackTimelineMetrics(playSteps.length, board.animSpeed);
+    const totalMs = metrics.totalMs;
     const startAt = performance.now();
 
     await new Promise(resolve => {
       const stepFrame = (now) => {
         const elapsed = now - startAt;
-        const segIdx = Math.min(board.steps.length - 2, Math.floor(elapsed / segTotalMs));
-        const segElapsed = Math.max(0, elapsed - segIdx * segTotalMs);
-        const rawT = clamp(segElapsed / transitionMs, 0, 1);
-        const scene = interpolateBetweenSteps(board.steps[segIdx], board.steps[segIdx + 1], rawT);
+        const frame = evaluatePlaybackFrame(playSteps, elapsed, metrics);
+        const scene = frame.scene;
 
         rctx.fillStyle = '#07090e';
         rctx.fillRect(0, 0, W, H);

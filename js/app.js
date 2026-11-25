@@ -1008,6 +1008,7 @@ window.togglePlayTacticsMove = tactics.togglePlayTacticsMove;
 window.openTacticsPlaybook = tactics.openTacticsPlaybook;
 window.setTacticsPlaybookTab = tactics.setTacticsPlaybookTab;
 window.setTacticsDifficultyFilter = tactics.setTacticsDifficultyFilter;
+window.setTacticsFormatFilter = tactics.setTacticsFormatFilter;
 window.dismissTacticsCoachingCue = tactics.dismissTacticsCoachingCue;
 window.closeTacticsPlaybook = tactics.closeTacticsPlaybook;
 window.addTacticsGear = tactics.addTacticsGear;
