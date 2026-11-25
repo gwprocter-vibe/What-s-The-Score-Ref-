@@ -26,7 +26,7 @@ export const FORMATIONS = {
     {
       id: '1-2-1',
       label: '1-2-1 Diamond',
-      short: '1-2-1',
+      short: 'Shape: 1-2-1',
       coords: [
         { x: 50, y: 89, role: 'gk' },
         { x: 50, y: 73 },
@@ -38,7 +38,7 @@ export const FORMATIONS = {
     {
       id: '2-2',
       label: '2-2 Box',
-      short: '2-2 Box',
+      short: 'Shape: 2-2',
       coords: [
         { x: 50, y: 89, role: 'gk' },
         { x: 30, y: 71 },
@@ -50,7 +50,7 @@ export const FORMATIONS = {
     {
       id: '1-1-2',
       label: '1-1-2 High Press',
-      short: '1-1-2',
+      short: 'Shape: 1-1-2',
       coords: [
         { x: 50, y: 89, role: 'gk' },
         { x: 50, y: 73 },
@@ -58,40 +58,13 @@ export const FORMATIONS = {
         { x: 27, y: 36 },
         { x: 73, y: 36 }
       ]
-    },
-    {
-      id: 'gk-retreat',
-      label: 'Goal Kick (Beat Retreat)',
-      short: 'Goal Kick',
-      ballOnIdx: 0,
-      oppBehindRetreat: true,
-      coords: [
-        { x: 50, y: 89, role: 'gk' },
-        { x: 18, y: 77 },
-        { x: 82, y: 77 },
-        { x: 50, y: 63 },
-        { x: 50, y: 46 }
-      ]
-    },
-    {
-      id: 'corner-5v5',
-      label: 'Corner / Kick-In Attack',
-      short: 'Corner',
-      ballOnIdx: 2,
-      coords: [
-        { x: 50, y: 88, role: 'gk' },
-        { x: 50, y: 56 },
-        { x: 91, y: 11 },
-        { x: 63, y: 20 },
-        { x: 38, y: 24 }
-      ]
     }
   ],
   '6v6': [
     {
       id: '2-2-1',
       label: '2-2-1 Solid',
-      short: '2-2-1',
+      short: 'Shape: 2-2-1',
       coords: [
         { x: 50, y: 90, role: 'gk' },
         { x: 30, y: 74 },
@@ -104,7 +77,7 @@ export const FORMATIONS = {
     {
       id: '1-3-1',
       label: '1-3-1 Wide Diamond',
-      short: '1-3-1',
+      short: 'Shape: 1-3-1',
       coords: [
         { x: 50, y: 90, role: 'gk' },
         { x: 50, y: 75 },
@@ -117,7 +90,7 @@ export const FORMATIONS = {
     {
       id: '2-1-2',
       label: '2-1-2 Attack',
-      short: '2-1-2',
+      short: 'Shape: 2-1-2',
       coords: [
         { x: 50, y: 90, role: 'gk' },
         { x: 30, y: 74 },
@@ -126,27 +99,13 @@ export const FORMATIONS = {
         { x: 29, y: 36 },
         { x: 71, y: 36 }
       ]
-    },
-    {
-      id: 'gk-6v6',
-      label: '6v6 Build-Up',
-      short: 'Build-Up',
-      ballOnIdx: 0,
-      coords: [
-        { x: 50, y: 90, role: 'gk' },
-        { x: 18, y: 78 },
-        { x: 82, y: 78 },
-        { x: 50, y: 65 },
-        { x: 24, y: 46 },
-        { x: 76, y: 46 }
-      ]
     }
   ],
   '7v7': [
     {
       id: '2-3-1',
       label: '2-3-1 Classic',
-      short: '2-3-1',
+      short: 'Shape: 2-3-1',
       coords: [
         { x: 50, y: 91, role: 'gk' },
         { x: 30, y: 76 },
@@ -160,7 +119,7 @@ export const FORMATIONS = {
     {
       id: '3-2-1',
       label: '3-2-1 Christmas Tree',
-      short: '3-2-1',
+      short: 'Shape: 3-2-1',
       coords: [
         { x: 50, y: 91, role: 'gk' },
         { x: 22, y: 75 },
@@ -174,7 +133,7 @@ export const FORMATIONS = {
     {
       id: '2-1-2-1',
       label: '2-1-2-1 Diamond',
-      short: '2-1-2-1',
+      short: 'Shape: 2-1-2-1',
       coords: [
         { x: 50, y: 91, role: 'gk' },
         { x: 30, y: 76 },
@@ -189,8 +148,8 @@ export const FORMATIONS = {
   'half': [
     {
       id: 'half-attack',
-      label: 'Attacking Shape',
-      short: 'Attack',
+      label: 'Half-Pitch Default',
+      short: 'Half Pitch',
       coords: [
         { x: 50, y: 86, role: 'gk' },
         { x: 50, y: 66 },
@@ -198,55 +157,18 @@ export const FORMATIONS = {
         { x: 80, y: 44 },
         { x: 50, y: 24 }
       ]
-    },
-    {
-      id: 'half-corner',
-      label: 'Corner Routine',
-      short: 'Corner',
-      ballOnIdx: 2,
-      coords: [
-        { x: 50, y: 86, role: 'gk' },
-        { x: 50, y: 58 },
-        { x: 92, y: 10 },
-        { x: 62, y: 22 },
-        { x: 38, y: 26 }
-      ]
-    },
-    {
-      id: 'half-defend',
-      label: 'Defending Goal Kick',
-      short: 'Defend',
-      coords: [
-        { x: 50, y: 10, role: 'gk' },
-        { x: 22, y: 26 },
-        { x: 78, y: 26 },
-        { x: 50, y: 44 },
-        { x: 50, y: 68 }
-      ]
     }
   ],
   'blank': [
     {
       id: 'drill-diamond',
-      label: '4+1 Rondo / Diamond',
-      short: 'Diamond',
+      label: 'Training Grass Default',
+      short: 'Training',
       coords: [
         { x: 50, y: 50, role: 'gk' },
         { x: 50, y: 80 },
         { x: 20, y: 50 },
         { x: 80, y: 50 },
-        { x: 50, y: 20 }
-      ]
-    },
-    {
-      id: 'drill-lines',
-      label: 'Passing Lines',
-      short: 'Lines',
-      coords: [
-        { x: 25, y: 82, role: 'gk' },
-        { x: 75, y: 82 },
-        { x: 25, y: 50 },
-        { x: 75, y: 50 },
         { x: 50, y: 20 }
       ]
     }
@@ -1601,8 +1523,13 @@ function renderTopControlsUI() {
 
   const formSel = document.getElementById('tacticsFormationSelect');
   if (formSel) {
-    const list = FORMATIONS[board.pitchMode] || FORMATIONS['5v5'];
-    formSel.innerHTML = list.map(f => `<option value="${f.id}" ${f.id === board.formationId ? 'selected' : ''}>${f.short}</option>`).join('');
+    const hasFormations = ['5v5', '6v6', '7v7'].includes(board.pitchMode);
+    formSel.classList.toggle('hidden', !hasFormations);
+    if (hasFormations) {
+      const list = FORMATIONS[board.pitchMode] || FORMATIONS['5v5'];
+      const validId = list.some(f => f.id === board.formationId) ? board.formationId : list[0].id;
+      formSel.innerHTML = list.map(f => `<option value="${f.id}" ${f.id === validId ? 'selected' : ''}>${f.short}</option>`).join('');
+    }
   }
 
   const retreatBtn = document.getElementById('tacticsRetreatBtn');

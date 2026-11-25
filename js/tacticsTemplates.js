@@ -19,7 +19,7 @@ export const BUILTIN_TEMPLATES = [
     cue: 'Split wide early — open your body, drive past the retreat line, and square across goal!',
     build: () => ({
       pitchMode: '5v5',
-      formationId: 'gk-retreat',
+      formationId: '1-2-1',
       retreatLine: true,
       lanesMode: 'lanes',
       oppMode: 'even',
@@ -475,7 +475,7 @@ export const BUILTIN_TEMPLATES = [
     cue: 'Form a side triangle — defender, pivot, winger — to play around the press!',
     build: () => ({
       pitchMode: '6v6',
-      formationId: 'gk-6v6',
+      formationId: '2-2-1',
       retreatLine: false,
       lanesMode: 'lanes',
       oppMode: 'even',
