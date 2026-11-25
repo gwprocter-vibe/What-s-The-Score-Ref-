@@ -239,9 +239,9 @@ body.mode-spectator #clockUnitCard {
 }
 
 body.mode-coach #scoreCardsGrid {
-  height: 195px;
-  min-height: 190px;
-  max-height: 210px;
+  height: 180px;
+  min-height: 174px;
+  max-height: 192px;
 }
 
 body.mode-coach #homeCardContainer,
@@ -252,7 +252,7 @@ body.mode-coach #awayCardContainer {
 
 body.mode-coach #coachTouchlineBar {
   flex: 0 0 auto;
-  min-height: 140px;
+  min-height: 165px;
 }
 
 #clockUnitCard {
@@ -401,8 +401,8 @@ body.mode-coach #resetMatchBtn {
 
   body.mode-coach #scoreCardsGrid {
     height: auto !important;
-    min-height: 138px !important;
-    max-height: 155px !important;
+    min-height: 126px !important;
+    max-height: 144px !important;
     flex: 1 1 auto !important;
   }
 
@@ -487,16 +487,23 @@ body.mode-coach #resetMatchBtn {
   }
 
   body.mode-coach #coachTouchlineBar {
-    min-height: 110px !important;
-    padding: 4px 6px !important;
+    min-height: 122px !important;
+    padding: 6px 8px !important;
   }
 
-  #coachTouchlineBar button {
-    padding: 4px 3px !important;
+  #coachTouchlineToolsGrid {
+    gap: 5px !important;
+    padding-bottom: 5px !important;
+    margin-bottom: 5px !important;
+  }
+
+  #coachTouchlineToolsGrid button {
+    padding: 4px 6px !important;
+    font-size: 10.5px !important;
   }
 
   #coachTouchlineDefaultRow {
-    gap: 4px !important;
+    gap: 5px !important;
   }
 
   #coachTouchlineDefaultRow button {
@@ -563,9 +570,9 @@ body.mode-coach #resetMatchBtn {
   }
 
   body.mode-coach #scoreCardsGrid {
-    height: 138px !important;
-    min-height: 135px !important;
-    max-height: 142px !important;
+    height: 122px !important;
+    min-height: 118px !important;
+    max-height: 126px !important;
   }
 
   body.mode-referee #scoreCardsGrid,
@@ -654,20 +661,22 @@ body.mode-coach #resetMatchBtn {
   }
 
   body.mode-coach #coachTouchlineBar {
-    min-height: 98px !important;
-    max-height: 104px !important;
-    padding: 3px 5px !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 4px 6px !important;
     border-radius: 10px !important;
   }
 
-  #coachTouchlineBar .border-b {
-    padding-bottom: 2px !important;
+  #coachTouchlineToolsGrid {
+    gap: 3px !important;
+    padding-bottom: 3px !important;
     margin-bottom: 3px !important;
   }
 
-  #coachTouchlineBar button {
-    padding: 2px 3px !important;
-    font-size: 8.5px !important;
+  #coachTouchlineToolsGrid button {
+    padding: 2.5px 4px !important;
+    font-size: 9.5px !important;
+    border-radius: 7px !important;
   }
 
   #coachTouchlineDefaultRow {

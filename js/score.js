@@ -2665,16 +2665,18 @@ export function renderTouchlineBarUI() {
   if (potmBadge && potmText) {
     if (appMode === 'coach') {
       potmBadge.classList.remove('hidden');
-      potmBadge.classList.add('inline-flex');
+      potmBadge.classList.add('flex');
       if (coachNotes && coachNotes.potm) {
         const p = coachNotes.potm;
         potmText.innerText = `#${p.number}${p.initials ? ' ' + p.initials : ''}`;
+        potmBadge.className = 'py-1.5 px-2 rounded-xl bg-amber-400/25 hover:bg-amber-400/35 border-2 border-amber-300 text-amber-200 font-black text-[11px] flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm whitespace-nowrap';
       } else {
         potmText.innerText = 'POTM';
+        potmBadge.className = 'py-1.5 px-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/70 text-amber-300 font-extrabold text-[11px] flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm whitespace-nowrap';
       }
     } else {
       potmBadge.classList.add('hidden');
-      potmBadge.classList.remove('inline-flex');
+      potmBadge.classList.remove('flex');
     }
   }
 
@@ -2810,11 +2812,11 @@ export function renderTouchlineBarUI() {
   if (notesToggleBtn) {
     const hasNotes = Boolean(coachNotes.notes && coachNotes.notes.trim().length > 0);
     if (hasNotes) {
-      notesToggleBtn.className = 'px-1.5 sm:px-2 py-1 bg-amber-500/20 border border-amber-400/80 text-amber-300 rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer shadow-sm';
-      notesToggleBtn.innerHTML = `<svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span>Notes</span><span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse"></span>`;
+      notesToggleBtn.className = 'py-1.5 px-2 rounded-xl bg-amber-500/20 border border-amber-400/80 text-amber-300 font-bold text-[11px] flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm whitespace-nowrap';
+      notesToggleBtn.innerHTML = `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span>Notes</span><span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse shrink-0"></span>`;
     } else {
-      notesToggleBtn.className = 'px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer';
-      notesToggleBtn.innerHTML = `<svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span>Notes</span>`;
+      notesToggleBtn.className = 'py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-200 hover:text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 whitespace-nowrap';
+      notesToggleBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span>Notes</span>`;
     }
   }
 }
