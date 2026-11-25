@@ -205,6 +205,23 @@ body.mode-coach #refHelperBar {
   display: none !important;
 }
 
+body.mode-coach #halfTimeTacticsShortcutBtn {
+  display: inline-flex !important;
+}
+
+body.mode-referee #halfTimeTacticsShortcutBtn {
+  display: none !important;
+}
+
+#tacticsBoardModal {
+  padding-top: max(8px, calc(env(safe-area-inset-top, 0px) + 6px));
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+}
+
+html.is-ios-standalone #tacticsBoardModal {
+  padding-top: max(47px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
+}
+
 body.mode-referee #refHelperBar {
   display: flex;
   flex-direction: column;

@@ -7,6 +7,7 @@ import * as rules from './rules.js';
 import * as report from './report.js';
 import * as lockMode from './lockMode.js';
 import * as storage from './storage.js';
+import * as tactics from './tactics.js';
 
 let deferredPrompt = null;
 
@@ -547,6 +548,8 @@ const ALL_MODAL_IDS = [
   'matchHistoryModal',
   'matchSyncModal',
   'installAppModal',
+  'tacticsPlaybookModal',
+  'tacticsBoardModal',
   'quickToolsDrawer'
 ];
 
@@ -947,6 +950,40 @@ window.searchRules = rules.searchRules;
 window.clearRulesSearch = rules.clearRulesSearch;
 window.scrollToRuleSection = rules.scrollToRuleSection;
 
+// Touchline Tactics Board Bindings
+window.openTacticsBoard = tactics.openTacticsBoard;
+window.closeTacticsBoard = tactics.closeTacticsBoard;
+window.setTacticsPitchMode = tactics.setTacticsPitchMode;
+window.onTacticsPitchSelectChange = tactics.onTacticsPitchSelectChange;
+window.onTacticsFormationSelectChange = tactics.onTacticsFormationSelectChange;
+window.toggleTacticsRetreatLine = tactics.toggleTacticsRetreatLine;
+window.cycleTacticsLanes = tactics.cycleTacticsLanes;
+window.cycleTacticsOpposition = tactics.cycleTacticsOpposition;
+window.setTacticsTool = tactics.setTacticsTool;
+window.undoTacticsAction = tactics.undoTacticsAction;
+window.clearTacticsLines = tactics.clearTacticsLines;
+window.resetTacticsPitch = tactics.resetTacticsPitch;
+window.syncTacticsSquad = () => tactics.syncSquadFromMatch({ resetPositions: false, silent: false });
+window.selectBenchChipForSwap = tactics.selectBenchChipForSwap;
+window.swapBenchWithPitchToken = tactics.swapBenchWithPitchToken;
+window.toggleTacticsAnimator = tactics.toggleTacticsAnimator;
+window.selectTacticsStep = tactics.selectTacticsStep;
+window.addTacticsStep = tactics.addTacticsStep;
+window.deleteLastTacticsStep = tactics.deleteLastTacticsStep;
+window.toggleTacticsAnimSpeed = tactics.toggleTacticsAnimSpeed;
+window.togglePlayTacticsMove = tactics.togglePlayTacticsMove;
+window.openTacticsPlaybook = tactics.openTacticsPlaybook;
+window.closeTacticsPlaybook = tactics.closeTacticsPlaybook;
+window.addTacticsGear = tactics.addTacticsGear;
+window.clearTacticsGear = tactics.clearTacticsGear;
+window.loadBuiltinTacticsTemplate = tactics.loadBuiltinTacticsTemplate;
+window.saveCurrentTacticsToPlaybook = tactics.saveCurrentTacticsToPlaybook;
+window.loadSavedPlaybookEntry = tactics.loadSavedPlaybookEntry;
+window.deleteSavedPlaybookEntry = tactics.deleteSavedPlaybookEntry;
+window.shareTacticsPng = tactics.shareTacticsPng;
+window.shareTacticsVideo = tactics.shareTacticsVideo;
+window.getTacticsState = tactics.getTacticsState;
+
 export function switchInstructionsTab(tab) {
   const refBtn = document.getElementById('tabRefInstructions');
   const coachBtn = document.getElementById('tabCoachInstructions');
@@ -1098,6 +1135,7 @@ export function toggleSunlightMode(forceState = null) {
   try {
     score.applyTeamVisuals('home');
     score.applyTeamVisuals('away');
+    tactics.drawTacticsCanvas();
   } catch (_) {}
 
   hardware.hapticFeedback('tap');
@@ -1358,6 +1396,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'matchHistoryModal',
     'matchSyncModal',
     'installAppModal',
+    'tacticsPlaybookModal',
     'quickToolsDrawer'
   ];
   BACKDROP_DISMISSIBLE_MODALS.forEach(id => {

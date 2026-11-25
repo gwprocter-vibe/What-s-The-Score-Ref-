@@ -170,6 +170,7 @@ body.sunlight-mode #coachTouchlineDefaultRow button span {
 body.sunlight-mode #coachTouchlineDefaultRow button svg {
   color: #FFE600 !important;
 }
+body.sunlight-mode #coachTacticsBoardBtn,
 body.sunlight-mode #coachSquadRotationBtn,
 body.sunlight-mode #coachSquadInitialsBtn,
 body.sunlight-mode #coachMomentsToggleBtn,
@@ -178,6 +179,16 @@ body.sunlight-mode #coachTouchlinePotmBadge {
   background-color: #000000 !important;
   border: 1.5px solid #FFE600 !important;
   color: #FFE600 !important;
+}
+
+body.sunlight-mode #tacticsBoardModal {
+  background-color: #000000 !important;
+}
+body.sunlight-mode #tacticsBoardModal select,
+body.sunlight-mode #tacticsBoardModal .tactics-dock-btn {
+  background-color: #000000 !important;
+  border-color: #FFE600 !important;
+  color: #ffffff !important;
 }
 body.sunlight-mode #coachTouchlinePotmPrompt {
   background: #000000 !important;

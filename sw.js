@@ -1,5 +1,5 @@
 // What's The Score Ref - 100% Offline Service Worker
-const CACHE_NAME = 'whatsthescoreref-v131';
+const CACHE_NAME = 'whatsthescoreref-v132';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -18,6 +18,7 @@ const STATIC_ASSETS = [
   './js/report.js',
   './js/lockMode.js',
   './js/storage.js',
+  './js/tactics.js',
   './icons/favicon.svg',
   './icons/confused_ref.png',
   './icons/apple-touch-icon.png',

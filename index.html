@@ -519,9 +519,14 @@
           <span id="halfTimeBreakLabel" class="font-bold text-indigo-200 truncate">Half-Time Break</span>
           <span id="halfTimeBreakTimer" class="font-mono-sport font-black text-amber-300 text-xs shrink-0">05:00</span>
         </div>
-        <button type="button" onclick="dismissHalfTimeBreak()" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold rounded-lg transition cursor-pointer shrink-0">
-          Dismiss
-        </button>
+        <div class="flex items-center gap-1 shrink-0">
+          <button id="halfTimeTacticsShortcutBtn" type="button" onclick="openTacticsBoard()" class="hidden px-2 py-0.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-black rounded-lg items-center gap-1 transition cursor-pointer active:scale-95 shadow-sm" title="Open Touchline Tactics Board for Half-Time Talk">
+            <span>Board ›</span>
+          </button>
+          <button type="button" onclick="dismissHalfTimeBreak()" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold rounded-lg transition cursor-pointer shrink-0">
+            Dismiss
+          </button>
+        </div>
       </div>
 
       <!-- 1ST HALF MUST END TOAST PROMPT -->
@@ -592,6 +597,11 @@
           </button>
         </div>
         <div class="flex items-center gap-1 shrink-0">
+          <!-- Touchline Tactics Board Button -->
+          <button id="coachTacticsBoardBtn" type="button" onclick="openTacticsBoard()" class="px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-amber-400/60 text-amber-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer active:scale-95" title="Open Touchline Tactics Board">
+            <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Board</span>
+          </button>
           <!-- Fair-Play Subs & GK Rotation Button -->
           <button id="coachSquadRotationBtn" type="button" onclick="openSquadRotationModal()" class="px-1.5 sm:px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-emerald-500/50 text-emerald-300 hover:text-white rounded-lg font-bold text-[10px] flex items-center gap-1 transition cursor-pointer active:scale-95" title="Track On-Pitch 5v5, Rolling Subs &amp; Goalkeeper">
             <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg>
@@ -2775,6 +2785,24 @@
             </ul>
           </div>
 
+          <!-- Card 5: Touchline Tactics Board -->
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <div class="flex items-center gap-2 font-black text-xs text-emerald-400">
+              <span class="w-5 h-5 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-mono-sport">5</span>
+              <span>TOUCHLINE TACTICS BOARD</span>
+            </div>
+            <ul class="space-y-1.5 text-slate-300 text-[11px] list-none pl-1">
+              <li class="flex items-start gap-1.5">
+                <span class="text-emerald-400 font-bold shrink-0">•</span>
+                <span><strong>Zero-Setup Auto-Sync:</strong> Tap <strong>Board</strong> on the Touchline Bar (or inside <em>Quick Tools</em>) — your kit colour, GK, starters, bench initials, and live Half-Time clock load automatically without altering your Fair-Play Sub stint counts.</span>
+              </li>
+              <li class="flex items-start gap-1.5">
+                <span class="text-emerald-400 font-bold shrink-0">•</span>
+                <span><strong>5v5 / 6v6 / 7v7 &amp; U9 Retreat Line:</strong> Switch pitches, toggle <strong>3 Lanes</strong> to stop players swarming the ball, snap the magnetic ball onto any player, sketch Pass/Run/Dribble/Zone cues, or tap <strong>Animate</strong> to play multi-step moves and share HD PNGs or video clips!</span>
+              </li>
+            </ul>
+          </div>
+
         </div>
 
       </div>
@@ -2964,6 +2992,30 @@
               </div>
             </div>
             <span class="px-2.5 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">GUIDE</span>
+          </button>
+        </div>
+
+        <!-- CATEGORY: TACTICS & COACHING -->
+        <div>
+          <div class="text-[10px] font-black uppercase text-amber-400 tracking-wider px-1 mb-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>TACTICS &amp; FORMATIONS</span>
+          </div>
+          <button type="button" onclick="closeModal('quickToolsDrawer'); openTacticsBoard();" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-amber-500/50 hover:border-amber-400 active:scale-[0.98] transition cursor-pointer text-left shadow-sm">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                  <line x1="12" y1="4" x2="12" y2="20"></line>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <div class="font-black text-white text-xs">Touchline Tactics Board</div>
+                <div class="text-[11px] text-slate-400 truncate">5v5 / 6v6 / 7v7, U9 Retreat Line, arrows &amp; step play</div>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg font-black text-[10px] shrink-0 font-mono-sport">BOARD</span>
           </button>
         </div>
 
@@ -3342,6 +3394,214 @@
 
       <button type="button" onclick="closeModal('matchSyncModal')" class="w-full pt-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer shrink-0">
         Done
+      </button>
+    </div>
+  </div>
+
+  <!-- 13. TOUCHLINE TACTICS BOARD FULL-SCREEN MODAL -->
+  <div id="tacticsBoardModal" class="hidden fixed inset-0 z-[65] bg-[#07090e] flex flex-col justify-between max-w-md mx-auto px-2.5 py-2 gap-1.5 select-none overflow-hidden">
+    <!-- Row 1: Top Header with Live Half-Time / Match Clock Pill & Export -->
+    <div class="flex items-center justify-between gap-1.5 shrink-0 pb-1 border-b border-slate-800/80">
+      <div class="flex items-center gap-2 min-w-0">
+        <img src="icons/confused_ref.png" alt="" class="w-7 h-7 rounded-lg border border-amber-400/50 object-cover shrink-0">
+        <span class="font-mono-sport font-black text-sm text-white truncate">Tactics</span>
+        <div id="tacticsClockPill" class="px-2 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-slate-300 font-mono-sport font-bold text-[10px] flex items-center gap-1 shrink-0">
+          <svg class="w-3 h-3 text-indigo-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 2.5"></path><path d="M9 2h6"></path></svg>
+          <span id="tacticsClockText">1H 00:00</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1 shrink-0">
+        <button type="button" onclick="syncTacticsSquad()" class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-300 transition cursor-pointer active:scale-95" title="Re-sync squad initials, GK &amp; kit colour from live match">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+        </button>
+        <button id="tacticsShareVideoBtn" type="button" onclick="shareTacticsVideo()" class="hidden px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400 text-emerald-300 font-mono-sport font-black text-[10px] transition cursor-pointer active:scale-95" title="Export animated move as video clip">
+          Clip
+        </button>
+        <button type="button" onclick="shareTacticsPng()" class="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/80 text-amber-300 font-mono-sport font-black text-[10px] transition cursor-pointer active:scale-95" title="Share 1600×2000 HD Tactics PNG">
+          Share
+        </button>
+        <button type="button" onclick="closeTacticsBoard()" class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition cursor-pointer active:scale-95" aria-label="Close Tactics Board">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Row 2: 1-Tap Context Bar (Pitch Format, Formation, Retreat, Lanes, Opp, Animate, Playbook) -->
+    <div class="flex items-center gap-1 overflow-x-auto no-scrollbar shrink-0 py-0.5">
+      <select id="tacticsPitchSelect" onchange="onTacticsPitchSelectChange(this.value)" aria-label="Pitch Format" class="px-1.5 py-1 rounded-lg bg-emerald-950/70 border border-emerald-400/70 text-emerald-200 font-mono-sport font-black text-[10px] focus:outline-none cursor-pointer shrink-0">
+        <option value="5v5">5v5 Pitch</option>
+        <option value="6v6">6v6 Pitch</option>
+        <option value="7v7">7v7 Pitch</option>
+        <option value="half">Half Pitch</option>
+        <option value="blank">Blank Grass</option>
+      </select>
+
+      <select id="tacticsFormationSelect" onchange="onTacticsFormationSelectChange(this.value)" aria-label="Formation Preset" class="px-1.5 py-1 rounded-lg bg-amber-950/60 border border-amber-400/70 text-amber-200 font-mono-sport font-black text-[10px] focus:outline-none cursor-pointer shrink-0">
+        <option value="1-2-1">1-2-1</option>
+      </select>
+
+      <button id="tacticsRetreatBtn" type="button" onclick="toggleTacticsRetreatLine()" class="px-2 py-1 rounded-lg text-[10px] font-black border bg-amber-500/20 border-amber-400 text-amber-300 transition cursor-pointer shrink-0">
+        Retreat: ON
+      </button>
+
+      <button id="tacticsLanesBtn" type="button" onclick="cycleTacticsLanes()" class="px-2 py-1 rounded-lg text-[10px] font-bold border bg-slate-900 border-slate-700 text-slate-400 hover:text-white transition cursor-pointer shrink-0">
+        Lanes: Off
+      </button>
+
+      <button id="tacticsOppBtn" type="button" onclick="cycleTacticsOpposition()" class="px-2 py-1 rounded-lg text-[10px] font-black border bg-blue-500/20 border-blue-400 text-blue-200 transition cursor-pointer shrink-0">
+        Opp: 5
+      </button>
+
+      <button id="tacticsAnimToggleBtn" type="button" onclick="toggleTacticsAnimator()" class="px-2 py-1 rounded-lg text-[10px] font-bold border bg-slate-900 border-slate-700 text-slate-300 hover:text-white transition cursor-pointer shrink-0">
+        Animate
+      </button>
+
+      <button type="button" onclick="openTacticsPlaybook()" class="px-2 py-1 rounded-lg text-[10px] font-black border bg-purple-500/20 border-purple-400/70 text-purple-200 hover:text-white transition cursor-pointer shrink-0">
+        Drills &amp; Gear
+      </button>
+    </div>
+
+    <!-- Row 3: 2x Retina Interactive Tactical Pitch -->
+    <div class="flex-1 min-h-0 w-full relative rounded-2xl overflow-hidden border-2 border-[#1e3a2f] shadow-inner bg-[#0a3f23]">
+      <canvas id="tacticsPitchCanvas" class="w-full h-full block touch-none"></canvas>
+    </div>
+
+    <!-- Row 4: Live Read-Only Bench Strip + Quick Clear / Reset -->
+    <div class="shrink-0 bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-1.5 min-w-0 flex-1 overflow-x-auto no-scrollbar">
+        <span id="tacticsBenchHint" class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide shrink-0">Bench:</span>
+        <div id="tacticsBenchTokens" class="flex items-center gap-1.5 shrink-0"></div>
+      </div>
+      <div class="flex items-center gap-1 shrink-0">
+        <button type="button" onclick="clearTacticsLines()" class="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-bold text-[10px] transition cursor-pointer" title="Erase drawn arrows &amp; zones while keeping player positions">
+          Clear Chalk
+        </button>
+        <button type="button" onclick="resetTacticsPitch()" class="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-rose-950 border border-slate-800 text-slate-400 hover:text-rose-300 font-bold text-[10px] transition cursor-pointer" title="Reset pitch back to clean formation">
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Row 5: Collapsible 1-Row Keyframe Step Animator (Hidden by default for max pitch space) -->
+    <div id="tacticsAnimatorBar" class="hidden shrink-0 bg-slate-950 border border-emerald-500/40 rounded-xl px-2 py-1.5 flex items-center justify-between gap-1.5 animate-fadeIn">
+      <div id="tacticsStepPills" class="flex items-center gap-1 overflow-x-auto no-scrollbar min-w-0"></div>
+      <div class="flex items-center gap-1 shrink-0">
+        <button id="tacticsSpeedBtn" type="button" onclick="toggleTacticsAnimSpeed()" class="px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-mono-sport font-black text-[10px] cursor-pointer" title="Toggle playback speed (1x / 0.5x teaching speed)">
+          1×
+        </button>
+        <button id="tacticsPlayMoveBtn" type="button" onclick="togglePlayTacticsMove()" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono-sport font-black text-[11px] flex items-center gap-1 cursor-pointer shadow shrink-0">
+          <span>▶ PLAY</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Row 6: 6-Button Thumb-Friendly Tool Dock -->
+    <div class="grid grid-cols-6 gap-1.5 shrink-0">
+      <button id="tacticsTool_move" type="button" onclick="setTacticsTool('move')" class="tactics-dock-btn py-1.5 px-1 rounded-xl bg-emerald-500/20 border-2 border-emerald-400 text-emerald-300 flex flex-col items-center justify-center gap-0.5 font-black text-[10px] transition cursor-pointer shadow-sm">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3"></path><path d="M9 5l3-3 3 3"></path><path d="M15 19l-3 3-3-3"></path><path d="M19 9l3 3-3 3"></path><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>
+        <span>Move</span>
+      </button>
+
+      <button id="tacticsTool_pass" type="button" onclick="setTacticsTool('pass')" class="tactics-dock-btn py-1.5 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 flex flex-col items-center justify-center gap-0.5 font-bold text-[10px] transition cursor-pointer">
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="19" y2="5"></line><polyline points="10 5 19 5 19 14"></polyline></svg>
+        <span>Pass</span>
+      </button>
+
+      <button id="tacticsTool_run" type="button" onclick="setTacticsTool('run')" class="tactics-dock-btn py-1.5 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 flex flex-col items-center justify-center gap-0.5 font-bold text-[10px] transition cursor-pointer">
+        <svg class="w-4 h-4 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="19" y2="5" stroke-dasharray="4 3"></line><polyline points="10 5 19 5 19 14"></polyline></svg>
+        <span>Run</span>
+      </button>
+
+      <button id="tacticsTool_dribble" type="button" onclick="setTacticsTool('dribble')" class="tactics-dock-btn py-1.5 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 flex flex-col items-center justify-center gap-0.5 font-bold text-[10px] transition cursor-pointer">
+        <svg class="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3-4 6 4 9 0s6 4 9-2"></path><polyline points="17 11 21 15 16 18"></polyline></svg>
+        <span>Dribble</span>
+      </button>
+
+      <button id="tacticsTool_zone" type="button" onclick="setTacticsTool('zone')" class="tactics-dock-btn py-1.5 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 flex flex-col items-center justify-center gap-0.5 font-bold text-[10px] transition cursor-pointer">
+        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="rgba(251,191,36,0.2)" stroke="currentColor" stroke-width="2.2" stroke-dasharray="4 3"><ellipse cx="12" cy="12" rx="9" ry="6"></ellipse></svg>
+        <span>Zone</span>
+      </button>
+
+      <button id="tacticsToolUndoBtn" type="button" onclick="undoTacticsAction()" class="tactics-dock-btn py-1.5 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 flex flex-col items-center justify-center gap-0.5 font-bold text-[10px] transition cursor-pointer active:scale-95 opacity-40">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"></path></svg>
+        <span>Undo</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 14. TACTICS PLAYBOOK, BUILT-IN DRILLS & TRAINING GEAR SHEET -->
+  <div id="tacticsPlaybookModal" class="hidden fixed inset-0 z-[75] bg-black/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-2 border-purple-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[88vh] flex flex-col shadow-2xl animate-fade-in">
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">
+        <div>
+          <h3 class="font-extrabold text-base text-white">Playbook &amp; Training Gear</h3>
+          <p class="text-[11px] text-slate-400">Drop props on grass, load drills, or save boards offline</p>
+        </div>
+        <button type="button" onclick="closeTacticsPlaybook()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="my-3 space-y-3.5 overflow-y-auto flex-1 pr-0.5 text-xs">
+        <!-- 1. Training Gear Props -->
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">1. Training Gear (Tap to Drop)</span>
+            <button type="button" onclick="clearTacticsGear()" class="text-[10px] font-bold text-slate-400 hover:text-rose-300 cursor-pointer">Clear Gear</button>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button type="button" onclick="addTacticsGear('cone-amber')" class="py-2 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex flex-col items-center gap-1 cursor-pointer transition active:scale-95">
+              <span class="w-3.5 h-3.5 rounded-sm bg-amber-400 rotate-45 inline-block"></span>
+              <span class="text-[10px] font-bold text-slate-200">Cone (Y)</span>
+            </button>
+            <button type="button" onclick="addTacticsGear('cone-sky')" class="py-2 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex flex-col items-center gap-1 cursor-pointer transition active:scale-95">
+              <span class="w-3.5 h-3.5 rounded-sm bg-sky-400 rotate-45 inline-block"></span>
+              <span class="text-[10px] font-bold text-slate-200">Cone (B)</span>
+            </button>
+            <button type="button" onclick="addTacticsGear('cone-rose')" class="py-2 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex flex-col items-center gap-1 cursor-pointer transition active:scale-95">
+              <span class="w-3.5 h-3.5 rounded-sm bg-rose-400 rotate-45 inline-block"></span>
+              <span class="text-[10px] font-bold text-slate-200">Cone (R)</span>
+            </button>
+            <button type="button" onclick="addTacticsGear('cone-lime')" class="py-2 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex flex-col items-center gap-1 cursor-pointer transition active:scale-95">
+              <span class="w-3.5 h-3.5 rounded-sm bg-lime-400 rotate-45 inline-block"></span>
+              <span class="text-[10px] font-bold text-slate-200">Cone (G)</span>
+            </button>
+          </div>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button type="button" onclick="addTacticsGear('ball-extra')" class="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 font-bold text-[10.5px] text-slate-200 cursor-pointer transition active:scale-95">
+              + Extra Ball
+            </button>
+            <button type="button" onclick="addTacticsGear('mini-goal')" class="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 font-bold text-[10.5px] text-slate-200 cursor-pointer transition active:scale-95">
+              + Mini Goal
+            </button>
+            <button type="button" onclick="addTacticsGear('pole')" class="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 font-bold text-[10.5px] text-slate-200 cursor-pointer transition active:scale-95">
+              + Pole
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Save & Load Custom Playbook -->
+        <div class="p-3 rounded-xl bg-slate-950 border border-emerald-500/30 space-y-2">
+          <div class="text-[10px] font-black uppercase tracking-wider text-emerald-400">2. My Saved Playbook (Offline)</div>
+          <div class="flex items-center gap-1.5">
+            <input id="tacticsSaveNameInput" type="text" maxlength="32" placeholder="Name this play or drill..." class="flex-1 bg-slate-900 border border-slate-700 focus:border-emerald-400 rounded-xl px-2.5 py-1.5 text-white text-base sm:text-xs focus:outline-none">
+            <button type="button" onclick="saveCurrentTacticsToPlaybook()" class="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs cursor-pointer transition active:scale-95 shrink-0 shadow">
+              Save
+            </button>
+          </div>
+          <div id="tacticsSavedBoardsList" class="space-y-1.5"></div>
+        </div>
+
+        <!-- 3. Built-In Grassroots Plays & Drills -->
+        <div class="space-y-1.5">
+          <div class="text-[10px] font-black uppercase tracking-wider text-purple-300 px-1">3. Starter Plays &amp; Drills (Animated)</div>
+          <div id="tacticsBuiltinTemplatesList" class="space-y-1.5"></div>
+        </div>
+      </div>
+
+      <button type="button" onclick="closeTacticsPlaybook()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs transition cursor-pointer shrink-0">
+        Back to Pitch
       </button>
     </div>
   </div>
