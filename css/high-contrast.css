@@ -216,6 +216,22 @@ body.sunlight-mode #tacticsBoardModal .tactics-dock-btn[class*="border-emerald"]
   color: #000000 !important;
   stroke: #000000 !important;
 }
+body.sunlight-mode #tacticsCoachingCueBar {
+  background-color: #000000 !important;
+  border: 2px solid #FFE600 !important;
+}
+body.sunlight-mode #tacticsCoachingCueText {
+  color: #FFE600 !important;
+}
+body.sunlight-mode .playbook-tab-btn[class*="bg-amber"],
+body.sunlight-mode .playbook-tab-btn[class*="bg-emerald"] {
+  background-color: #FFE600 !important;
+  color: #000000 !important;
+  border: 2px solid #ffffff !important;
+}
+body.sunlight-mode .playbook-diff-chip {
+  border-width: 1.5px !important;
+}
 body.sunlight-mode #coachTouchlinePotmPrompt {
   background: #000000 !important;
   border: 2.5px solid #FFE600 !important;
