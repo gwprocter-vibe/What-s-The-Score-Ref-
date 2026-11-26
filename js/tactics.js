@@ -9,6 +9,8 @@ import { hapticFeedback } from './hardware.js';
 
 const WORKING_STORAGE_KEY = 'whatsthescoreref_tactics_working_v1';
 const PLAYBOOK_STORAGE_KEY = 'whatsthescoreref_tactics_playbook_v1';
+const STARRED_STORAGE_KEY = 'whatsthescoreref_tactics_starred_v1';
+const PITCH_PAD = 17;
 const MAX_SAVED_BOARDS = 24;
 const MAX_STEPS = 8;
 const MAX_UNDO = 30;
@@ -204,13 +206,13 @@ function getDefaultOppCoords(count, oppBehindRetreat = false, pitchMode = '5v5')
   if (count >= 7) {
     const seven = [
       { x: 50, y: 9, label: 'GK', isGk: true },
-      { x: 28, y: 23, label: '2' },
-      { x: 72, y: 23, label: '3' },
-      { x: 20, y: 40, label: '4' },
-      { x: 50, y: 38, label: '5' },
-      { x: 80, y: 40, label: '6' },
-      { x: 50, y: 55, label: '7' },
-      { x: 35, y: 55, label: '8' }
+      { x: 28, y: 22, label: '2' },
+      { x: 72, y: 22, label: '3' },
+      { x: 22, y: 41, label: '4' },
+      { x: 50, y: 25, label: '5' },
+      { x: 78, y: 41, label: '6' },
+      { x: 40, y: 47, label: '7' },
+      { x: 60, y: 47, label: '8' }
     ];
     return seven.slice(0, count);
   }
@@ -245,6 +247,8 @@ let board = {
   retreatLine: true,
   lanesMode: 'off', // 'off' | 'lanes' | 'thirds'
   oppMode: 'even',  // 'off' | 'even' | 'powerplay'
+  customTeamCount: 0,
+  hideGkBadge: false,
   customOppCount: 0,
   customOppRoster: null,
   activeCue: null, // { title, difficulty, category, standard, cue }
@@ -266,14 +270,18 @@ let board = {
 };
 
 let undoStack = [];
-let selectedBenchNumber = null; // Allows 2-tap bench-to-pitch swap in addition to drag-and-drop!
-let activePointer = null;       // Pointer drag / stroke state
+let selectedBenchNumber = null;    // 2-tap bench-to-pitch swap
+let selectedPitchTokenId = null;   // 2-tap starter-to-starter / GK role swap on pitch!
+let activePointer = null;          // Pointer drag / stroke state
 let benchDragGhost = null;
 let benchDragState = null;
 
 let animRafId = null;
 let isAnimating = false;
-let animRenderOverride = null; // Interpolated positions during playback
+let isAnimPaused = false;
+let animPausedElapsedMs = 0;
+let animRenderOverride = null;     // Interpolated positions during playback
+let isHuddleMode = false;          // Full-screen Huddle Presentation Mode
 let clockPollInterval = null;
 let canvasResizeObserver = null;
 let initialized = false;
@@ -301,6 +309,8 @@ function pushUndoSnapshot() {
     retreatLine: board.retreatLine,
     lanesMode: board.lanesMode,
     oppMode: board.oppMode,
+    customTeamCount: board.customTeamCount || 0,
+    hideGkBadge: Boolean(board.hideGkBadge),
     customOppCount: board.customOppCount,
     customOppRoster: board.customOppRoster ? cloneDeep(board.customOppRoster) : null,
     activeCue: board.activeCue ? cloneDeep(board.activeCue) : null,
@@ -323,6 +333,8 @@ function saveWorkingBoard() {
       retreatLine: board.retreatLine,
       lanesMode: board.lanesMode,
       oppMode: board.oppMode,
+      customTeamCount: board.customTeamCount || 0,
+      hideGkBadge: Boolean(board.hideGkBadge),
       customOppCount: board.customOppCount,
       customOppRoster: board.customOppRoster,
       activeCue: board.activeCue,
@@ -371,6 +383,9 @@ function resolveTeamColors() {
 }
 
 function getTeamSizeForMode(mode = board.pitchMode) {
+  if (mode === board.pitchMode && board.customTeamCount > 0) {
+    return board.customTeamCount;
+  }
   return PITCH_MODES[mode]?.teamSize || 5;
 }
 
@@ -559,8 +574,11 @@ export function applyFormationToBoard(formationId, options = { recordUndo: true 
   const list = FORMATIONS[board.pitchMode] || FORMATIONS['5v5'];
   const chosen = list.find(f => f.id === formationId) || list[0];
   board.formationId = chosen.id;
+  board.customTeamCount = 0;
+  board.hideGkBadge = false;
   board.customOppCount = 0;
   board.customOppRoster = null;
+  selectedPitchTokenId = null;
   board.activeCue = null;
   board.lanesMode = 'off';
   board.isAnimatorOpen = false;
@@ -841,9 +859,18 @@ export function selectTacticsStep(idx) {
   stopTacticsAnimation();
   if (idx < 0 || idx >= board.steps.length) return;
   board.activeStepIdx = idx;
+  selectedPitchTokenId = null;
   hapticFeedback('tap');
   saveWorkingBoard();
   renderAllUI();
+}
+
+export function nudgeTacticsStep(delta) {
+  if (board.steps.length <= 1) return;
+  const next = clamp(board.activeStepIdx + delta, 0, board.steps.length - 1);
+  if (next !== board.activeStepIdx) {
+    selectTacticsStep(next);
+  }
 }
 
 export function addTacticsStep() {
@@ -859,14 +886,70 @@ export function addTacticsStep() {
     oppPos: cloneDeep(source.oppPos),
     ball: cloneDeep(source.ball),
     gear: cloneDeep(source.gear),
-    drawings: [] // Fresh chalk for the next phase!
+    drawings: []
   };
+
+  // Smart + Step Auto-Advance: advance players along Run/Dribble arrows & advance ball along Pass arrows!
+  let autoApplied = 0;
+  const srcDrawings = source.drawings || [];
+  srcDrawings.forEach(d => {
+    if ((d.type === 'run' || d.type === 'dribble') && Array.isArray(d.pts) && d.pts.length >= 2) {
+      const start = d.pts[0];
+      const tip = d.pts[d.pts.length - 1];
+      let best = null;
+      let bestDist = 9.5;
+      Object.entries(source.teamPos || {}).forEach(([id, pos]) => {
+        const dist = Math.hypot(pos.x - start.x, pos.y - start.y);
+        if (dist < bestDist) { bestDist = dist; best = { grp: 'teamPos', id }; }
+      });
+      Object.entries(source.oppPos || {}).forEach(([id, pos]) => {
+        const dist = Math.hypot(pos.x - start.x, pos.y - start.y);
+        if (dist < bestDist) { bestDist = dist; best = { grp: 'oppPos', id }; }
+      });
+      if (best && Math.hypot(tip.x - start.x, tip.y - start.y) >= 4) {
+        cloned[best.grp][best.id] = { x: clamp(tip.x, 3, 97), y: clamp(tip.y, 2, 97) };
+        if (d.type === 'dribble' && cloned.ball?.attachedTo === best.id) {
+          cloned.ball.x = cloned[best.grp][best.id].x;
+          cloned.ball.y = cloned[best.grp][best.id].y;
+        }
+        autoApplied++;
+      }
+    }
+  });
+
+  const passArrows = srcDrawings.filter(d => d.type === 'pass' && Array.isArray(d.pts) && d.pts.length >= 2);
+  if (passArrows.length > 0) {
+    const p = bindPassArrowEndpoints({ ...passArrows[passArrows.length - 1] }, source, null);
+    const tip = p.pts[p.pts.length - 1];
+    const inGoalMouth = tip.x >= 36 && tip.x <= 64 && (tip.y <= 7 || tip.y >= 93) && board.pitchMode !== 'blank';
+    if (inGoalMouth) {
+      cloned.ball = { x: clamp(tip.x, 38, 62), y: tip.y <= 7 ? -1.2 : 101.2, attachedTo: null };
+      autoApplied++;
+    } else if (p.toId && getTokenPosInScene(cloned, p.toId)) {
+      const rp = getTokenPosInScene(cloned, p.toId);
+      cloned.ball = { x: rp.x, y: rp.y, attachedTo: p.toId };
+      autoApplied++;
+    } else {
+      let recId = findNearestTokenIdInScene(cloned, tip, 7.8, p.fromId);
+      if (recId && getTokenPosInScene(cloned, recId)) {
+        const rp = getTokenPosInScene(cloned, recId);
+        cloned.ball = { x: rp.x, y: rp.y, attachedTo: recId };
+      } else {
+        cloned.ball = { x: clamp(tip.x, 3, 97), y: clamp(tip.y, -1.5, 98), attachedTo: null };
+      }
+      autoApplied++;
+    }
+  }
+
   board.steps.push(cloned);
   board.activeStepIdx = board.steps.length - 1;
-  board.activeTool = 'move';
+  selectedPitchTokenId = null;
   hapticFeedback('success');
   saveWorkingBoard();
   renderAllUI();
+  if (autoApplied > 0) {
+    score.showMatchToast(`Step ${board.steps.length} auto-advanced from your arrows!`, '✨', 1800);
+  }
 }
 
 export function deleteLastTacticsStep() {
@@ -1255,37 +1338,54 @@ function evaluatePlaybackFrame(playSteps, elapsed, metrics) {
 }
 
 export function togglePlayTacticsMove() {
-  if (isAnimating) {
-    stopTacticsAnimation();
-    return;
-  }
-
   const playSteps = buildPlaybackSteps(board.steps);
   if (playSteps.length < 2) {
     addTacticsStep();
-    score.showMatchToast('Drag players/ball to their Step 2 positions, then tap Play!', '▶️', 2600);
+    score.showMatchToast('Draw arrows or drag players, then tap Play!', '▶️', 2400);
     return;
   }
 
-  isAnimating = true;
-  board.isAnimatorOpen = true;
-  board.activeStepIdx = 0;
-  hapticFeedback('tap');
-  const metrics = computePlaybackTimelineMetrics(playSteps.length, board.animSpeed);
-  const startedAt = performance.now();
+  // If actively playing -> Pause in place so coach can point & teach!
+  if (isAnimating && !isAnimPaused) {
+    if (animRafId) {
+      cancelAnimationFrame(animRafId);
+      animRafId = null;
+    }
+    isAnimPaused = true;
+    hapticFeedback('tap');
+    renderAllUI();
+    requestAnimationFrame(() => { resizeTacticsCanvas(); drawTacticsCanvas(); });
+    return;
+  }
 
-  renderAnimatorBarUI();
+  const metrics = computePlaybackTimelineMetrics(playSteps.length, board.animSpeed);
+  const resumeOffset = (isAnimating && isAnimPaused) ? animPausedElapsedMs : 0;
+
+  isAnimating = true;
+  isAnimPaused = false;
+  board.isAnimatorOpen = true;
+  if (resumeOffset === 0) board.activeStepIdx = 0;
+  selectedPitchTokenId = null;
+  hapticFeedback('tap');
+
+  const startedAt = performance.now() - resumeOffset;
+  renderAllUI();
+  requestAnimationFrame(() => { resizeTacticsCanvas(); drawTacticsCanvas(); });
 
   const tick = (now) => {
-    if (!isAnimating) return;
+    if (!isAnimating || isAnimPaused) return;
     const elapsed = now - startedAt;
+    animPausedElapsedMs = elapsed;
 
     if (elapsed >= metrics.totalMs) {
       isAnimating = false;
+      isAnimPaused = false;
+      animPausedElapsedMs = 0;
       animRafId = null;
       animRenderOverride = null;
       board.activeStepIdx = board.steps.length - 1;
       renderAllUI();
+      requestAnimationFrame(() => { resizeTacticsCanvas(); drawTacticsCanvas(); });
       return;
     }
 
@@ -1306,11 +1406,37 @@ export function stopTacticsAnimation() {
     cancelAnimationFrame(animRafId);
     animRafId = null;
   }
-  if (isAnimating) {
+  if (isAnimating || isAnimPaused) {
     isAnimating = false;
+    isAnimPaused = false;
+    animPausedElapsedMs = 0;
     animRenderOverride = null;
     renderAllUI();
+    requestAnimationFrame(() => { resizeTacticsCanvas(); drawTacticsCanvas(); });
   }
+}
+
+export function toggleTacticsSunlight() {
+  const next = !document.body?.classList.contains('sunlight-mode');
+  if (typeof window.toggleSunlightMode === 'function') {
+    window.toggleSunlightMode(next);
+  } else {
+    document.documentElement?.classList.toggle('sunlight-mode', next);
+    document.body?.classList.toggle('sunlight-mode', next);
+  }
+  hapticFeedback('tap');
+  renderAllUI();
+}
+
+export function toggleTacticsHuddleMode() {
+  isHuddleMode = !isHuddleMode;
+  hapticFeedback('tap');
+  renderAllUI();
+  requestAnimationFrame(() => {
+    resizeTacticsCanvas();
+    drawTacticsCanvas();
+  });
+  score.showMatchToast(isHuddleMode ? 'Huddle Mode — Full Pitch View' : 'Exited Huddle Mode', '⛶', 1400);
 }
 
 let lastMatchPitchMode = '5v5';
@@ -1349,23 +1475,21 @@ function resetPitchForPlaybookCategory(category) {
   });
 }
 
-// 1-Tap Top-Bar Quick Switch between Match Plays and Training Drills!
-// First tap switches the pitch mode & context cleanly; tapping the already-active pill opens its Playbook library!
+// 1-Tap Top-Bar Quick Switch between Match Plays and Training Drills (pure mode toggle — no surprise modal pop!)
 export function setTacticsBoardMode(mode) {
   if (mode !== 'match' && mode !== 'training') return;
   stopTacticsAnimation();
-  if (playbookTab === mode) {
-    openTacticsPlaybook(mode);
-    return;
-  }
+  if (playbookTab === mode) return;
   playbookTab = mode;
   playbookTabManuallyChosen = true;
+  board.customTeamCount = 0;
+  board.hideGkBadge = false;
   resetPitchForPlaybookCategory(mode);
   hapticFeedback('tap');
   score.showMatchToast(
     mode === 'training' ? 'Drills Mode — Blank Grass & Training Props' : `Plays Mode — ${PITCH_MODES[board.pitchMode]?.label || '5v5'} Match Pitch`,
     mode === 'training' ? '△' : '⚽',
-    1600
+    1500
   );
 }
 
@@ -1412,8 +1536,29 @@ export function setTacticsPlaybookTab(tab) {
   renderPlaybookModalUI();
 }
 
+function loadStarredPlaybookIds() {
+  try {
+    const raw = localStorage.getItem(STARRED_STORAGE_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+export function toggleStarPlaybookItem(itemId, ev) {
+  if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+  const list = loadStarredPlaybookIds();
+  const idx = list.indexOf(itemId);
+  if (idx >= 0) list.splice(idx, 1);
+  else list.push(itemId);
+  try { localStorage.setItem(STARRED_STORAGE_KEY, JSON.stringify(list)); } catch (_) {}
+  hapticFeedback('selection');
+  renderPlaybookModalUI();
+}
+
 export function setTacticsDifficultyFilter(diff) {
-  if (!['all', 'easy', 'medium', 'advanced'].includes(diff)) return;
+  if (!['all', 'starred', 'easy', 'medium', 'advanced'].includes(diff)) return;
   playbookDifficulty = diff;
   hapticFeedback('tap');
   renderPlaybookModalUI();
@@ -1445,17 +1590,44 @@ export function addTacticsGear(kind) {
   const step = board.steps[board.activeStepIdx];
   if (!step) return;
   pushUndoSnapshot();
-  const count = (step.gear || []).length;
-  // Stagger slightly near pitch centre so multiple cones don't stack invisibly
-  const offsetX = ((count % 4) - 1.5) * 7;
-  const offsetY = (Math.floor(count / 4) % 3 - 1) * 7;
+
+  // Scan candidate open-grass pockets so props NEVER spawn hidden underneath a player token!
+  const occupied = [
+    ...Object.values(step.teamPos || {}),
+    ...Object.values(step.oppPos || {}),
+    ...(step.gear || [])
+  ];
+  const candidates = [
+    { x: 34, y: 38 }, { x: 66, y: 38 }, { x: 34, y: 62 }, { x: 66, y: 62 },
+    { x: 50, y: 34 }, { x: 50, y: 66 }, { x: 24, y: 50 }, { x: 76, y: 50 },
+    { x: 24, y: 28 }, { x: 76, y: 28 }, { x: 24, y: 72 }, { x: 76, y: 72 },
+    { x: 50, y: 50 }
+  ];
+  let chosenPt = candidates[0];
+  let bestMinClearance = -1;
+  for (const cand of candidates) {
+    let minD = 999;
+    for (const occ of occupied) {
+      const d = Math.hypot(cand.x - occ.x, cand.y - occ.y);
+      if (d < minD) minD = d;
+    }
+    if (minD >= 10.5) {
+      chosenPt = cand;
+      bestMinClearance = minD;
+      break;
+    }
+    if (minD > bestMinClearance) {
+      bestMinClearance = minD;
+      chosenPt = cand;
+    }
+  }
+
   const item = {
     id: `g_${Date.now()}_${Math.floor(Math.random() * 999)}`,
     kind,
-    x: clamp(50 + offsetX, 14, 86),
-    y: clamp(50 + offsetY, 14, 86)
+    x: clamp(chosenPt.x, 12, 88),
+    y: clamp(chosenPt.y, 12, 88)
   };
-  // Propagate gear across all steps so cones don't vanish mid-animation
   board.steps.forEach(s => {
     if (!Array.isArray(s.gear)) s.gear = [];
     s.gear.push({ ...item });
@@ -1501,7 +1673,10 @@ export function loadBuiltinTacticsTemplate(templateId) {
   board.retreatLine = Boolean(built.retreatLine);
   board.lanesMode = built.lanesMode || 'off';
   board.oppMode = built.oppMode || 'off';
+  board.customTeamCount = built.customTeamCount || 0;
+  board.hideGkBadge = Boolean(built.hideGkBadge);
   board.customOppCount = built.steps[0]?.customOppCount || 0;
+  selectedPitchTokenId = null;
   board.customOppRoster = built.customOppRoster ? cloneDeep(built.customOppRoster) : null;
   board.activeCue = {
     title: tpl.title,
@@ -1580,6 +1755,8 @@ export function saveCurrentTacticsToPlaybook() {
       retreatLine: board.retreatLine,
       lanesMode: board.lanesMode,
       oppMode: board.oppMode,
+      customTeamCount: board.customTeamCount || 0,
+      hideGkBadge: Boolean(board.hideGkBadge),
       customOppCount: board.customOppCount,
       customOppRoster: board.customOppRoster ? cloneDeep(board.customOppRoster) : null,
       activeCue: board.activeCue ? cloneDeep(board.activeCue) : null,
@@ -1618,7 +1795,10 @@ export function loadSavedPlaybookEntry(entryId) {
   board.retreatLine = Boolean(snap.retreatLine);
   board.lanesMode = snap.lanesMode || 'off';
   board.oppMode = snap.oppMode || 'off';
+  board.customTeamCount = snap.customTeamCount || 0;
+  board.hideGkBadge = Boolean(snap.hideGkBadge);
   board.customOppCount = snap.customOppCount || 0;
+  selectedPitchTokenId = null;
   board.customOppRoster = snap.customOppRoster ? cloneDeep(snap.customOppRoster) : null;
   board.activeCue = snap.activeCue ? cloneDeep(snap.activeCue) : null;
 
@@ -1707,12 +1887,32 @@ function renderTopControlsUI() {
   const quickDrillsBtn = document.getElementById('tacticsQuickDrillsBtn');
   if (quickPlaysBtn && quickDrillsBtn) {
     quickPlaysBtn.className = !isTrainMode
-      ? 'px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 font-mono-sport font-black text-[10px] shadow-sm transition cursor-pointer'
-      : 'px-2 py-0.5 rounded-md text-slate-400 hover:text-white font-mono-sport font-bold text-[10px] transition cursor-pointer';
+      ? 'min-h-[28px] px-2.5 py-1 rounded-lg bg-amber-400 text-slate-950 font-mono-sport font-black text-[10.5px] flex items-center justify-center shadow-sm transition cursor-pointer'
+      : 'min-h-[28px] px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-mono-sport font-bold text-[10.5px] flex items-center justify-center transition cursor-pointer';
     quickDrillsBtn.className = isTrainMode
-      ? 'px-2 py-0.5 rounded-md bg-emerald-400 text-slate-950 font-mono-sport font-black text-[10px] shadow-sm transition cursor-pointer'
-      : 'px-2 py-0.5 rounded-md text-slate-400 hover:text-white font-mono-sport font-bold text-[10px] transition cursor-pointer';
+      ? 'min-h-[28px] px-2.5 py-1 rounded-lg bg-emerald-400 text-slate-950 font-mono-sport font-black text-[10.5px] flex items-center justify-center shadow-sm transition cursor-pointer'
+      : 'min-h-[28px] px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-mono-sport font-bold text-[10.5px] flex items-center justify-center transition cursor-pointer';
   }
+
+  const sunBtn = document.getElementById('tacticsSunlightBtn');
+  if (sunBtn) {
+    const sunActive = Boolean(document.body?.classList.contains('sunlight-mode'));
+    sunBtn.className = sunActive
+      ? 'p-1.5 rounded-lg bg-amber-400 border border-white text-slate-950 transition cursor-pointer active:scale-95 shadow'
+      : 'p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-300 transition cursor-pointer active:scale-95';
+  }
+
+  const autoPlayHuddle = isAnimating && !isAnimPaused && typeof window !== 'undefined' && window.innerHeight < 720;
+  const effectiveHuddle = isHuddleMode || autoPlayHuddle;
+  const huddleBtn = document.getElementById('tacticsHuddleBtn');
+  if (huddleBtn) {
+    huddleBtn.className = effectiveHuddle
+      ? 'p-1.5 rounded-lg bg-emerald-400 border border-white text-slate-950 transition cursor-pointer active:scale-95 shadow'
+      : 'p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-emerald-300 transition cursor-pointer active:scale-95';
+  }
+  document.getElementById('tacticsContextToolbar')?.classList.toggle('hidden', effectiveHuddle);
+  document.getElementById('tacticsBenchStripRow')?.classList.toggle('hidden', effectiveHuddle);
+  document.getElementById('tacticsToolDockRow')?.classList.toggle('hidden', effectiveHuddle);
 
   const hasFormations = ['5v5', '6v6', '7v7'].includes(board.pitchMode);
   const formSel = document.getElementById('tacticsFormationSelect');
@@ -1869,12 +2069,15 @@ function renderAnimatorBarUI() {
   }
 
   if (playBtn) {
-    if (isAnimating) {
-      playBtn.innerHTML = `<span>■ STOP</span>`;
-      playBtn.className = 'px-2.5 py-1 rounded-lg bg-rose-500 hover:bg-rose-400 text-white font-mono-sport font-black text-[11px] flex items-center gap-1 cursor-pointer shadow shrink-0';
+    if (isAnimating && !isAnimPaused) {
+      playBtn.innerHTML = `<span>⏸ PAUSE</span>`;
+      playBtn.className = 'px-2.5 py-1 rounded-lg bg-rose-500 hover:bg-rose-400 text-white font-mono-sport font-black text-[10.5px] flex items-center gap-1 cursor-pointer shadow shrink-0';
+    } else if (isAnimating && isAnimPaused) {
+      playBtn.innerHTML = `<span>▶ RESUME</span>`;
+      playBtn.className = 'px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono-sport font-black text-[10.5px] flex items-center gap-1 cursor-pointer shadow shrink-0';
     } else {
       playBtn.innerHTML = `<span>▶ PLAY</span>`;
-      playBtn.className = 'px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono-sport font-black text-[11px] flex items-center gap-1 cursor-pointer shadow shrink-0';
+      playBtn.className = 'px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono-sport font-black text-[10.5px] flex items-center gap-1 cursor-pointer shadow shrink-0';
     }
   }
 }
@@ -1889,6 +2092,19 @@ function renderToolDockUI() {
       ? 'tactics-dock-btn py-1.5 px-1 rounded-xl bg-emerald-500/20 border-2 border-emerald-400 text-emerald-300 flex flex-col items-center justify-center gap-0.5 font-black text-[10px] transition cursor-pointer shadow-sm'
       : 'tactics-dock-btn py-1.5 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 flex flex-col items-center justify-center gap-0.5 font-bold text-[10px] transition cursor-pointer active:scale-95';
   });
+
+  // Floating Active Drawing Banner so coaches never scribble accidentally when trying to move a player!
+  const banner = document.getElementById('tacticsActiveToolBanner');
+  const bannerTxt = document.getElementById('tacticsActiveToolBannerText');
+  if (banner && bannerTxt) {
+    const isDrawingTool = board.activeTool !== 'move' && !isAnimating;
+    banner.classList.toggle('hidden', !isDrawingTool);
+    banner.classList.toggle('flex', isDrawingTool);
+    if (isDrawingTool) {
+      const names = { pass: 'DRAWING PASS / SHOT', run: 'DRAWING RUN', dribble: 'DRAWING DRIBBLE', zone: 'DRAWING ZONE' };
+      bannerTxt.innerText = names[board.activeTool] || 'DRAWING';
+    }
+  }
   updateUndoButtonUI();
 }
 
@@ -1989,36 +2205,43 @@ function renderPlaybookModalUI() {
     ? allTabTemplates.filter(t => t.squadFormat === playbookFormatFilter)
     : allTabTemplates;
 
-  // Render Difficulty Filter Pills with Counts (scoped to active Squad Size!)
+  const starredIds = loadStarredPlaybookIds();
+
+  // Render Difficulty + ★ Starred Filter Pills with Counts
   const diffBar = document.getElementById('tacticsDifficultyFilterBar');
   if (diffBar) {
     const counts = {
       all: formatFilteredTemplates.length,
+      starred: formatFilteredTemplates.filter(t => starredIds.includes(t.id)).length,
       easy: formatFilteredTemplates.filter(t => t.difficulty === 'easy').length,
       medium: formatFilteredTemplates.filter(t => t.difficulty === 'medium').length,
       advanced: formatFilteredTemplates.filter(t => t.difficulty === 'advanced').length
     };
     const pills = [
       { id: 'all', label: `All (${counts.all})`, activeCls: 'bg-slate-200 text-slate-950 border-white font-black' },
+      { id: 'starred', label: `★ (${counts.starred})`, activeCls: 'bg-amber-300 text-slate-950 border-white font-black' },
       { id: 'easy', label: `Easy (${counts.easy})`, activeCls: 'bg-emerald-500 text-slate-950 border-emerald-300 font-black' },
-      { id: 'medium', label: `Medium (${counts.medium})`, activeCls: 'bg-amber-400 text-slate-950 border-yellow-200 font-black' },
+      { id: 'medium', label: `Med (${counts.medium})`, activeCls: 'bg-amber-400 text-slate-950 border-yellow-200 font-black' },
       { id: 'advanced', label: `Adv (${counts.advanced})`, activeCls: 'bg-rose-500 text-white border-rose-300 font-black' }
     ];
     diffBar.innerHTML = pills.map(p => {
       const isAct = playbookDifficulty === p.id;
       const cls = isAct
-        ? `playbook-diff-chip flex-1 py-1.5 px-1.5 rounded-lg border text-[10.5px] shadow-sm transition cursor-pointer text-center whitespace-nowrap ${p.activeCls}`
-        : 'playbook-diff-chip flex-1 py-1.5 px-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-[10.5px] transition cursor-pointer text-center whitespace-nowrap';
+        ? `playbook-diff-chip flex-1 py-1.5 px-1 rounded-lg border text-[10px] shadow-sm transition cursor-pointer text-center whitespace-nowrap ${p.activeCls}`
+        : 'playbook-diff-chip flex-1 py-1.5 px-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-[10px] transition cursor-pointer text-center whitespace-nowrap';
       return `<button type="button" onclick="setTacticsDifficultyFilter('${p.id}')" class="${cls}">${p.label}</button>`;
     }).join('');
   }
 
-  // Render Filtered Built-In Plays / Drills
+  // Render Filtered Built-In Plays / Drills with Live Mini-Pitch SVG Thumbnails & Full 2-Line Titles!
   const tplList = document.getElementById('tacticsBuiltinTemplatesList');
   if (tplList) {
-    const visibleTemplates = playbookDifficulty === 'all'
-      ? formatFilteredTemplates
-      : formatFilteredTemplates.filter(t => t.difficulty === playbookDifficulty);
+    let visibleTemplates = formatFilteredTemplates;
+    if (playbookDifficulty === 'starred') {
+      visibleTemplates = formatFilteredTemplates.filter(t => starredIds.includes(t.id));
+    } else if (playbookDifficulty !== 'all') {
+      visibleTemplates = formatFilteredTemplates.filter(t => t.difficulty === playbookDifficulty);
+    }
 
     const diffBadgeMap = {
       easy: { label: 'EASY', cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' },
@@ -2026,25 +2249,35 @@ function renderPlaybookModalUI() {
       advanced: { label: 'ADVANCED', cls: 'bg-rose-500/20 text-rose-300 border-rose-500/40' }
     };
 
-    tplList.innerHTML = visibleTemplates.map(t => {
-      const db = diffBadgeMap[t.difficulty] || diffBadgeMap.easy;
-      return `
-        <button type="button" onclick="loadBuiltinTacticsTemplate('${t.id}')" class="w-full p-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-amber-400/60 text-left flex flex-col gap-1.5 transition active:scale-[0.99] cursor-pointer shadow-sm">
-          <div class="w-full flex items-center justify-between gap-1.5">
-            <div class="flex items-center gap-1.5 min-w-0">
-              <span class="px-1.5 py-0.5 rounded border font-mono-sport font-black text-[9px] shrink-0 ${db.cls}">${db.label}</span>
-              <span class="font-extrabold text-xs text-white truncate">${score.escapeHtml(t.title)}</span>
+    if (visibleTemplates.length === 0) {
+      tplList.innerHTML = '<div class="text-center py-4 text-[11px] text-slate-400 italic">No starred items yet — tap ★ on any play or drill to build tonight’s session plan!</div>';
+    } else {
+      tplList.innerHTML = visibleTemplates.map(t => {
+        const db = diffBadgeMap[t.difficulty] || diffBadgeMap.easy;
+        const isStar = starredIds.includes(t.id);
+        const thumbSvg = buildMiniPitchThumbnailSvg(t);
+        return `
+          <div onclick="loadBuiltinTacticsTemplate('${t.id}')" role="button" tabindex="0" class="playbook-card-item w-full p-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-amber-400/60 text-left flex items-start gap-2.5 transition active:scale-[0.99] cursor-pointer shadow-sm">
+            <div class="shrink-0 rounded-lg overflow-hidden border border-emerald-500/30 shadow-inner">${thumbSvg}</div>
+            <div class="flex-1 min-w-0 flex flex-col gap-1">
+              <div class="w-full flex items-start justify-between gap-1.5">
+                <span class="font-extrabold text-xs text-white leading-snug">${score.escapeHtml(t.title)}</span>
+                <span onclick="toggleStarPlaybookItem('${t.id}', event)" title="Star for Tonight's Session" class="px-1.5 py-0.5 rounded-md border text-[11px] leading-none shrink-0 select-none ${isStar ? 'bg-amber-400/20 border-amber-400 text-amber-300' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-amber-300'}">${isStar ? '★' : '☆'}</span>
+              </div>
+              <div class="flex items-center flex-wrap gap-1">
+                <span class="px-1.5 py-0.5 rounded border font-mono-sport font-black text-[8.5px] ${db.cls}">${db.label}</span>
+                <span class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700 font-mono-sport font-bold text-[8.5px]">${score.escapeHtml(t.tag)}</span>
+                <span class="text-slate-500 font-mono-sport font-bold text-[8.5px] uppercase">${score.escapeHtml(t.standard || '')}</span>
+              </div>
+              <p class="text-[10.5px] text-slate-300 leading-snug">${score.escapeHtml(t.desc)}</p>
+              <div class="pt-1 border-t border-slate-800/80 text-[10px] text-amber-300/95 font-semibold leading-snug">
+                Cue: “${score.escapeHtml(t.cue || '')}”
+              </div>
             </div>
-            <span class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700 font-mono-sport font-bold text-[9px] shrink-0">${score.escapeHtml(t.tag)}</span>
           </div>
-          <p class="text-[10.5px] text-slate-300 leading-snug">${score.escapeHtml(t.desc)}</p>
-          <div class="flex items-start justify-between gap-2 pt-1 border-t border-slate-800/80 text-[10px]">
-            <span class="text-amber-300/95 font-semibold leading-snug">Cue: “${score.escapeHtml(t.cue || '')}”</span>
-            <span class="text-slate-500 font-mono-sport font-bold text-[9px] uppercase shrink-0 pt-0.5">${score.escapeHtml(t.standard || '')}</span>
-          </div>
-        </button>
-      `;
-    }).join('');
+        `;
+      }).join('');
+    }
   }
 
   // Render Category-Separated Saved Boards
@@ -2071,6 +2304,54 @@ function renderPlaybookModalUI() {
         </div>
       `).join('');
     }
+  }
+}
+
+function buildMiniPitchThumbnailSvg(tpl) {
+  try {
+    const built = tpl.build();
+    const s0 = built.steps?.[0] || {};
+    const ownCol = board.teamMeta?.color || '#eab308';
+    const oppCol = board.teamMeta?.oppColor || '#2563eb';
+    const pm = built.pitchMode;
+    let lines = '<rect x="3" y="4" width="46" height="60" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>';
+    if (pm !== 'blank') {
+      lines += '<rect x="20" y="1" width="12" height="3" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.7)" stroke-width="0.8"/>';
+      lines += '<rect x="14" y="4" width="24" height="11" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="0.8"/>';
+      if (pm !== 'half') {
+        lines += '<line x1="3" y1="34" x2="49" y2="34" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>';
+        lines += '<circle cx="26" cy="34" r="5.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>';
+        lines += '<rect x="14" y="53" width="24" height="11" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="0.8"/>';
+      }
+    }
+    const mx = x => (3 + (x / 100) * 46).toFixed(1);
+    const my = y => (4 + (y / 100) * 60).toFixed(1);
+    let gearSvg = '';
+    (s0.gear || []).forEach(g => {
+      if (g.kind === 'mini-goal') {
+        gearSvg += `<rect x="${(mx(g.x) - 4).toFixed(1)}" y="${(my(g.y) - 1.6).toFixed(1)}" width="8" height="3.2" fill="rgba(255,255,255,0.25)" stroke="#fff" stroke-width="0.8"/>`;
+      } else {
+        gearSvg += `<circle cx="${mx(g.x)}" cy="${my(g.y)}" r="1.4" fill="#fbbf24"/>`;
+      }
+    });
+    let strokesSvg = '';
+    (s0.drawings || []).forEach(d => {
+      if (!Array.isArray(d.pts) || d.pts.length < 2) return;
+      const a = d.pts[0], b = d.pts[d.pts.length - 1];
+      const col = d.type === 'pass' ? '#ffffff' : (d.type === 'dribble' ? '#c084fc' : '#38bdf8');
+      const dash = d.type === 'run' ? ' stroke-dasharray="2,1.5"' : '';
+      strokesSvg += `<line x1="${mx(a.x)}" y1="${my(a.y)}" x2="${mx(b.x)}" y2="${my(b.y)}" stroke="${col}" stroke-width="1.2"${dash}/>`;
+    });
+    let dotsSvg = '';
+    Object.values(s0.oppPos || {}).forEach(pt => {
+      dotsSvg += `<circle cx="${mx(pt.x)}" cy="${my(pt.y)}" r="2.1" fill="${oppCol}" stroke="#fff" stroke-width="0.5"/>`;
+    });
+    Object.values(s0.teamPos || {}).forEach(pt => {
+      dotsSvg += `<circle cx="${mx(pt.x)}" cy="${my(pt.y)}" r="2.4" fill="${ownCol}" stroke="#0f172a" stroke-width="0.6"/>`;
+    });
+    return `<svg width="52" height="68" viewBox="0 0 52 68" class="block bg-[#0b4426]">${lines}${gearSvg}${strokesSvg}${dotsSvg}</svg>`;
+  } catch (_) {
+    return '<svg width="52" height="68" viewBox="0 0 52 68" class="block bg-[#0b4426]"></svg>';
   }
 }
 
@@ -2104,7 +2385,7 @@ export function resizeTacticsCanvas() {
   }
 }
 
-function normToPx(nx, ny, w, h, pad = 14) {
+function normToPx(nx, ny, w, h, pad = PITCH_PAD) {
   const innerW = w - pad * 2;
   const innerH = h - pad * 2;
   return {
@@ -2113,13 +2394,45 @@ function normToPx(nx, ny, w, h, pad = 14) {
   };
 }
 
-function pxToNorm(px, py, w, h, pad = 14) {
+function pxToNorm(px, py, w, h, pad = PITCH_PAD) {
   const innerW = Math.max(1, w - pad * 2);
   const innerH = Math.max(1, h - pad * 2);
-  return {
-    x: clamp(((px - pad) / innerW) * 100, 3, 97),
-    y: clamp(((py - pad) / innerH) * 100, 3, 97)
-  };
+  const rawX = ((px - pad) / innerW) * 100;
+  const rawY = ((py - pad) / innerH) * 100;
+  const x = clamp(rawX, 3, 97);
+  // Allow dragging the ball directly into the top/bottom goal net when aligned with the goal mouth!
+  const inMouthX = x >= 37 && x <= 63 && board.pitchMode !== 'blank';
+  const minY = inMouthX ? -1.6 : 2.5;
+  const maxY = (inMouthX && board.pitchMode !== 'half') ? 101.6 : 97.5;
+  return { x, y: clamp(rawY, minY, maxY) };
+}
+
+function drawGoalWithNet(ctx, gx, gy, gw, gh, isSunlight) {
+  ctx.save();
+  ctx.fillStyle = isSunlight ? 'rgba(255, 230, 0, 0.14)' : 'rgba(255, 255, 255, 0.11)';
+  ctx.fillRect(gx, gy, gw, gh);
+
+  // Diagonal cross-hatched mesh inside goal net
+  ctx.beginPath();
+  ctx.rect(gx, gy, gw, gh);
+  ctx.clip();
+  ctx.strokeStyle = isSunlight ? 'rgba(255, 255, 255, 0.42)' : 'rgba(255, 255, 255, 0.26)';
+  ctx.lineWidth = 0.9;
+  const step = Math.max(5, Math.round(gh * 0.45));
+  for (let x = gx - gh; x <= gx + gw + gh; x += step) {
+    ctx.moveTo(x, gy);
+    ctx.lineTo(x + gh, gy + gh);
+    ctx.moveTo(x + gh, gy);
+    ctx.lineTo(x, gy + gh);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = isSunlight ? 3.0 : 2.3;
+  ctx.strokeRect(gx, gy, gw, gh);
+  ctx.restore();
 }
 
 function drawPitchSurfaceAndLines(ctx, w, h, pad, isSunlight) {
@@ -2160,9 +2473,10 @@ function drawPitchSurfaceAndLines(ctx, w, h, pad, isSunlight) {
     ctx.fillStyle = isSunlight ? 'rgba(255,230,0,0.42)' : 'rgba(255,255,255,0.16)';
     ctx.font = '700 10px "Chakra Petch", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('LEFT LANE', left + pw / 6, cy - 8);
-    ctx.fillText('CENTRE', cx, cy - 8);
-    ctx.fillText('RIGHT LANE', right - pw / 6, cy - 8);
+    const laneLabelY = top + ph * 0.185;
+    ctx.fillText('LEFT LANE', left + pw / 6, laneLabelY);
+    ctx.fillText('CENTRE', cx, laneLabelY);
+    ctx.fillText('RIGHT LANE', right - pw / 6, laneLabelY);
     ctx.restore();
   } else if (board.lanesMode === 'thirds') {
     ctx.save();
@@ -2199,7 +2513,8 @@ function drawPitchSurfaceAndLines(ctx, w, h, pad, isSunlight) {
   if (board.pitchMode === 'half') {
     // Top Goal + Attacking Penalty Area + Halfway circle arc at bottom
     const goalW = pw * 0.24;
-    ctx.strokeRect(cx - goalW / 2, top - 6, goalW, 6);
+    const goalD = Math.max(11, Math.round(pad * 0.72));
+    drawGoalWithNet(ctx, cx - goalW / 2, top - goalD, goalW, goalD, isSunlight);
     const boxW = pw * 0.58;
     const boxH = ph * 0.28;
     ctx.strokeRect(cx - boxW / 2, top, boxW, boxH);
@@ -2237,9 +2552,10 @@ function drawPitchSurfaceAndLines(ctx, w, h, pad, isSunlight) {
   ctx.fill();
 
   // Goals & Penalty Areas
-  const goalW = board.pitchMode === '7v7' ? pw * 0.22 : pw * 0.19;
-  ctx.strokeRect(cx - goalW / 2, top - 5, goalW, 5);
-  ctx.strokeRect(cx - goalW / 2, bottom, goalW, 5);
+  const goalW = board.pitchMode === '7v7' ? pw * 0.22 : pw * 0.20;
+  const goalD = Math.max(11, Math.round(pad * 0.72));
+  drawGoalWithNet(ctx, cx - goalW / 2, top - goalD, goalW, goalD, isSunlight);
+  drawGoalWithNet(ctx, cx - goalW / 2, bottom, goalW, goalD, isSunlight);
 
   const boxW = board.pitchMode === '7v7' ? pw * 0.56 : (board.pitchMode === '6v6' ? pw * 0.50 : pw * 0.46);
   const boxH = board.pitchMode === '7v7' ? ph * 0.165 : ph * 0.145;
@@ -2397,6 +2713,32 @@ function drawTacticalStroke(ctx, d, w, h, pad, isSunlight) {
     drawWavyPath(ctx, pts);
     ctx.stroke();
   } else {
+    // Detect Shot-on-Goal: pass arrow with no player receiver aimed into goal mouth (or high-velocity strike)!
+    const rawTip = d.pts[d.pts.length - 1];
+    const isShot = !d.toId && rawTip && (
+      (board.pitchMode !== 'blank' && rawTip.x >= 35 && rawTip.x <= 65 && rawTip.y <= 5.5) ||
+      (board.pitchMode === 'blank' && rawTip.y <= 13 && (rawTip.x >= 18 && rawTip.x <= 30 || rawTip.x >= 70 && rawTip.x <= 82))
+    );
+    if (isShot && pts.length === 2) {
+      const dx = pts[1].x - pts[0].x;
+      const dy = pts[1].y - pts[0].y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = (-dy / len) * 2.4;
+      const ny = (dx / len) * 2.4;
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x + nx, pts[0].y + ny);
+      ctx.lineTo(pts[1].x + nx, pts[1].y + ny);
+      ctx.moveTo(pts[0].x - nx, pts[0].y - ny);
+      ctx.lineTo(pts[1].x - nx, pts[1].y - ny);
+      ctx.stroke();
+      const tail = pts[0];
+      const tip = pts[1];
+      drawArrowhead(ctx, tail.x, tail.y, tip.x, tip.y, '#fde047', 13);
+      ctx.restore();
+      return;
+    }
     drawSmoothCurve(ctx, pts);
     ctx.stroke();
   }
@@ -2533,9 +2875,39 @@ function drawPlayerToken(ctx, x, y, radius, fillHex, trimHex, topLabel, mainLabe
   ctx.restore();
 }
 
-function renderSceneOntoContext(ctx, w, h, pad, scene, options = { isSunlight: false, scaleFactor: 1 }) {
-  const { isSunlight, scaleFactor } = options;
+function renderSceneOntoContext(ctx, w, h, pad, scene, options = { isSunlight: false, scaleFactor: 1, showGhosts: false }) {
+  const { isSunlight, scaleFactor, showGhosts } = options;
   drawPitchSurfaceAndLines(ctx, w, h, pad, isSunlight);
+
+  // 0. Ghost Onion-Skin of Step k-1 while editing Step k > 1!
+  if (showGhosts && board.isAnimatorOpen && !isAnimating && board.activeStepIdx > 0) {
+    const prev = board.steps[board.activeStepIdx - 1];
+    if (prev) {
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      (prev.drawings || []).forEach(d => drawTacticalStroke(ctx, projectDrawingOntoScene(d, prev), w, h, pad, isSunlight));
+      const ghostR = (board.pitchMode === 'half' ? 19 : 16) * scaleFactor;
+      board.teamRoster.forEach(tok => {
+        const gp = prev.teamPos?.[tok.id];
+        const cp = scene.teamPos?.[tok.id];
+        if (!gp) return;
+        const gpx = normToPx(gp.x, gp.y, w, h, pad);
+        if (cp && Math.hypot(cp.x - gp.x, cp.y - gp.y) >= 4) {
+          const cpx = normToPx(cp.x, cp.y, w, h, pad);
+          ctx.strokeStyle = '#fde047';
+          ctx.lineWidth = 1.6;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(gpx.x, gpx.y);
+          ctx.lineTo(cpx.x, cpx.y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        drawPlayerToken(ctx, gpx.x, gpx.y, ghostR, board.teamMeta.color || '#eab308', '#ffffff', '', tok.initials || `#${tok.number}`, false);
+      });
+      ctx.restore();
+    }
+  }
 
   // 1. Saved Tactical Drawings + Live In-Progress Stroke
   (scene.drawings || []).forEach(d => drawTacticalStroke(ctx, projectDrawingOntoScene(d, scene), w, h, pad, isSunlight));
@@ -2596,12 +2968,12 @@ function renderSceneOntoContext(ctx, w, h, pad, scene, options = { isSunlight: f
     const pos = scene.teamPos?.[tok.id];
     if (!pos) return;
     const p = normToPx(pos.x, pos.y, w, h, pad);
-    const showAsGk = tok.isGk && board.pitchMode !== 'blank';
+    const showAsGk = tok.isGk && board.pitchMode !== 'blank' && !board.hideGkBadge;
     const fill = showAsGk ? gkFill : ownColor;
-    const trim = showAsGk ? '#cffafe' : ownTrim;
+    const trim = isSunlight ? '#ffffff' : (showAsGk ? '#cffafe' : ownTrim);
     const topLbl = tok.initials ? (showAsGk ? 'GK' : `#${tok.number}`) : (showAsGk ? 'GK' : '');
     const mainLbl = tok.initials ? tok.initials : `#${tok.number}`;
-    const showSwapRing = Boolean(selectedBenchNumber);
+    const showSwapRing = Boolean(selectedBenchNumber) || selectedPitchTokenId === tok.id;
     drawPlayerToken(ctx, p.x, p.y, baseR, fill, trim, topLbl, mainLbl, showSwapRing);
 
     if (scene.ball?.attachedTo === tok.id) {
@@ -2609,9 +2981,20 @@ function renderSceneOntoContext(ctx, w, h, pad, scene, options = { isSunlight: f
     }
   });
 
-  // 5. Free-Floating Ball (when not snapped to any player)
+  // 5. Free-Floating Ball + Goal Net Celebration Ring!
   if (scene.ball && !scene.ball.attachedTo) {
     const bp = normToPx(scene.ball.x, scene.ball.y, w, h, pad);
+    const isScoredInMainNet = board.pitchMode !== 'blank' && scene.ball.x >= 37 && scene.ball.x <= 63 && (scene.ball.y <= 1.2 || scene.ball.y >= 98.8);
+    const isScoredInMiniGoal = (scene.gear || []).some(g => g.kind === 'mini-goal' && Math.hypot(g.x - scene.ball.x, g.y - scene.ball.y) <= 4.5);
+    if (isScoredInMainNet || isScoredInMiniGoal) {
+      ctx.save();
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 2.6 * scaleFactor;
+      ctx.beginPath();
+      ctx.arc(bp.x, bp.y, 15 * scaleFactor, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
     drawFootballGlyph(ctx, bp.x, bp.y, 9.5 * scaleFactor);
   }
 }
@@ -2630,30 +3013,68 @@ export function drawTacticsCanvas() {
   const scene = animRenderOverride || board.steps[board.activeStepIdx] || board.steps[0];
   const isSunlight = document.body?.classList.contains('sunlight-mode');
   if (scene) {
-    renderSceneOntoContext(ctx, m.width, m.height, 12, scene, { isSunlight, scaleFactor: 1 });
+    renderSceneOntoContext(ctx, m.width, m.height, PITCH_PAD, scene, { isSunlight, scaleFactor: 1, showGhosts: true });
   }
   ctx.restore();
 }
 
 // ---------------- Touch / Pointer Interaction Engine ----------------
+function distToSegmentPx(px, py, ax, ay, bx, by) {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 0.01) return Math.hypot(px - ax, py - ay);
+  const t = clamp(((px - ax) * dx + (py - ay) * dy) / lenSq, 0, 1);
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+
+function hitTestDrawingIndex(px, py, w, h, pad, scene) {
+  const list = scene.drawings || [];
+  for (let i = list.length - 1; i >= 0; i--) {
+    const rawD = list[i];
+    if (rawD.type === 'zone') {
+      const p1 = normToPx(rawD.x1, rawD.y1, w, h, pad);
+      const p2 = normToPx(rawD.x2, rawD.y2, w, h, pad);
+      const cx = (p1.x + p2.x) / 2;
+      const cy = (p1.y + p2.y) / 2;
+      const rx = Math.max(12, Math.abs(p2.x - p1.x) / 2);
+      const ry = Math.max(12, Math.abs(p2.y - p1.y) / 2);
+      const normEll = Math.hypot((px - cx) / rx, (py - cy) / ry);
+      if (normEll >= 0.72 && normEll <= 1.28) return i;
+      continue;
+    }
+    const d = projectDrawingOntoScene(rawD, scene);
+    const pts = (d.pts || []).map(p => normToPx(p.x, p.y, w, h, pad));
+    for (let s = 0; s < pts.length - 1; s++) {
+      if (distToSegmentPx(px, py, pts[s].x, pts[s].y, pts[s + 1].x, pts[s + 1].y) <= 13) {
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+
 function hitTestScene(px, py, w, h, pad, scene) {
+  const renderR = board.pitchMode === 'half' ? 21 : (board.pitchMode === '7v7' ? 16.5 : 18);
   const baseR = board.pitchMode === 'half' ? 24 : 21;
 
-  // 1. Check Ball first (either free-floating OR attached badge on a player's boot!)
+  // 1. Check Ball first with generous priority over host player's boot!
   if (scene.ball) {
     if (scene.ball.attachedTo) {
+      const isOppHost = scene.ball.attachedTo.startsWith('o');
+      const hostR = isOppHost ? renderR * 0.88 : renderR;
       const host = scene.teamPos?.[scene.ball.attachedTo] || scene.oppPos?.[scene.ball.attachedTo];
       if (host) {
         const hp = normToPx(host.x, host.y, w, h, pad);
-        const bx = hp.x + 13;
-        const by = hp.y + 12;
-        if (Math.hypot(px - bx, py - by) <= 15) {
+        const bx = hp.x + hostR * 0.72;
+        const by = hp.y + hostR * 0.68;
+        if (Math.hypot(px - bx, py - by) <= 18) {
           return { kind: 'ball' };
         }
       }
     } else {
       const bp = normToPx(scene.ball.x, scene.ball.y, w, h, pad);
-      if (Math.hypot(px - bp.x, py - bp.y) <= 20) {
+      if (Math.hypot(px - bp.x, py - bp.y) <= 21) {
         return { kind: 'ball' };
       }
     }
@@ -2716,13 +3137,13 @@ function onCanvasPointerDown(e) {
   const rect = m.canvas.getBoundingClientRect();
   const px = e.clientX - rect.left;
   const py = e.clientY - rect.top;
-  const norm = pxToNorm(px, py, m.width, m.height, 12);
+  const norm = pxToNorm(px, py, m.width, m.height, PITCH_PAD);
   const step = board.steps[board.activeStepIdx];
   if (!step) return;
 
   // Handle 2-tap Bench -> Pitch swap if a bench chip is highlighted
   if (selectedBenchNumber !== null) {
-    const hit = hitTestScene(px, py, m.width, m.height, 12, step);
+    const hit = hitTestScene(px, py, m.width, m.height, PITCH_PAD, step);
     if (hit && hit.kind === 'team') {
       swapBenchWithPitchToken(selectedBenchNumber, hit.id);
       return;
@@ -2735,12 +3156,32 @@ function onCanvasPointerDown(e) {
   try { m.canvas.setPointerCapture(e.pointerId); } catch (_) {}
 
   if (board.activeTool === 'move') {
-    const hit = hitTestScene(px, py, m.width, m.height, 12, step);
-    if (!hit) return; // Explicit Move mode: never draw accidental lines on empty grass!
+    const hit = hitTestScene(px, py, m.width, m.height, PITCH_PAD, step);
+    if (!hit) {
+      // Tap-to-Delete Single Stroke: tapping an individual arrow or zone in Move mode removes just that stroke!
+      const strokeIdx = hitTestDrawingIndex(px, py, m.width, m.height, PITCH_PAD, step);
+      if (strokeIdx >= 0) {
+        pushUndoSnapshot();
+        step.drawings.splice(strokeIdx, 1);
+        selectedPitchTokenId = null;
+        hapticFeedback('tap');
+        saveWorkingBoard();
+        updateUndoButtonUI();
+        drawTacticsCanvas();
+        score.showMatchToast('Removed arrow (tap Undo to restore)', '✕', 1500);
+        return;
+      }
+      if (selectedPitchTokenId) {
+        selectedPitchTokenId = null;
+        drawTacticsCanvas();
+      }
+      return;
+    }
 
     pushUndoSnapshot();
     const originPos = (hit.kind === 'team' && step.teamPos?.[hit.id]) ? { ...step.teamPos[hit.id] } : null;
     if (hit.kind === 'ball') {
+      selectedPitchTokenId = null;
       step.ball.attachedTo = null;
       step.ball.x = norm.x;
       step.ball.y = norm.y;
@@ -2749,6 +3190,8 @@ function onCanvasPointerDown(e) {
       pointerId: e.pointerId,
       mode: 'drag',
       target: hit,
+      startPx: px,
+      startPy: py,
       originPos,
       moved: false
     };
@@ -2777,12 +3220,16 @@ function onCanvasPointerMove(e) {
   const rect = m.canvas.getBoundingClientRect();
   const px = e.clientX - rect.left;
   const py = e.clientY - rect.top;
-  const norm = pxToNorm(px, py, m.width, m.height, 12);
+  const norm = pxToNorm(px, py, m.width, m.height, PITCH_PAD);
   const step = board.steps[board.activeStepIdx];
   if (!step) return;
 
   if (activePointer.mode === 'drag') {
+    if (!activePointer.moved && Math.hypot(px - (activePointer.startPx || px), py - (activePointer.startPy || py)) < 5) {
+      return;
+    }
     activePointer.moved = true;
+    selectedPitchTokenId = null;
     const tgt = activePointer.target;
     if (tgt.kind === 'team' && step.teamPos[tgt.id]) {
       step.teamPos[tgt.id] = norm;
@@ -2820,16 +3267,65 @@ function onCanvasPointerUp(e) {
   const step = board.steps[board.activeStepIdx];
 
   if (activePointer.mode === 'drag' && step) {
-    // 1. Single-prop delete when dragging gear into bottom remove zone
+    // 1. Gear: Single-tap cone to cycle colour OR drag into bottom zone to delete!
     if (activePointer.target.kind === 'gear') {
       const gNow = (step.gear || []).find(item => item.id === activePointer.target.id);
-      if (gNow && gNow.y >= 89) {
+      if (gNow && !activePointer.moved && gNow.kind.startsWith('cone-')) {
+        const order = ['cone-amber', 'cone-sky', 'cone-rose', 'cone-lime'];
+        const nextKind = order[(order.indexOf(gNow.kind) + 1) % order.length];
+        board.steps.forEach(s => {
+          const gi = (s.gear || []).find(item => item.id === gNow.id);
+          if (gi) gi.kind = nextKind;
+        });
+        hapticFeedback('selection');
+      } else if (gNow && activePointer.moved && gNow.y >= 89) {
         const delId = activePointer.target.id;
         board.steps.forEach(s => {
           s.gear = (s.gear || []).filter(item => item.id !== delId);
         });
         hapticFeedback('tap');
         score.showMatchToast('Prop removed (tap Undo to restore)', '✕', 1600);
+      }
+    }
+
+    // 1b. Two-Tap Starter <-> Starter / GK Role Swap on Pitch (when tapped without dragging!)
+    if (activePointer.target.kind === 'team' && !activePointer.moved) {
+      undoStack.pop(); // Pure tap selection doesn't consume an undo slot unless swapping!
+      const tappedId = activePointer.target.id;
+      if (!selectedPitchTokenId) {
+        selectedPitchTokenId = tappedId;
+        hapticFeedback('selection');
+      } else if (selectedPitchTokenId === tappedId) {
+        selectedPitchTokenId = null;
+      } else {
+        const a = board.teamRoster.find(t => t.id === selectedPitchTokenId);
+        const b = board.teamRoster.find(t => t.id === tappedId);
+        if (a && b) {
+          pushUndoSnapshot();
+          const tmpNum = a.number, tmpInit = a.initials;
+          a.number = b.number; a.initials = b.initials;
+          b.number = tmpNum; b.initials = tmpInit;
+          hapticFeedback('success');
+          const lblA = a.initials ? `#${a.number} ${a.initials}` : `#${a.number}`;
+          const lblB = b.initials ? `#${b.number} ${b.initials}` : `#${b.number}`;
+          score.showMatchToast(`Swapped ${lblA} ⇄ ${lblB}`, '⇄', 1600);
+        }
+        selectedPitchTokenId = null;
+      }
+    }
+
+    // 1c. If a pure tap landed on an opponent token right over a drawn stroke, delete that stroke!
+    if (activePointer.target.kind === 'opp' && !activePointer.moved) {
+      undoStack.pop();
+      const m = getCanvasAndMetrics();
+      if (m) {
+        const sIdx = hitTestDrawingIndex(activePointer.startPx, activePointer.startPy, m.width, m.height, PITCH_PAD, step);
+        if (sIdx >= 0) {
+          pushUndoSnapshot();
+          step.drawings.splice(sIdx, 1);
+          hapticFeedback('tap');
+          score.showMatchToast('Removed arrow (tap Undo to restore)', '✕', 1500);
+        }
       }
     }
 
@@ -2867,26 +3363,29 @@ function onCanvasPointerUp(e) {
       }
     }
 
-    // 3. Magnetic Ball Snap when dropping the ball near any player!
+    // 3. Magnetic Ball Snap when dropping the ball near any player (bypassed inside Goal Mouth so GK never steals a goal!)
     if (activePointer.target.kind === 'ball' && step.ball) {
-      let bestId = null;
-      let bestDist = 7.5; // Normalized magnetic snap radius (~7.5% of pitch)
-      board.teamRoster.forEach(tok => {
-        const p = step.teamPos?.[tok.id];
-        if (!p) return;
-        const d = Math.hypot(p.x - step.ball.x, p.y - step.ball.y);
-        if (d < bestDist) { bestDist = d; bestId = tok.id; }
-      });
-      board.oppRoster.forEach(tok => {
-        const p = step.oppPos?.[tok.id];
-        if (!p) return;
-        const d = Math.hypot(p.x - step.ball.x, p.y - step.ball.y);
-        if (d < bestDist) { bestDist = d; bestId = tok.id; }
-      });
-      if (bestId) {
-        step.ball.attachedTo = bestId;
-        syncAttachedBallPosition(step);
-        hapticFeedback('selection');
+      const inGoalMouth = board.pitchMode !== 'blank' && step.ball.x >= 36 && step.ball.x <= 64 && (step.ball.y <= 5.5 || step.ball.y >= 94.5);
+      if (!inGoalMouth) {
+        let bestId = null;
+        let bestDist = 7.5;
+        board.teamRoster.forEach(tok => {
+          const p = step.teamPos?.[tok.id];
+          if (!p) return;
+          const d = Math.hypot(p.x - step.ball.x, p.y - step.ball.y);
+          if (d < bestDist) { bestDist = d; bestId = tok.id; }
+        });
+        board.oppRoster.forEach(tok => {
+          const p = step.oppPos?.[tok.id];
+          if (!p) return;
+          const d = Math.hypot(p.x - step.ball.x, p.y - step.ball.y);
+          if (d < bestDist) { bestDist = d; bestId = tok.id; }
+        });
+        if (bestId) {
+          step.ball.attachedTo = bestId;
+          syncAttachedBallPosition(step);
+          hapticFeedback('selection');
+        }
       }
     }
     saveWorkingBoard();
@@ -2907,6 +3406,10 @@ function onCanvasPointerUp(e) {
         bindPassArrowEndpoints(savedStroke, step, board.steps[board.activeStepIdx + 1] || null);
       }
       step.drawings.push(savedStroke);
+      if (savedStroke.type === 'zone') {
+        board.activeTool = 'move';
+        renderToolDockUI();
+      }
       hapticFeedback('selection');
       saveWorkingBoard();
     }
@@ -2962,7 +3465,7 @@ function onBenchChipPointerDown(e) {
         const px = ev.clientX - rect.left;
         const py = ev.clientY - rect.top;
         if (px >= 0 && px <= rect.width && py >= 0 && py <= rect.height) {
-          const hit = hitTestScene(px, py, m.width, m.height, 12, step);
+          const hit = hitTestScene(px, py, m.width, m.height, PITCH_PAD, step);
           if (hit && hit.kind === 'team') {
             swapBenchWithPitchToken(benchDragState.num, hit.id);
           }
@@ -3044,7 +3547,7 @@ function buildHighResTacticalCardCanvas() {
   ctx.clip();
 
   const activeScene = board.steps[board.activeStepIdx] || board.steps[0];
-  renderSceneOntoContext(ctx, pitchW, pitchH, 42, activeScene, { isSunlight: false, scaleFactor: 2.65 });
+  renderSceneOntoContext(ctx, pitchW, pitchH, 46, activeScene, { isSunlight: false, scaleFactor: 2.65, showGhosts: false });
   ctx.restore();
 
   ctx.strokeStyle = '#1e3a2f';
@@ -3052,15 +3555,31 @@ function buildHighResTacticalCardCanvas() {
   roundRectPath(ctx, pitchX, pitchY, pitchW, pitchH, 28);
   ctx.stroke();
 
+  if (board.activeCue?.cue) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.7)';
+    ctx.lineWidth = 3;
+    roundRectPath(ctx, 76, 1790, W - 152, 64, 16);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#fde68a';
+    ctx.font = '700 24px "Chakra Petch", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`COACHING CUE: “${board.activeCue.cue}”`, W / 2, 1822);
+    ctx.restore();
+  }
+
   // Bench & Brand Footer
   ctx.fillStyle = '#cbd5e1';
   ctx.font = '700 26px "Chakra Petch", sans-serif';
   ctx.textAlign = 'left';
   if (board.benchRoster.length > 0) {
     const benchTxt = board.benchRoster.map(b => b.initials ? `#${b.number} ${b.initials}` : `#${b.number}`).join('   •   ');
-    ctx.fillText(`BENCH:  ${benchTxt}`, 76, 1848);
+    ctx.fillText(`BENCH:  ${benchTxt}`, 76, board.activeCue?.cue ? 1884 : 1848);
   } else {
-    ctx.fillText(`SQUAD ON PITCH: ${board.teamRoster.length} PLAYERS`, 76, 1848);
+    ctx.fillText(`SQUAD ON PITCH: ${board.teamRoster.length} PLAYERS`, 76, board.activeCue?.cue ? 1884 : 1848);
   }
 
   ctx.fillStyle = '#64748b';
@@ -3179,9 +3698,9 @@ export async function shareTacticsVideo() {
         renderSceneOntoContext(rctx, W - 48, H - 108, 22, scene, { isSunlight: false, scaleFactor: 1.35 });
         rctx.restore();
 
-        rctx.fillStyle = '#94a3b8';
-        rctx.font = '700 15px "Chakra Petch", sans-serif';
-        rctx.fillText("WHAT'S THE SCORE REF? • TOUCHLINE TACTICS", 28, H - 18);
+        rctx.fillStyle = board.activeCue?.cue ? '#fde68a' : '#94a3b8';
+        rctx.font = '700 14px "Chakra Petch", sans-serif';
+        rctx.fillText(board.activeCue?.cue ? `CUE: “${board.activeCue.cue}”` : "WHAT'S THE SCORE REF? • TOUCHLINE TACTICS", 28, H - 18);
 
         if (elapsed < totalMs) {
           requestAnimationFrame(stepFrame);
@@ -3246,6 +3765,8 @@ export function initTacticsBoardIfNeeded() {
     board.retreatLine = typeof saved.retreatLine === 'boolean' ? saved.retreatLine : true;
     board.lanesMode = saved.lanesMode || 'off';
     board.oppMode = saved.oppMode || 'even';
+    board.customTeamCount = saved.customTeamCount || 0;
+    board.hideGkBadge = Boolean(saved.hideGkBadge);
     board.customOppCount = saved.customOppCount || 0;
     board.customOppRoster = Array.isArray(saved.customOppRoster) ? saved.customOppRoster : null;
     board.activeCue = saved.activeCue || null;

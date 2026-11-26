@@ -340,3 +340,53 @@ body.sunlight-mode .sunlight-yellow-text {
   color: #FFE600 !important;
   text-shadow: none !important;
 }
+
+/* 11. Touchline Tactics Board High-Contrast Glare Overrides */
+body.sunlight-mode #tacticsBoardModal {
+  background-color: #000000 !important;
+}
+body.sunlight-mode #tacticsPitchSelect,
+body.sunlight-mode #tacticsFormationSelect,
+body.sunlight-mode #tacticsRetreatBtn,
+body.sunlight-mode #tacticsLanesBtn,
+body.sunlight-mode #tacticsOppBtn,
+body.sunlight-mode #tacticsAnimToggleBtn,
+body.sunlight-mode #tacticsOpenLibraryBtn,
+body.sunlight-mode #tacticsClearBtn,
+body.sunlight-mode #tacticsResetBtn,
+body.sunlight-mode #tacticsHuddleBtn {
+  background-color: #000000 !important;
+  border: 2px solid #FFE600 !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+body.sunlight-mode #tacticsSunlightBtn {
+  background-color: #FFE600 !important;
+  border: 2px solid #ffffff !important;
+  color: #000000 !important;
+}
+body.sunlight-mode #tacticsQuickModeSwitch {
+  background-color: #000000 !important;
+  border: 2px solid #ffffff !important;
+}
+body.sunlight-mode #tacticsCoachingCueBar {
+  background-color: #000000 !important;
+  border: 2px solid #FFE600 !important;
+}
+body.sunlight-mode #tacticsCoachingCueText {
+  color: #FFE600 !important;
+}
+body.sunlight-mode .tactics-dock-btn {
+  background-color: #000000 !important;
+  border: 2px solid #888888 !important;
+  color: #ffffff !important;
+}
+body.sunlight-mode .tactics-dock-btn[class*="border-emerald"] {
+  background-color: #FFE600 !important;
+  border: 2px solid #ffffff !important;
+  color: #000000 !important;
+}
+body.sunlight-mode .tactics-dock-btn[class*="border-emerald"] svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
