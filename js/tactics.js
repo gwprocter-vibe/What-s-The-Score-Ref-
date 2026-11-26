@@ -10,7 +10,7 @@ import { hapticFeedback } from './hardware.js';
 const WORKING_STORAGE_KEY = 'whatsthescoreref_tactics_working_v1';
 const PLAYBOOK_STORAGE_KEY = 'whatsthescoreref_tactics_playbook_v1';
 const STARRED_STORAGE_KEY = 'whatsthescoreref_tactics_starred_v1';
-const PITCH_PAD = 17;
+const PITCH_PAD = 20;
 const MAX_SAVED_BOARDS = 24;
 const MAX_STEPS = 8;
 const MAX_UNDO = 30;
@@ -232,8 +232,8 @@ function getDefaultOppCoords(count, oppBehindRetreat = false, pitchMode = '5v5')
     { x: 50, y: 10, label: 'GK', isGk: true },
     { x: 30, y: 26, label: '2' },
     { x: 70, y: 26, label: '3' },
-    { x: 34, y: 46, label: '4' },
-    { x: 66, y: 46, label: '5' }
+    { x: 34, y: 41, label: '4' },
+    { x: 60, y: 41, label: '5' }
   ].slice(0, count);
 }
 
@@ -924,6 +924,7 @@ export function addTacticsStep() {
     const inGoalMouth = tip.x >= 36 && tip.x <= 64 && (tip.y <= 7 || tip.y >= 93) && board.pitchMode !== 'blank';
     if (inGoalMouth) {
       cloned.ball = { x: clamp(tip.x, 38, 62), y: tip.y <= 7 ? -1.2 : 101.2, attachedTo: null };
+      board.activeTool = 'move';
       autoApplied++;
     } else if (p.toId && getTokenPosInScene(cloned, p.toId)) {
       const rp = getTokenPosInScene(cloned, p.toId);
@@ -1520,7 +1521,10 @@ export function openTacticsPlaybook(forcedTab) {
 
   renderAllUI();
   renderPlaybookModalUI();
-  document.getElementById('tacticsPlaybookModal')?.classList.remove('hidden');
+  const modalEl = document.getElementById('tacticsPlaybookModal');
+  modalEl?.classList.remove('hidden');
+  const scrollBody = modalEl?.querySelector('.overflow-y-auto');
+  if (scrollBody) scrollBody.scrollTop = 0;
   hapticFeedback('tap');
 }
 
@@ -1534,6 +1538,8 @@ export function setTacticsPlaybookTab(tab) {
   }
   hapticFeedback('tap');
   renderPlaybookModalUI();
+  const scrollBody = document.getElementById('tacticsPlaybookModal')?.querySelector('.overflow-y-auto');
+  if (scrollBody) scrollBody.scrollTop = 0;
 }
 
 function loadStarredPlaybookIds() {
@@ -1902,8 +1908,7 @@ function renderTopControlsUI() {
       : 'p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-300 transition cursor-pointer active:scale-95';
   }
 
-  const autoPlayHuddle = isAnimating && !isAnimPaused && typeof window !== 'undefined' && window.innerHeight < 720;
-  const effectiveHuddle = isHuddleMode || autoPlayHuddle;
+  const effectiveHuddle = isHuddleMode;
   const huddleBtn = document.getElementById('tacticsHuddleBtn');
   if (huddleBtn) {
     huddleBtn.className = effectiveHuddle
@@ -2046,7 +2051,7 @@ function renderAnimatorBarUI() {
   if (!board.isAnimatorOpen) return;
 
   if (stepsEl) {
-    const compact = board.steps.length >= 4;
+    const compact = board.steps.length >= 3;
     const padCls = board.steps.length >= 5 ? 'px-1.5 py-1 text-[10px]' : 'px-2 py-1 text-[10.5px]';
     let html = board.steps.map((_, idx) => {
       const active = idx === board.activeStepIdx;
@@ -2713,28 +2718,28 @@ function drawTacticalStroke(ctx, d, w, h, pad, isSunlight) {
     drawWavyPath(ctx, pts);
     ctx.stroke();
   } else {
-    // Detect Shot-on-Goal: pass arrow with no player receiver aimed into goal mouth (or high-velocity strike)!
+    // Detect Shot-on-Goal: pass arrow (2-point template OR multi-point hand-drawn stroke) aimed into goal mouth!
     const rawTip = d.pts[d.pts.length - 1];
     const isShot = !d.toId && rawTip && (
       (board.pitchMode !== 'blank' && rawTip.x >= 35 && rawTip.x <= 65 && rawTip.y <= 5.5) ||
       (board.pitchMode === 'blank' && rawTip.y <= 13 && (rawTip.x >= 18 && rawTip.x <= 30 || rawTip.x >= 70 && rawTip.x <= 82))
     );
-    if (isShot && pts.length === 2) {
-      const dx = pts[1].x - pts[0].x;
-      const dy = pts[1].y - pts[0].y;
+    if (isShot && pts.length >= 2) {
+      const p0 = pts[0];
+      const pN = pts[pts.length - 1];
+      const dx = pN.x - p0.x;
+      const dy = pN.y - p0.y;
       const len = Math.hypot(dx, dy) || 1;
       const nx = (-dy / len) * 2.4;
       const ny = (dx / len) * 2.4;
       ctx.strokeStyle = '#fde047';
       ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x + nx, pts[0].y + ny);
-      ctx.lineTo(pts[1].x + nx, pts[1].y + ny);
-      ctx.moveTo(pts[0].x - nx, pts[0].y - ny);
-      ctx.lineTo(pts[1].x - nx, pts[1].y - ny);
+      drawSmoothCurve(ctx, pts.map(p => ({ x: p.x + nx, y: p.y + ny })));
       ctx.stroke();
-      const tail = pts[0];
-      const tip = pts[1];
+      drawSmoothCurve(ctx, pts.map(p => ({ x: p.x - nx, y: p.y - ny })));
+      ctx.stroke();
+      const tail = pts[Math.max(0, pts.length - 3)];
+      const tip = pN;
       drawArrowhead(ctx, tail.x, tail.y, tip.x, tip.y, '#fde047', 13);
       ctx.restore();
       return;
@@ -2879,32 +2884,28 @@ function renderSceneOntoContext(ctx, w, h, pad, scene, options = { isSunlight: f
   const { isSunlight, scaleFactor, showGhosts } = options;
   drawPitchSurfaceAndLines(ctx, w, h, pad, isSunlight);
 
-  // 0. Ghost Onion-Skin of Step k-1 while editing Step k > 1!
-  if (showGhosts && board.isAnimatorOpen && !isAnimating && board.activeStepIdx > 0) {
+  // 0. Active-Drag Origin Reference Ring ONLY while actively dragging a player on Step k > 1 (never leaves extra ghost markers on pitch after animations!)
+  if (showGhosts && activePointer && activePointer.mode === 'drag' && activePointer.target?.kind === 'team' && !isAnimating && board.activeStepIdx > 0) {
+    const dragId = activePointer.target.id;
     const prev = board.steps[board.activeStepIdx - 1];
-    if (prev) {
+    const gp = prev?.teamPos?.[dragId];
+    const cp = scene.teamPos?.[dragId];
+    if (gp && cp && Math.hypot(cp.x - gp.x, cp.y - gp.y) >= 4) {
+      const gpx = normToPx(gp.x, gp.y, w, h, pad);
+      const cpx = normToPx(cp.x, cp.y, w, h, pad);
       ctx.save();
-      ctx.globalAlpha = 0.22;
-      (prev.drawings || []).forEach(d => drawTacticalStroke(ctx, projectDrawingOntoScene(d, prev), w, h, pad, isSunlight));
-      const ghostR = (board.pitchMode === 'half' ? 19 : 16) * scaleFactor;
-      board.teamRoster.forEach(tok => {
-        const gp = prev.teamPos?.[tok.id];
-        const cp = scene.teamPos?.[tok.id];
-        if (!gp) return;
-        const gpx = normToPx(gp.x, gp.y, w, h, pad);
-        if (cp && Math.hypot(cp.x - gp.x, cp.y - gp.y) >= 4) {
-          const cpx = normToPx(cp.x, cp.y, w, h, pad);
-          ctx.strokeStyle = '#fde047';
-          ctx.lineWidth = 1.6;
-          ctx.setLineDash([4, 4]);
-          ctx.beginPath();
-          ctx.moveTo(gpx.x, gpx.y);
-          ctx.lineTo(cpx.x, cpx.y);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        }
-        drawPlayerToken(ctx, gpx.x, gpx.y, ghostR, board.teamMeta.color || '#eab308', '#ffffff', '', tok.initials || `#${tok.number}`, false);
-      });
+      ctx.globalAlpha = 0.45;
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 1.6 * scaleFactor;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(gpx.x, gpx.y);
+      ctx.lineTo(cpx.x, cpx.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(gpx.x, gpx.y, 6 * scaleFactor, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
       ctx.restore();
     }
   }
@@ -2991,7 +2992,7 @@ function renderSceneOntoContext(ctx, w, h, pad, scene, options = { isSunlight: f
       ctx.strokeStyle = '#fde047';
       ctx.lineWidth = 2.6 * scaleFactor;
       ctx.beginPath();
-      ctx.arc(bp.x, bp.y, 15 * scaleFactor, 0, Math.PI * 2);
+      ctx.arc(bp.x, bp.y, 13.5 * scaleFactor, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }
@@ -3068,7 +3069,9 @@ function hitTestScene(px, py, w, h, pad, scene) {
         const hp = normToPx(host.x, host.y, w, h, pad);
         const bx = hp.x + hostR * 0.72;
         const by = hp.y + hostR * 0.68;
-        if (Math.hypot(px - bx, py - by) <= 18) {
+        const distBall = Math.hypot(px - bx, py - by);
+        const distHost = Math.hypot(px - hp.x, py - hp.y);
+        if (distBall <= 14 && distBall < distHost) {
           return { kind: 'ball' };
         }
       }

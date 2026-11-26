@@ -73,7 +73,7 @@
 
     <div class="relative flex flex-col items-center text-center z-10 animate-splash-pop">
       <div class="relative mb-7 sm:mb-8">
-        <div class="absolute -inset-4 bg-gradient-to-r from-amber-500/35 to-emerald-500/35 rounded-full blur-2xl opacity-80 animate-pulse"></div>
+        <div class="absolute -inset-3 bg-gradient-to-r from-amber-500/20 to-emerald-500/20 rounded-full opacity-80 animate-pulse"></div>
         <div class="relative w-52 h-52 sm:w-56 sm:h-56 rounded-full bg-slate-950 border-2 border-amber-400/80 flex items-center justify-center shadow-2xl shadow-amber-500/30 overflow-hidden ring-4 ring-amber-400/25">
           <img id="splashLogoImg"
                src="icons/logo-512.png"
@@ -711,7 +711,7 @@
       </div>
 
       <!-- Status Toast / Feedback Strip (Floating overlay so layout never shifts) -->
-      <div id="coachTouchlineToast" class="hidden absolute left-2.5 right-2.5 bottom-2.5 z-20 p-2 bg-slate-950/95 border border-emerald-400/70 rounded-xl text-emerald-300 font-bold text-[11px] flex items-center justify-between shadow-xl backdrop-blur-md animate-fadeIn">
+      <div id="coachTouchlineToast" class="hidden absolute left-2.5 right-2.5 bottom-2.5 z-20 p-2 bg-slate-950/95 border border-emerald-400/70 rounded-xl text-emerald-300 font-bold text-[11px] flex items-center justify-between shadow-xl animate-fadeIn">
         <span id="coachTouchlineToastText" class="truncate pr-1">✓ Moment logged</span>
         <button type="button" onclick="document.getElementById('coachTouchlineToast').classList.add('hidden')" class="text-emerald-400 hover:text-white text-xs px-1 shrink-0 cursor-pointer">✕</button>
       </div>
@@ -751,7 +751,7 @@
   <!-- ================= MODALS & DRAWERS ================= -->
 
   <!-- 1. FULL GOAL TIMELINE DRAWER (Handles high scoring games 20+ goals smoothly) -->
-  <div id="timelineModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="timelineModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-slate-700 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
         <div>
@@ -810,7 +810,7 @@
   </div>
 
   <!-- 1C. COACH MATCH MOMENTS MODAL (Pop up like Goal Timeline) -->
-  <div id="coachMomentsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="coachMomentsModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-amber-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
         <div>
@@ -850,7 +850,7 @@
   </div>
 
   <!-- 1D. COACH MATCH NOTES MODAL (Full Screen Pop Up For Reflections & Tactics) -->
-  <div id="coachNotesModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+  <div id="coachNotesModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-sm w-full p-4 sm:p-5 max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
@@ -934,7 +934,7 @@
   </div>
 
   <!-- 1E. COACH FAIR-PLAY SUB & GOALKEEPER ROTATION MODAL -->
-  <div id="squadRotationModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="squadRotationModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-emerald-500/80 rounded-2xl max-w-sm w-full p-4 max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
       <!-- Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
@@ -1005,7 +1005,7 @@
   </div>
 
   <!-- 1B. MATCH REPORT MODAL (1-Tap Share / WhatsApp / FA Full-Time Copy) -->
-  <div id="reportModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="reportModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-emerald-500/70 rounded-2xl max-w-sm w-full p-3.5 sm:p-4 max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">
@@ -1198,7 +1198,7 @@
   </div>
 
   <!-- 1C. SHARE MATCH RESULT (CHOOSE APP) MODAL -->
-  <div id="sharePickerModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 sm:p-4">
+  <div id="sharePickerModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border-2 border-slate-700 rounded-2xl max-w-sm w-full p-4 max-h-[88vh] overflow-y-auto shadow-2xl animate-fade-in flex flex-col gap-3">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">
@@ -1335,7 +1335,7 @@
   </div>
 
   <!-- 2. COIN TOSS MODAL (z-[60] so it can open directly over Pre-Match Checks) -->
-  <div id="coinModal" class="hidden fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="coinModal" class="hidden fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4">
     <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-xs w-full p-5 text-center shadow-2xl">
       <h3 class="font-extrabold text-lg text-white mb-1">Pre-Match Coin Toss</h3>
       <p class="text-xs text-slate-400 mb-4">Decide kick-off or ends without a physical coin</p>
@@ -1363,7 +1363,7 @@
   </div>
 
   <!-- 3. PRE-MATCH 5v5 & CHECKLIST MODAL -->
-  <div id="prematchModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="prematchModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-slate-700 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] overflow-y-auto shadow-2xl">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <div>
@@ -1456,7 +1456,7 @@
   </div>
 
   <!-- 4. U9 RULES & 1-TAP DISPUTE SOLVER MODAL -->
-  <div id="rulesModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="rulesModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-amber-500 rounded-2xl max-w-sm w-full p-4 max-h-[88vh] overflow-y-auto shadow-2xl">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <div>
@@ -1932,7 +1932,7 @@
   <!-- 5. POCKET & RAIN LOCK OVERLAY -->
   <div id="pocketLockOverlay" class="hidden fixed inset-0 z-[80] bg-transparent flex flex-col justify-between items-center select-none touch-none">
     <!-- Top Barrier Bar: Stretches across entire viewport, completely shielding Header Title and Settings Cog -->
-    <div class="w-full bg-slate-950/95 border-b border-amber-500/50 py-3 px-3 flex items-center justify-center gap-2 shadow-2xl shadow-black/80 backdrop-blur-md">
+    <div class="w-full bg-slate-950/95 border-b border-amber-500/50 py-3 px-3 flex items-center justify-center gap-2 shadow-2xl shadow-black/80">
       <div class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0"></div>
       <span class="text-xs sm:text-sm font-black text-amber-300 tracking-wider font-mono-sport uppercase">
         SCREEN LOCKED • BUTTONS PROTECTED
@@ -1944,7 +1944,7 @@
 
     <!-- Bottom Hold-to-Unlock Control Dock -->
     <div class="w-full max-w-sm px-4 pb-4 pt-1">
-      <div class="flex flex-col items-center bg-slate-950/95 border-2 border-amber-500/60 p-3 rounded-2xl shadow-2xl shadow-black backdrop-blur-md w-full">
+      <div class="flex flex-col items-center bg-slate-950/95 border-2 border-amber-500/60 p-3 rounded-2xl shadow-2xl shadow-black w-full">
         <button id="holdUnlockBtn" type="button"
                 onpointerdown="startUnlockProgress(event)"
                 onpointerup="cancelUnlockProgress()"
@@ -1968,7 +1968,7 @@
   </div>
 
   <!-- 6. TEAM CUSTOMIZATION MODAL (Rename & Kit Colors) -->
-  <div id="teamEditModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+  <div id="teamEditModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-sm w-full p-4 sm:p-5 max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
@@ -2122,7 +2122,7 @@
   </div>
 
   <!-- 5B. GOAL ATTRIBUTION MODAL (Scorer & Assist - Safeguarding Initials Only) -->
-  <div id="goalAttributionModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="goalAttributionModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div id="goalAttributionCard" class="bg-slate-900 border-2 border-emerald-500/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in">
       <!-- Modal Header: Ultra-clean, bold title -->
       <div class="flex items-center justify-between pb-3 mb-2 border-b border-slate-800 shrink-0">
@@ -2170,7 +2170,7 @@
   </div>
 
   <!-- 5D. QUICK SQUAD INITIALS SETUP MODAL (All-In-One Coach Setup) -->
-  <div id="squadInitialsModal" class="hidden fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+  <div id="squadInitialsModal" class="hidden fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-sm w-full p-4 sm:p-5 shadow-2xl animate-fade-in flex flex-col max-h-[90vh]">
       <!-- Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
@@ -2258,7 +2258,7 @@
   </div>
 
   <!-- 6. RESET SCORES & TIMES CONFIRMATION MODAL ("Are you sure?") -->
-  <div id="confirmResetModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="confirmResetModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
     <div class="bg-slate-900 border-2 border-rose-500/70 rounded-2xl max-w-xs w-full p-5 flex flex-col items-center text-center shadow-2xl animate-fade-in">
       <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2287,7 +2287,7 @@
   </div>
 
   <!-- 7. RESET HALF CONFIRMATION MODAL -->
-  <div id="confirmResetHalfModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="confirmResetHalfModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
     <div class="bg-slate-900 border-2 border-amber-500/70 rounded-2xl max-w-xs w-full p-5 flex flex-col items-center text-center shadow-2xl animate-fade-in">
       <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3">
         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2312,7 +2312,7 @@
   </div>
 
   <!-- 8. END HALF CONFIRMATION MODAL -->
-  <div id="confirmEndHalfModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="confirmEndHalfModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
     <div class="bg-slate-900 border-2 border-emerald-500/70 rounded-2xl max-w-xs w-full p-5 flex flex-col items-center text-center shadow-2xl animate-fade-in">
       <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3">
         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2337,7 +2337,7 @@
   </div>
 
   <!-- 8A. CONCLUDED MATCH GOAL CONFIRMATION MODAL -->
-  <div id="confirmConcludedGoalModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="confirmConcludedGoalModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-amber-500/80 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
@@ -2445,7 +2445,7 @@
   </div>
 
   <!-- 8A-2. CONCLUDED MATCH SCORE REMOVAL / DECREMENT CONFIRMATION MODAL -->
-  <div id="confirmConcludedScoreRemovalModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="confirmConcludedScoreRemovalModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
     <div class="bg-slate-900 border-2 border-rose-500/70 rounded-2xl max-w-xs w-full p-5 flex flex-col items-center text-center shadow-2xl animate-fade-in">
       <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2471,7 +2471,7 @@
   </div>
 
   <!-- 8B. MATCH CARD GRAPHIC MODAL (HTML5 CANVAS EXPORT) -->
-  <div id="matchCardModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="matchCardModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-amber-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[92vh] flex flex-col shadow-2xl animate-fadeIn">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
@@ -2548,7 +2548,7 @@
   </div>
 
   <!-- 8C. MATCH CARD FULLSCREEN HD VIEWER (LIGHTBOX) -->
-  <div id="matchCardFullscreenModal" class="hidden fixed inset-0 z-[60] bg-black/95 backdrop-blur-md flex flex-col justify-between p-2 sm:p-4 animate-fadeIn">
+  <div id="matchCardFullscreenModal" class="hidden fixed inset-0 z-[60] bg-black/95 flex flex-col justify-between p-2 sm:p-4 animate-fadeIn">
     <!-- Top Header -->
     <div class="flex items-center justify-between p-2 shrink-0">
       <div class="flex items-center gap-2">
@@ -2577,7 +2577,7 @@
   </div>
 
   <!-- 8D. USER GUIDE & INSTRUCTIONS MODAL -->
-  <div id="instructionsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="instructionsModal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-indigo-500/80 rounded-2xl max-w-md w-full p-4 max-h-[88vh] flex flex-col shadow-2xl animate-fade-in">
       
       <!-- Modal Header -->
@@ -2847,12 +2847,12 @@
   </div>
 
   <!-- 8E. TOUCHLINE ROLE SELECTION MODAL (PROMPTED ON APP OPEN) -->
-  <div id="roleSelectModal" class="hidden fixed inset-0 z-[70] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+  <div id="roleSelectModal" class="hidden fixed inset-0 z-[70] bg-black/90 flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border-2 border-amber-500/70 rounded-3xl max-w-sm w-full p-5 shadow-2xl flex flex-col items-center text-center relative overflow-hidden animate-fade-in">
       
       <!-- Top Decorative Aura & Icon -->
       <div class="relative mb-2.5">
-        <div class="absolute -inset-2 bg-gradient-to-r from-emerald-500/30 to-amber-500/30 rounded-2xl blur-lg opacity-70"></div>
+        <div class="absolute -inset-1.5 bg-gradient-to-r from-emerald-500/20 to-amber-500/20 rounded-2xl opacity-70"></div>
         <div class="relative w-12 h-12 rounded-2xl bg-slate-950 border border-amber-400/50 flex items-center justify-center shadow-xl overflow-hidden">
           <img src="icons/confused_ref.png" alt="" class="w-full h-full object-cover">
         </div>
@@ -2932,7 +2932,7 @@
   </div>
 
   <!-- 9. QUICK MATCHDAY TOOLS DRAWER -->
-  <div id="quickToolsDrawer" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="quickToolsDrawer" class="hidden fixed inset-0 z-50 bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-sm w-full p-4 max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
       <!-- Drawer Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
@@ -3317,7 +3317,7 @@
   </div>
 
   <!-- 10. iOS INSTALL INSTRUCTIONS MODAL (Top-Level Sibling Modal) -->
-  <div id="installAppModal" class="hidden fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="installAppModal" class="hidden fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4">
     <div class="bg-slate-900 border-2 border-cyan-500/70 rounded-2xl max-w-xs w-full p-5 flex flex-col items-center text-center shadow-2xl animate-fade-in">
       <div class="w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-3">
         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -3346,7 +3346,7 @@
   </div>
 
   <!-- 11. SEASON MATCH HISTORY ARCHIVE MODAL -->
-  <div id="matchHistoryModal" class="hidden fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="matchHistoryModal" class="hidden fixed inset-0 z-[60] bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-purple-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[88vh] flex flex-col shadow-2xl animate-fade-in">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
         <div class="flex items-center gap-2">
@@ -3385,7 +3385,7 @@
   </div>
 
   <!-- 12. TOUCHLINE MATCH SYNC MODAL (REF <-> COACH) -->
-  <div id="matchSyncModal" class="hidden fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="matchSyncModal" class="hidden fixed inset-0 z-[60] bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-sky-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
         <div class="flex items-center gap-2">
@@ -3614,7 +3614,7 @@
   </div>
 
   <!-- 14. TWO-TAB ACADEMY PLAYBOOK: MATCH PLAYS vs TRAINING DRILLS & GEAR -->
-  <div id="tacticsPlaybookModal" class="hidden fixed inset-0 z-[75] bg-black/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
+  <div id="tacticsPlaybookModal" class="hidden fixed inset-0 z-[75] bg-black/90 flex items-end sm:items-center justify-center p-2 sm:p-4">
     <div class="bg-slate-900 border-2 border-purple-500/70 rounded-2xl max-w-sm w-full p-4 max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
       <!-- Header -->
       <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 shrink-0">

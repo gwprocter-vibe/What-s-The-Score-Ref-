@@ -342,7 +342,8 @@ body.sunlight-mode .sunlight-yellow-text {
 }
 
 /* 11. Touchline Tactics Board High-Contrast Glare Overrides */
-body.sunlight-mode #tacticsBoardModal {
+body.sunlight-mode #tacticsBoardModal,
+body.sunlight-mode #tacticsTopHeaderRow {
   background-color: #000000 !important;
 }
 body.sunlight-mode #tacticsPitchSelect,
@@ -354,11 +355,21 @@ body.sunlight-mode #tacticsAnimToggleBtn,
 body.sunlight-mode #tacticsOpenLibraryBtn,
 body.sunlight-mode #tacticsClearBtn,
 body.sunlight-mode #tacticsResetBtn,
-body.sunlight-mode #tacticsHuddleBtn {
+body.sunlight-mode #tacticsHuddleBtn,
+body.sunlight-mode #tacticsClockPill,
+body.sunlight-mode #tacticsShareVideoBtn,
+body.sunlight-mode #tacticsTopHeaderRow button[onclick="shareTacticsPng()"],
+body.sunlight-mode #tacticsTopHeaderRow button[onclick="closeTacticsBoard()"],
+body.sunlight-mode #tacticsBenchStripRow button[onclick="syncTacticsSquad()"] {
   background-color: #000000 !important;
   border: 2px solid #FFE600 !important;
   color: #ffffff !important;
   font-weight: 900 !important;
+}
+body.sunlight-mode #tacticsBenchStripRow,
+body.sunlight-mode #tacticsAnimatorBar {
+  background-color: #000000 !important;
+  border: 2px solid #FFE600 !important;
 }
 body.sunlight-mode #tacticsSunlightBtn {
   background-color: #FFE600 !important;

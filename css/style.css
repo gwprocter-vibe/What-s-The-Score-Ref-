@@ -36,6 +36,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 html, body {
@@ -46,7 +48,8 @@ html, body {
   overflow: hidden;
 }
 
-header {
+header,
+#tacticsTopHeaderRow {
   position: sticky;
   top: 0;
   z-index: 30;
@@ -83,26 +86,31 @@ body {
 /* iOS Standalone (Saved to Home Screen) Notch, Dynamic Island & iOS 26 Top Progressive Blur Clearance */
 @supports (-webkit-touch-callout: none) {
   @media (display-mode: standalone) {
-    body {
-      padding-top: max(47px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
+    body,
+    #tacticsBoardModal,
+    #matchCardFullscreenModal {
+      padding-top: max(50px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
     }
   }
   @media (display-mode: standalone) and (min-height: 780px) {
-    body {
+    body,
+    #tacticsBoardModal,
+    #matchCardFullscreenModal {
       padding-top: max(68px, calc(env(safe-area-inset-top, 0px) + 14px)) !important;
     }
   }
 }
 
-html.is-ios-standalone body {
-  padding-top: max(47px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
+html.is-ios-standalone body,
+html.is-ios-standalone #tacticsBoardModal,
+html.is-ios-standalone #matchCardFullscreenModal {
+  padding-top: max(50px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
 }
 
 @media (min-height: 780px) {
-  html.is-ios-standalone body {
-    padding-top: max(68px, calc(env(safe-area-inset-top, 0px) + 14px)) !important;
-  }
-  html.is-ios-standalone #tacticsBoardModal {
+  html.is-ios-standalone body,
+  html.is-ios-standalone #tacticsBoardModal,
+  html.is-ios-standalone #matchCardFullscreenModal {
     padding-top: max(68px, calc(env(safe-area-inset-top, 0px) + 14px)) !important;
   }
 }
@@ -242,10 +250,6 @@ body.mode-referee #halfTimeTacticsShortcutBtn {
 #tacticsBoardModal {
   padding-top: max(8px, calc(env(safe-area-inset-top, 0px) + 6px));
   padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
-}
-
-html.is-ios-standalone #tacticsBoardModal {
-  padding-top: max(47px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
 }
 
 body.mode-referee #refHelperBar,
