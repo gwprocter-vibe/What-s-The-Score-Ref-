@@ -223,6 +223,13 @@ body.sunlight-mode #tacticsCoachingCueBar {
 body.sunlight-mode #tacticsCoachingCueText {
   color: #FFE600 !important;
 }
+body.sunlight-mode #tacticsCoachingStepBeat {
+  color: #ffffff !important;
+}
+body.sunlight-mode #tacticsLoopBtn {
+  border-color: #FFE600 !important;
+  color: #ffffff !important;
+}
 body.sunlight-mode .playbook-tab-btn[class*="bg-amber"],
 body.sunlight-mode .playbook-tab-btn[class*="bg-emerald"] {
   background-color: #FFE600 !important;
@@ -385,6 +392,13 @@ body.sunlight-mode #tacticsCoachingCueBar {
 }
 body.sunlight-mode #tacticsCoachingCueText {
   color: #FFE600 !important;
+}
+body.sunlight-mode #tacticsCoachingStepBeat {
+  color: #ffffff !important;
+}
+body.sunlight-mode #tacticsLoopBtn {
+  border-color: #FFE600 !important;
+  color: #ffffff !important;
 }
 body.sunlight-mode .tactics-dock-btn {
   background-color: #000000 !important;

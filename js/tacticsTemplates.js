@@ -12,6 +12,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 6 Steps",
     desc: "GK plays wide to split defender, who drives across the retreat line, feeds the forward, squares across goal, and scores.",
     cue: "Split wide early — first touch forward past halfway!",
+    stepCues: ["Play out cleanly to Left Back","Left Back drives into open grass","Feed Striker & make support run","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "1-2-1",
@@ -84,12 +85,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 87
+                                              "x": 46.4,
+                                              "y": 87.8
                                         },
                                         {
-                                              "x": 22,
-                                              "y": 79
+                                              "x": 21.6,
+                                              "y": 79.2
                                         }
                                   ]
                             }
@@ -225,8 +226,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 26
                             },
                             "o3": {
-                                  "x": 26.1,
-                                  "y": 46.6
+                                  "x": 27.5,
+                                  "y": 47.5
                             },
                             "o4": {
                                   "x": 56,
@@ -246,12 +247,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 20,
-                                              "y": 48
+                                              "x": 19.8,
+                                              "y": 49
                                         },
                                         {
-                                              "x": 33,
-                                              "y": 28
+                                              "x": 32.2,
+                                              "y": 29.6
                                         }
                                   ]
                             },
@@ -303,8 +304,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 15.5
                             },
                             "o2": {
-                                  "x": 54.6,
-                                  "y": 25.2
+                                  "x": 54.7,
+                                  "y": 27.6
                             },
                             "o3": {
                                   "x": 29.8,
@@ -328,12 +329,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 38,
-                                              "y": 22
+                                              "x": 37.4,
+                                              "y": 22.3
                                         },
                                         {
-                                              "x": 59,
-                                              "y": 20
+                                              "x": 61.2,
+                                              "y": 21.8
                                         }
                                   ]
                             }
@@ -364,7 +365,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 49,
+                                  "x": 46.5,
                                   "y": 10
                             },
                             "o1": {
@@ -397,8 +398,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 59,
-                                              "y": 17
+                                              "x": 60.3,
+                                              "y": 16.2
                                         },
                                         {
                                               "x": 55,
@@ -474,6 +475,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 5 Steps",
     desc: "Forward checks toward the ball to drag their marker tight, spins in behind down the line, crosses low, and scores.",
     cue: "Check in to fake, spin behind, and cross low!",
+    stepCues: ["Check away to open passing lane","Feed Right Wing & make support run","Switch play wide to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "1-2-1",
@@ -545,19 +547,6 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 45
                                         }
                                   ]
-                            },
-                            {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 72,
-                                              "y": 44
-                                        },
-                                        {
-                                              "x": 71.6,
-                                              "y": 45
-                                        }
-                                  ]
                             }
                       ]
                 },
@@ -621,26 +610,26 @@ export const BUILTIN_TEMPLATES = [
                                   "y2": 28
                             },
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 83.1,
-                                              "y": 45
-                                        },
-                                        {
-                                              "x": 84,
-                                              "y": 20
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t3",
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 91,
-                                              "y": 47
+                                              "x": 90,
+                                              "y": 48.5
+                                        },
+                                        {
+                                              "x": 86.1,
+                                              "y": 46.5
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 83.1,
+                                              "y": 45
                                         },
                                         {
                                               "x": 84,
@@ -683,8 +672,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 19.7
                             },
                             "o2": {
-                                  "x": 70,
-                                  "y": 22
+                                  "x": 69.2,
+                                  "y": 16.3
                             },
                             "o3": {
                                   "x": 46,
@@ -703,6 +692,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t4",
+                                  "toId": "t2",
+                                  "pts": [
+                                        {
+                                              "x": 80.2,
+                                              "y": 20.5
+                                        },
+                                        {
+                                              "x": 41.4,
+                                              "y": 25.9
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -711,22 +715,7 @@ export const BUILTIN_TEMPLATES = [
                                         },
                                         {
                                               "x": 43.5,
-                                              "y": 18.9
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t4",
-                                  "toId": "t2",
-                                  "pts": [
-                                        {
-                                              "x": 80,
-                                              "y": 20
-                                        },
-                                        {
-                                              "x": 44,
-                                              "y": 19
+                                              "y": 20.5
                                         }
                                   ]
                             }
@@ -744,7 +733,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t2": {
                                   "x": 43.5,
-                                  "y": 18.9
+                                  "y": 20.5
                             },
                             "t3": {
                                   "x": 80,
@@ -757,7 +746,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 53,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -779,7 +768,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 43.5,
-                            "y": 18.9,
+                            "y": 20.5,
                             "attachedTo": "t2"
                       },
                       "gear": [],
@@ -790,8 +779,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 44,
-                                              "y": 16
+                                              "x": 43.8,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 45,
@@ -867,6 +856,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 5 Steps",
     desc: "Play short to the showing support player, drive inside to commit the lone defender, slip the striker, and score.",
     cue: "Show short fast — drive in and slip your mate!",
+    stepCues: ["Bounce lay-off to Right Wing","Right Wing drives into open grass","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -878,21 +868,17 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 88
-                            },
-                            "t1": {
-                                  "x": 50,
                                   "y": 60
                             },
-                            "t2": {
+                            "t1": {
                                   "x": 92,
                                   "y": 10
                             },
-                            "t3": {
+                            "t2": {
                                   "x": 74.2,
                                   "y": 25.1
                             },
-                            "t4": {
+                            "t3": {
                                   "x": 44.3,
                                   "y": 23.2
                             }
@@ -922,10 +908,25 @@ export const BUILTIN_TEMPLATES = [
                       "ball": {
                             "x": 92,
                             "y": 10,
-                            "attachedTo": "t2"
+                            "attachedTo": "t1"
                       },
                       "gear": [],
                       "drawings": [
+                            {
+                                  "type": "pass",
+                                  "fromId": "t1",
+                                  "toId": "t2",
+                                  "pts": [
+                                        {
+                                              "x": 89.1,
+                                              "y": 12.5
+                                        },
+                                        {
+                                              "x": 77.1,
+                                              "y": 22.6
+                                        }
+                                  ]
+                            },
                             {
                                   "type": "run",
                                   "pts": [
@@ -938,21 +939,6 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 15.9
                                         }
                                   ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t2",
-                                  "toId": "t3",
-                                  "pts": [
-                                        {
-                                              "x": 89,
-                                              "y": 11
-                                        },
-                                        {
-                                              "x": 78,
-                                              "y": 16
-                                        }
-                                  ]
                             }
                       ]
                 },
@@ -960,21 +946,17 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 88
-                            },
-                            "t1": {
-                                  "x": 50,
                                   "y": 58
                             },
-                            "t2": {
+                            "t1": {
                                   "x": 89.2,
                                   "y": 18.2
                             },
-                            "t3": {
+                            "t2": {
                                   "x": 78.2,
                                   "y": 15.9
                             },
-                            "t4": {
+                            "t3": {
                                   "x": 40.2,
                                   "y": 19.3
                             }
@@ -1004,7 +986,7 @@ export const BUILTIN_TEMPLATES = [
                       "ball": {
                             "x": 78.2,
                             "y": 15.9,
-                            "attachedTo": "t3"
+                            "attachedTo": "t2"
                       },
                       "gear": [],
                       "drawings": [
@@ -1016,21 +998,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 15.9
                                         },
                                         {
-                                              "x": 62.7,
-                                              "y": 20.2
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 40.2,
-                                              "y": 19.3
+                                              "x": 72.2,
+                                              "y": 24.3
                                         },
                                         {
-                                              "x": 39.9,
-                                              "y": 16
+                                              "x": 62.7,
+                                              "y": 20.2
                                         }
                                   ]
                             }
@@ -1040,21 +1013,17 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 88
-                            },
-                            "t1": {
-                                  "x": 50,
                                   "y": 56
                             },
-                            "t2": {
+                            "t1": {
                                   "x": 84,
                                   "y": 24
                             },
-                            "t3": {
+                            "t2": {
                                   "x": 62.7,
                                   "y": 20.2
                             },
-                            "t4": {
+                            "t3": {
                                   "x": 39.9,
                                   "y": 16
                             }
@@ -1065,41 +1034,41 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 9.7
                             },
                             "o1": {
-                                  "x": 51.2,
-                                  "y": 17.9
+                                  "x": 50.8,
+                                  "y": 23.8
                             },
                             "o2": {
                                   "x": 71.1,
                                   "y": 14.6
                             },
                             "o3": {
-                                  "x": 42,
-                                  "y": 25
+                                  "x": 39.8,
+                                  "y": 25.4
                             },
                             "o4": {
-                                  "x": 56,
-                                  "y": 29
+                                  "x": 57.2,
+                                  "y": 30.3
                             }
                       },
                       "ball": {
                             "x": 62.7,
                             "y": 20.2,
-                            "attachedTo": "t3"
+                            "attachedTo": "t2"
                       },
                       "gear": [],
                       "drawings": [
                             {
                                   "type": "pass",
-                                  "fromId": "t3",
-                                  "toId": "t4",
+                                  "fromId": "t2",
+                                  "toId": "t3",
                                   "pts": [
                                         {
                                               "x": 59,
-                                              "y": 19
+                                              "y": 19.5
                                         },
                                         {
-                                              "x": 44,
-                                              "y": 16
+                                              "x": 43.6,
+                                              "y": 16.7
                                         }
                                   ]
                             }
@@ -1109,28 +1078,24 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 88
-                            },
-                            "t1": {
-                                  "x": 50,
                                   "y": 54
                             },
-                            "t2": {
+                            "t1": {
                                   "x": 82,
                                   "y": 26
                             },
-                            "t3": {
+                            "t2": {
                                   "x": 61.5,
                                   "y": 20.9
                             },
-                            "t4": {
-                                  "x": 39.7,
-                                  "y": 16
+                            "t3": {
+                                  "x": 39.1,
+                                  "y": 19.6
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 53.2,
+                                  "x": 53.5,
                                   "y": 9.4
                             },
                             "o1": {
@@ -1142,8 +1107,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 16.5
                             },
                             "o3": {
-                                  "x": 42,
-                                  "y": 24.2
+                                  "x": 43.7,
+                                  "y": 26.9
                             },
                             "o4": {
                                   "x": 55.9,
@@ -1151,20 +1116,20 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 39.7,
-                            "y": 16,
-                            "attachedTo": "t4"
+                            "x": 39.1,
+                            "y": 19.6,
+                            "attachedTo": "t3"
                       },
                       "gear": [],
                       "drawings": [
                             {
                                   "type": "pass",
-                                  "fromId": "t4",
+                                  "fromId": "t3",
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 42,
-                                              "y": 13
+                                              "x": 40.2,
+                                              "y": 15.9
                                         },
                                         {
                                               "x": 45,
@@ -1178,21 +1143,17 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 88
-                            },
-                            "t1": {
-                                  "x": 50,
                                   "y": 52
                             },
-                            "t2": {
+                            "t1": {
                                   "x": 80,
                                   "y": 26
                             },
-                            "t3": {
+                            "t2": {
                                   "x": 60.5,
                                   "y": 19.7
                             },
-                            "t4": {
+                            "t3": {
                                   "x": 40,
                                   "y": 13.3
                             }
@@ -1227,7 +1188,9 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": []
                 }
-          ]
+          ],
+          "customTeamCount": 4,
+          "hideGkBadge": true
     })
   },
   {
@@ -1240,6 +1203,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 5 Steps",
     desc: "Uses the U9 Dribble-In rule when defenders stand off: drive straight off the sideline, beat the full-back to the byline, and cut back to score.",
     cue: "Space ahead on a kick-in? Dribble straight onto the pitch!",
+    stepCues: ["Left Wing drives into open grass","Left Wing drives into open grass","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "1-2-1",
@@ -1463,8 +1427,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 28.5,
-                                  "y": 16.2
+                                  "x": 27.8,
+                                  "y": 20.4
                             },
                             "o2": {
                                   "x": 57.1,
@@ -1492,12 +1456,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 21,
-                                              "y": 14
+                                              "x": 21.7,
+                                              "y": 13.6
                                         },
                                         {
-                                              "x": 45,
-                                              "y": 18
+                                              "x": 43.9,
+                                              "y": 17.2
                                         }
                                   ]
                             },
@@ -1535,8 +1499,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 15
                             },
                             "t4": {
-                                  "x": 48,
-                                  "y": 18
+                                  "x": 47.8,
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
@@ -1549,8 +1513,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 17
                             },
                             "o2": {
-                                  "x": 58,
-                                  "y": 22
+                                  "x": 58.7,
+                                  "y": 22.1
                             },
                             "o3": {
                                   "x": 28,
@@ -1562,8 +1526,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 48,
-                            "y": 18,
+                            "x": 47.8,
+                            "y": 20.5,
                             "attachedTo": "t4"
                       },
                       "gear": [],
@@ -1575,7 +1539,7 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 49,
-                                              "y": 15
+                                              "y": 16.9
                                         },
                                         {
                                               "x": 55,
@@ -1648,9 +1612,10 @@ export const BUILTIN_TEMPLATES = [
     difficulty: "easy",
     standard: "FA Match Restart",
     title: "5v5 Kick-Off: Back-Set & Wing Launch",
-    tag: "5v5 • 5 Steps",
+    tag: "5v5 • 6 Steps",
     desc: "Rehearsed U9 Kick-Off: striker rolls back to the central defender, wingers burst wide past halfway, angled pass down the flank, and square ball to finish.",
     cue: "Set Kick-Off back cleanly — sprint wide before the pass!",
+    stepCues: ["Bounce lay-off to Defender","Feed Right Wing & make support run","Right Wing drives into open grass","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "1-2-1",
@@ -1716,11 +1681,11 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 50,
-                                              "y": 53
+                                              "y": 53.8
                                         },
                                         {
                                               "x": 50,
-                                              "y": 63
+                                              "y": 62.2
                                         }
                                   ]
                             },
@@ -1810,12 +1775,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 53,
-                                              "y": 62
+                                              "x": 52.7,
+                                              "y": 62.4
                                         },
                                         {
-                                              "x": 80,
-                                              "y": 36
+                                              "x": 79.3,
+                                              "y": 36.6
                                         }
                                   ]
                             },
@@ -1960,8 +1925,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 25.5
                             },
                             "o2": {
-                                  "x": 68,
-                                  "y": 18
+                                  "x": 68.3,
+                                  "y": 11.7
                             },
                             "o3": {
                                   "x": 44,
@@ -1985,12 +1950,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 77,
-                                              "y": 18
+                                              "x": 76.2,
+                                              "y": 17.8
                                         },
                                         {
-                                              "x": 51,
-                                              "y": 16
+                                              "x": 51.5,
+                                              "y": 16.5
                                         }
                                   ]
                             }
@@ -2016,7 +1981,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t4": {
                                   "x": 47.9,
-                                  "y": 16.1
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
@@ -2043,7 +2008,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 47.9,
-                            "y": 16.1,
+                            "y": 20.5,
                             "attachedTo": "t4"
                       },
                       "gear": [],
@@ -2054,8 +2019,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 48,
-                                              "y": 13
+                                              "x": 47.4,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 45,
@@ -2131,6 +2096,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 5 Steps",
     desc: "Escape a crowded left wing by bouncing back to the pivot, switching to the wide-open right winger, squaring, and scoring.",
     cue: "Crowded wing? Bounce to the middle and switch sides!",
+    stepCues: ["Bounce lay-off to Defender","Feed Right Wing & make support run","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "1-2-1",
@@ -2203,12 +2169,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 21,
-                                              "y": 55
+                                              "x": 21.2,
+                                              "y": 53.9
                                         },
                                         {
-                                              "x": 46,
-                                              "y": 66
+                                              "x": 46.6,
+                                              "y": 66.3
                                         }
                                   ]
                             }
@@ -2267,6 +2233,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t1",
+                                  "toId": "t3",
+                                  "pts": [
+                                        {
+                                              "x": 53,
+                                              "y": 63.7
+                                        },
+                                        {
+                                              "x": 79,
+                                              "y": 44.3
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -2276,21 +2257,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 78,
                                               "y": 26
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t1",
-                                  "toId": "t3",
-                                  "pts": [
-                                        {
-                                              "x": 54,
-                                              "y": 63
-                                        },
-                                        {
-                                              "x": 78,
-                                              "y": 28
                                         }
                                   ]
                             }
@@ -2337,8 +2303,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 44.5
                             },
                             "o4": {
-                                  "x": 66,
-                                  "y": 26
+                                  "x": 65.4,
+                                  "y": 29.8
                             }
                       },
                       "ball": {
@@ -2349,30 +2315,17 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 52,
-                                              "y": 22
-                                        },
-                                        {
-                                              "x": 54,
-                                              "y": 19
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t3",
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 74,
-                                              "y": 25
+                                              "x": 74.2,
+                                              "y": 25.4
                                         },
                                         {
-                                              "x": 56,
-                                              "y": 19
+                                              "x": 55.8,
+                                              "y": 22.6
                                         }
                                   ]
                             }
@@ -2398,12 +2351,12 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t4": {
                                   "x": 54,
-                                  "y": 19
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 49,
+                                  "x": 46.5,
                                   "y": 10
                             },
                             "o1": {
@@ -2425,7 +2378,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 54,
-                            "y": 19,
+                            "y": 20.5,
                             "attachedTo": "t4"
                       },
                       "gear": [],
@@ -2436,8 +2389,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 54,
-                                              "y": 16
+                                              "x": 54.2,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 55,
@@ -2513,6 +2466,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 5 Steps",
     desc: "Pass into the striker’s feet, sprint past your marker for the 1-touch return, drive into the box, and score.",
     cue: "Pass and sprint — never stand and watch your pass!",
+    stepCues: ["Feed Midfielder & make support run","Feed Left Wing & make support run","Striker drives into open grass","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "1-2-1",
@@ -2557,8 +2511,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 28
                             },
                             "o3": {
-                                  "x": 30,
-                                  "y": 48
+                                  "x": 29.9,
+                                  "y": 47.8
                             },
                             "o4": {
                                   "x": 52.6,
@@ -2578,12 +2532,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 28,
+                                              "x": 27.3,
                                               "y": 56
                                         },
                                         {
-                                              "x": 47,
-                                              "y": 44
+                                              "x": 46.6,
+                                              "y": 44.4
                                         }
                                   ]
                             },
@@ -2593,6 +2547,10 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 24,
                                               "y": 58
+                                        },
+                                        {
+                                              "x": 17.5,
+                                              "y": 48
                                         },
                                         {
                                               "x": 24,
@@ -2639,8 +2597,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 28
                             },
                             "o3": {
-                                  "x": 32,
-                                  "y": 44
+                                  "x": 31.7,
+                                  "y": 45.3
                             },
                             "o4": {
                                   "x": 50,
@@ -2662,6 +2620,21 @@ export const BUILTIN_TEMPLATES = [
                                   "y2": 30
                             },
                             {
+                                  "type": "pass",
+                                  "fromId": "t4",
+                                  "toId": "t2",
+                                  "pts": [
+                                        {
+                                              "x": 46.3,
+                                              "y": 42.4
+                                        },
+                                        {
+                                              "x": 27.7,
+                                              "y": 38.7
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -2671,21 +2644,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 33.2,
                                               "y": 24.9
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t4",
-                                  "toId": "t2",
-                                  "pts": [
-                                        {
-                                              "x": 47,
-                                              "y": 40
-                                        },
-                                        {
-                                              "x": 34,
-                                              "y": 25
                                         }
                                   ]
                             }
@@ -2751,8 +2709,8 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 24.9
                                         },
                                         {
-                                              "x": 37.9,
-                                              "y": 18.7
+                                              "x": 37.8,
+                                              "y": 20.1
                                         }
                                   ]
                             }
@@ -2769,8 +2727,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 64
                             },
                             "t2": {
-                                  "x": 37.9,
-                                  "y": 18.7
+                                  "x": 37.8,
+                                  "y": 20.1
                             },
                             "t3": {
                                   "x": 69.5,
@@ -2783,12 +2741,12 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 47,
+                                  "x": 46.5,
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 39.9,
-                                  "y": 26.8
+                                  "x": 40.1,
+                                  "y": 27.9
                             },
                             "o2": {
                                   "x": 58.3,
@@ -2799,13 +2757,13 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 35
                             },
                             "o4": {
-                                  "x": 51.1,
+                                  "x": 51.2,
                                   "y": 28.7
                             }
                       },
                       "ball": {
-                            "x": 37.9,
-                            "y": 18.7,
+                            "x": 37.8,
+                            "y": 20.1,
                             "attachedTo": "t2"
                       },
                       "gear": [],
@@ -2816,8 +2774,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 40,
-                                              "y": 16
+                                              "x": 40.2,
+                                              "y": 17.2
                                         },
                                         {
                                               "x": 55,
@@ -2893,6 +2851,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 5 Steps",
     desc: "Opponent plays wide; striker curves press to block GK return, winger jumps the sideline pass, feeds striker, and scores.",
     cue: "Curve your press — lock them onto one touchline!",
+    stepCues: ["Curve press as ball travels","Spring press trap — win the ball!","Feed Striker & make support run","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "1-2-1",
@@ -2958,12 +2917,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "o1",
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 13
+                                              "x": 46.6,
+                                              "y": 12.7
                                         },
                                         {
-                                              "x": 28,
-                                              "y": 22
+                                              "x": 27.4,
+                                              "y": 22.3
                                         }
                                   ]
                             }
@@ -3022,6 +2981,28 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "zone",
+                                  "x1": 10,
+                                  "y1": 20,
+                                  "x2": 34,
+                                  "y2": 46
+                            },
+                            {
+                                  "type": "pass",
+                                  "fromId": "o1",
+                                  "toId": "t2",
+                                  "pts": [
+                                        {
+                                              "x": 24.3,
+                                              "y": 27.8
+                                        },
+                                        {
+                                              "x": 25.7,
+                                              "y": 48.2
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -3046,30 +3027,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 52
                                         },
                                         {
-                                              "x": 21.9,
-                                              "y": 38.8
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "zone",
-                                  "x1": 10,
-                                  "y1": 20,
-                                  "x2": 34,
-                                  "y2": 46
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "o1",
-                                  "toId": "t2",
-                                  "pts": [
-                                        {
-                                              "x": 24,
-                                              "y": 28
+                                              "x": 30.2,
+                                              "y": 43.5
                                         },
                                         {
-                                              "x": 22,
-                                              "y": 39
+                                              "x": 21.9,
+                                              "y": 38.8
                                         }
                                   ]
                             }
@@ -3128,26 +3091,26 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 32,
-                                              "y": 25
-                                        },
-                                        {
-                                              "x": 46,
-                                              "y": 20
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t2",
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 25,
-                                              "y": 36
+                                              "x": 24.1,
+                                              "y": 35.7
+                                        },
+                                        {
+                                              "x": 29.8,
+                                              "y": 28.1
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 32,
+                                              "y": 25
                                         },
                                         {
                                               "x": 46,
@@ -3182,7 +3145,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 52,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -3215,8 +3178,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 17
+                                              "x": 45.8,
+                                              "y": 16.2
                                         },
                                         {
                                               "x": 45,
@@ -3289,9 +3252,10 @@ export const BUILTIN_TEMPLATES = [
     difficulty: "medium",
     standard: "FA Out-of-Possession",
     title: "5v5 2-2 Compact Box & Split Counter",
-    tag: "5v5 • 5 Steps",
+    tag: "5v5 • 6 Steps",
     desc: "Stay compact in a central 2-2 box to block through-balls, step in to intercept, and immediately split the defence on the counter.",
     cue: "Protect the middle as a 2-2 box — win it and break fast!",
+    stepCues: ["Spring press trap — win the ball!","Feed Midfielder & make support run","Striker drives into open grass","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "2-2",
@@ -3363,12 +3327,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 29,
-                                              "y": 47
+                                              "x": 27.7,
+                                              "y": 47.4
                                         },
                                         {
-                                              "x": 38,
-                                              "y": 64
+                                              "x": 36.3,
+                                              "y": 64.6
                                         }
                                   ]
                             },
@@ -3428,8 +3392,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 50
                             },
                             "o4": {
-                                  "x": 52,
-                                  "y": 58
+                                  "x": 52.8,
+                                  "y": 59.3
                             }
                       },
                       "ball": {
@@ -3445,12 +3409,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 41,
-                                              "y": 59
+                                              "x": 41.2,
+                                              "y": 59.9
                                         },
                                         {
-                                              "x": 68,
-                                              "y": 34
+                                              "x": 62.8,
+                                              "y": 46.1
                                         }
                                   ]
                             },
@@ -3596,7 +3560,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "o2": {
                                   "x": 58.7,
-                                  "y": 22.6
+                                  "y": 22.8
                             },
                             "o3": {
                                   "x": 34,
@@ -3620,12 +3584,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 65,
-                                              "y": 18
+                                              "x": 64.4,
+                                              "y": 17.6
                                         },
                                         {
-                                              "x": 49,
-                                              "y": 16
+                                              "x": 49.8,
+                                              "y": 16.3
                                         }
                                   ]
                             }
@@ -3647,7 +3611,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t3": {
                                   "x": 46,
-                                  "y": 16
+                                  "y": 20.5
                             },
                             "t4": {
                                   "x": 66.6,
@@ -3678,7 +3642,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 46,
-                            "y": 16,
+                            "y": 20.5,
                             "attachedTo": "t3"
                       },
                       "gear": [],
@@ -3689,8 +3653,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 13
+                                              "x": 45.6,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 44,
@@ -3766,6 +3730,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 5 Steps",
     desc: "Left winger pushes high, striker drops into the pocket to link play, right winger breaks in, and squares for the tap-in.",
     cue: "One moves out, another fills the open space!",
+    stepCues: ["Feed Midfielder & make support run","Feed Right Wing & make support run","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "1-2-1",
@@ -3826,6 +3791,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t1",
+                                  "toId": "t4",
+                                  "pts": [
+                                        {
+                                              "x": 50,
+                                              "y": 69.2
+                                        },
+                                        {
+                                              "x": 50,
+                                              "y": 39.8
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -3844,21 +3824,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 50,
                                               "y": 36
-                                        },
-                                        {
-                                              "x": 50,
-                                              "y": 53
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t1",
-                                  "toId": "t4",
-                                  "pts": [
-                                        {
-                                              "x": 50,
-                                              "y": 69
                                         },
                                         {
                                               "x": 50,
@@ -3909,8 +3874,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 44
                             },
                             "o4": {
-                                  "x": 65.2,
-                                  "y": 46.2
+                                  "x": 63.8,
+                                  "y": 42.2
                             }
                       },
                       "ball": {
@@ -3921,6 +3886,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t4",
+                                  "toId": "t3",
+                                  "pts": [
+                                        {
+                                              "x": 53.6,
+                                              "y": 51.8
+                                        },
+                                        {
+                                              "x": 72.7,
+                                              "y": 45.1
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -3930,21 +3910,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 63.8,
                                               "y": 21.8
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t4",
-                                  "toId": "t3",
-                                  "pts": [
-                                        {
-                                              "x": 53,
-                                              "y": 50
-                                        },
-                                        {
-                                              "x": 64,
-                                              "y": 22
                                         }
                                   ]
                             }
@@ -3980,7 +3945,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "o1": {
                                   "x": 42.4,
-                                  "y": 22
+                                  "y": 16.2
                             },
                             "o2": {
                                   "x": 70.5,
@@ -4003,6 +3968,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t3",
+                                  "toId": "t2",
+                                  "pts": [
+                                        {
+                                              "x": 60,
+                                              "y": 21.8
+                                        },
+                                        {
+                                              "x": 34.7,
+                                              "y": 22
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -4010,23 +3990,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 22
                                         },
                                         {
-                                              "x": 38.2,
-                                              "y": 17.8
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t3",
-                                  "toId": "t2",
-                                  "pts": [
-                                        {
-                                              "x": 60,
-                                              "y": 21
+                                              "x": 36.3,
+                                              "y": 27.4
                                         },
                                         {
-                                              "x": 38,
-                                              "y": 18
+                                              "x": 38.7,
+                                              "y": 20.2
                                         }
                                   ]
                             }
@@ -4043,8 +4012,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 60
                             },
                             "t2": {
-                                  "x": 38.2,
-                                  "y": 17.8
+                                  "x": 38.7,
+                                  "y": 20.2
                             },
                             "t3": {
                                   "x": 61.6,
@@ -4057,12 +4026,12 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 52,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 31.5,
-                                  "y": 24.5
+                                  "x": 30.1,
+                                  "y": 25.3
                             },
                             "o2": {
                                   "x": 68.3,
@@ -4078,8 +4047,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 38.2,
-                            "y": 17.8,
+                            "x": 38.7,
+                            "y": 20.2,
                             "attachedTo": "t2"
                       },
                       "gear": [],
@@ -4090,8 +4059,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 40,
-                                              "y": 15
+                                              "x": 39.8,
+                                              "y": 16.6
                                         },
                                         {
                                               "x": 45,
@@ -4167,6 +4136,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 5 Steps",
     desc: "Goalkeeper claims a shot, rolls instantly to the right defender, who carries into space and hits a diagonal pass to score.",
     cue: "Keeper scan up — roll wide fast and sprint!",
+    stepCues: ["Play out cleanly to Right Back","Right Back drives into open grass","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "5v5",
           "formationId": "2-2",
@@ -4232,12 +4202,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 54,
+                                              "x": 53.3,
                                               "y": 86
                                         },
                                         {
-                                              "x": 78,
-                                              "y": 71
+                                              "x": 76.7,
+                                              "y": 72
                                         }
                                   ]
                             }
@@ -4316,6 +4286,10 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 46
                                         },
                                         {
+                                              "x": 27.1,
+                                              "y": 32.2
+                                        },
+                                        {
                                               "x": 38,
                                               "y": 23.6
                                         }
@@ -4329,8 +4303,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 44.4
                                         },
                                         {
-                                              "x": 60,
-                                              "y": 24
+                                              "x": 55.5,
+                                              "y": 35.3
+                                        },
+                                        {
+                                              "x": 59.9,
+                                              "y": 23.7
                                         }
                                   ]
                             }
@@ -4355,8 +4333,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 23.6
                             },
                             "t4": {
-                                  "x": 60,
-                                  "y": 24
+                                  "x": 59.9,
+                                  "y": 23.7
                             }
                       },
                       "oppPos": {
@@ -4369,8 +4347,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 31.9
                             },
                             "o2": {
-                                  "x": 62,
-                                  "y": 32.1
+                                  "x": 62.7,
+                                  "y": 31.4
                             },
                             "o3": {
                                   "x": 46,
@@ -4389,6 +4367,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t2",
+                                  "toId": "t3",
+                                  "pts": [
+                                        {
+                                              "x": 76.7,
+                                              "y": 46.1
+                                        },
+                                        {
+                                              "x": 41.3,
+                                              "y": 25.5
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -4396,23 +4389,8 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 23.6
                                         },
                                         {
-                                              "x": 40.1,
-                                              "y": 18.8
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t2",
-                                  "toId": "t3",
-                                  "pts": [
-                                        {
-                                              "x": 76,
-                                              "y": 45
-                                        },
-                                        {
-                                              "x": 40,
-                                              "y": 19
+                                              "x": 40.4,
+                                              "y": 20.3
                                         }
                                   ]
                             }
@@ -4433,8 +4411,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 42
                             },
                             "t3": {
-                                  "x": 40.1,
-                                  "y": 18.8
+                                  "x": 40.4,
+                                  "y": 20.3
                             },
                             "t4": {
                                   "x": 60,
@@ -4443,12 +4421,12 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 48,
+                                  "x": 46.5,
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 34.4,
-                                  "y": 25.9
+                                  "x": 33.6,
+                                  "y": 26.6
                             },
                             "o2": {
                                   "x": 60,
@@ -4464,8 +4442,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 40.1,
-                            "y": 18.8,
+                            "x": 40.4,
+                            "y": 20.3,
                             "attachedTo": "t3"
                       },
                       "gear": [],
@@ -4476,8 +4454,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 43,
-                                              "y": 16
+                                              "x": 42.6,
+                                              "y": 17.2
                                         },
                                         {
                                               "x": 55,
@@ -4553,6 +4531,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "5v5 • 4 Steps",
     desc: "For U9 Indirect Free Kicks on the penalty box edge (deliberate heading or GK punt): decoy run pulls the wall, short sideways lay-off, and clean 2nd-touch finish.",
     cue: "Indirect kick needs two touches — roll sideways and strike!",
+    stepCues: ["Feed Striker & make support run","Striker drives into open grass","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -4563,21 +4542,17 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 88
-                            },
-                            "t1": {
-                                  "x": 50,
                                   "y": 66
                             },
-                            "t2": {
+                            "t1": {
                                   "x": 24,
                                   "y": 34
                             },
-                            "t3": {
+                            "t2": {
                                   "x": 62,
                                   "y": 32
                             },
-                            "t4": {
+                            "t3": {
                                   "x": 42,
                                   "y": 30
                             }
@@ -4607,10 +4582,25 @@ export const BUILTIN_TEMPLATES = [
                       "ball": {
                             "x": 42,
                             "y": 30,
-                            "attachedTo": "t4"
+                            "attachedTo": "t3"
                       },
                       "gear": [],
                       "drawings": [
+                            {
+                                  "type": "pass",
+                                  "fromId": "t3",
+                                  "toId": "t2",
+                                  "pts": [
+                                        {
+                                              "x": 45.8,
+                                              "y": 30.4
+                                        },
+                                        {
+                                              "x": 58.2,
+                                              "y": 31.6
+                                        }
+                                  ]
+                            },
                             {
                                   "type": "run",
                                   "pts": [
@@ -4619,23 +4609,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 34
                                         },
                                         {
-                                              "x": 19.8,
-                                              "y": 15.5
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t4",
-                                  "toId": "t3",
-                                  "pts": [
-                                        {
-                                              "x": 45,
-                                              "y": 30
+                                              "x": 15.6,
+                                              "y": 26.2
                                         },
                                         {
-                                              "x": 59,
-                                              "y": 31
+                                              "x": 19.8,
+                                              "y": 15.5
                                         }
                                   ]
                             }
@@ -4645,21 +4624,17 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 88
-                            },
-                            "t1": {
-                                  "x": 50,
                                   "y": 64
                             },
-                            "t2": {
+                            "t1": {
                                   "x": 19.8,
                                   "y": 15.5
                             },
-                            "t3": {
+                            "t2": {
                                   "x": 60,
                                   "y": 31
                             },
-                            "t4": {
+                            "t3": {
                                   "x": 42,
                                   "y": 30
                             }
@@ -4689,7 +4664,7 @@ export const BUILTIN_TEMPLATES = [
                       "ball": {
                             "x": 60,
                             "y": 31,
-                            "attachedTo": "t3"
+                            "attachedTo": "t2"
                       },
                       "gear": [],
                       "drawings": [
@@ -4714,6 +4689,10 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 30
                                         },
                                         {
+                                              "x": 34.7,
+                                              "y": 24
+                                        },
+                                        {
                                               "x": 40.3,
                                               "y": 16.4
                                         }
@@ -4725,28 +4704,24 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 88
-                            },
-                            "t1": {
-                                  "x": 50,
                                   "y": 62
                             },
-                            "t2": {
+                            "t1": {
                                   "x": 19.8,
                                   "y": 14.7
                             },
-                            "t3": {
+                            "t2": {
                                   "x": 58.5,
                                   "y": 23
                             },
-                            "t4": {
+                            "t3": {
                                   "x": 40.3,
                                   "y": 16.4
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 47.2,
+                                  "x": 46.5,
                                   "y": 9.8
                             },
                             "o1": {
@@ -4769,18 +4744,18 @@ export const BUILTIN_TEMPLATES = [
                       "ball": {
                             "x": 58.5,
                             "y": 23,
-                            "attachedTo": "t3"
+                            "attachedTo": "t2"
                       },
                       "gear": [],
                       "drawings": [
                             {
                                   "type": "pass",
-                                  "fromId": "t3",
+                                  "fromId": "t2",
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 58,
-                                              "y": 20
+                                              "x": 58.1,
+                                              "y": 19.2
                                         },
                                         {
                                               "x": 56,
@@ -4794,21 +4769,17 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 88
-                            },
-                            "t1": {
-                                  "x": 50,
                                   "y": 62
                             },
-                            "t2": {
+                            "t1": {
                                   "x": 22,
                                   "y": 13.9
                             },
-                            "t3": {
+                            "t2": {
                                   "x": 58.7,
                                   "y": 20.9
                             },
-                            "t4": {
+                            "t3": {
                                   "x": 39.7,
                                   "y": 16.4
                             }
@@ -4843,7 +4814,9 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": []
                 }
-          ]
+          ],
+          "customTeamCount": 4,
+          "hideGkBadge": true
     })
   },
   {
@@ -4856,6 +4829,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 6 Steps",
     desc: "GK plays to split left back, inside to central pivot, out to left winger, low cross to striker, and finish!",
     cue: "Make a triangle wide — defender, pivot, winger!",
+    stepCues: ["Play out cleanly to Left Back","Feed Midfielder & make support run","Feed Left Wing & make support run","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "2-2-1",
@@ -4929,12 +4903,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 88
+                                              "x": 46.4,
+                                              "y": 88.7
                                         },
                                         {
-                                              "x": 21,
-                                              "y": 79
+                                              "x": 21.6,
+                                              "y": 79.3
                                         }
                                   ]
                             }
@@ -5001,26 +4975,26 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 40,
-                                              "y": 62
-                                        },
-                                        {
-                                              "x": 36,
-                                              "y": 58
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t1",
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 21,
-                                              "y": 73
+                                              "x": 21.2,
+                                              "y": 74
+                                        },
+                                        {
+                                              "x": 36.8,
+                                              "y": 64
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 40,
+                                              "y": 62
                                         },
                                         {
                                               "x": 36,
@@ -5091,6 +5065,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t3",
+                                  "toId": "t4",
+                                  "pts": [
+                                        {
+                                              "x": 33.7,
+                                              "y": 55
+                                        },
+                                        {
+                                              "x": 20.3,
+                                              "y": 37
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -5099,21 +5088,6 @@ export const BUILTIN_TEMPLATES = [
                                         },
                                         {
                                               "x": 19.8,
-                                              "y": 22
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t3",
-                                  "toId": "t4",
-                                  "pts": [
-                                        {
-                                              "x": 33,
-                                              "y": 55
-                                        },
-                                        {
-                                              "x": 20,
                                               "y": 22
                                         }
                                   ]
@@ -5153,8 +5127,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 31.3,
-                                  "y": 22
+                                  "x": 31.6,
+                                  "y": 26.9
                             },
                             "o2": {
                                   "x": 62,
@@ -5181,30 +5155,17 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 50,
-                                              "y": 20
-                                        },
-                                        {
-                                              "x": 49.9,
-                                              "y": 18
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t4",
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 24,
-                                              "y": 21
+                                              "x": 23.6,
+                                              "y": 21.7
                                         },
                                         {
-                                              "x": 50,
-                                              "y": 18
+                                              "x": 46.2,
+                                              "y": 20.3
                                         }
                                   ]
                             }
@@ -5233,13 +5194,13 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 20
                             },
                             "t5": {
-                                  "x": 49.9,
-                                  "y": 18
+                                  "x": 49.8,
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 48,
+                                  "x": 46.5,
                                   "y": 9.9
                             },
                             "o1": {
@@ -5247,7 +5208,7 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 20
                             },
                             "o2": {
-                                  "x": 60.5,
+                                  "x": 60.9,
                                   "y": 21.2
                             },
                             "o3": {
@@ -5264,8 +5225,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 49.9,
-                            "y": 18,
+                            "x": 49.8,
+                            "y": 20.5,
                             "attachedTo": "t5"
                       },
                       "gear": [],
@@ -5276,8 +5237,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 51,
-                                              "y": 15
+                                              "x": 50.7,
+                                              "y": 16.8
                                         },
                                         {
                                               "x": 55,
@@ -5361,6 +5322,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 4 Steps",
     desc: "Striker sprints to the near post to drag defenders forward, vacating the penalty-box edge for a clean low cut-back.",
     cue: "One sprints near post — second arrives on the spot!",
+    stepCues: ["Check away to open passing lane","Bounce lay-off to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "2-1-2",
@@ -5429,6 +5391,13 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "zone",
+                                  "x1": 46,
+                                  "y1": 17,
+                                  "x2": 62,
+                                  "y2": 26
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -5453,13 +5422,6 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 24.6
                                         }
                                   ]
-                            },
-                            {
-                                  "type": "zone",
-                                  "x1": 46,
-                                  "y1": 17,
-                                  "x2": 62,
-                                  "y2": 26
                             }
                       ]
                 },
@@ -5504,8 +5466,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 15.9
                             },
                             "o3": {
-                                  "x": 66,
-                                  "y": 19.2
+                                  "x": 68.5,
+                                  "y": 25.2
                             },
                             "o4": {
                                   "x": 43.6,
@@ -5529,12 +5491,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 87,
-                                              "y": 11
+                                              "x": 86.5,
+                                              "y": 11.5
                                         },
                                         {
-                                              "x": 54,
-                                              "y": 20
+                                              "x": 58.6,
+                                              "y": 23.1
                                         }
                                   ]
                             }
@@ -5556,10 +5518,10 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t3": {
                                   "x": 53.7,
-                                  "y": 22.6
+                                  "y": 22.7
                             },
                             "t4": {
-                                  "x": 66.9,
+                                  "x": 67,
                                   "y": 11.4
                             },
                             "t5": {
@@ -5569,20 +5531,20 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 51.9,
-                                  "y": 7.1
+                                  "x": 53.5,
+                                  "y": 7.5
                             },
                             "o1": {
-                                  "x": 56.4,
-                                  "y": 14.6
+                                  "x": 57,
+                                  "y": 15.1
                             },
                             "o2": {
                                   "x": 43.1,
                                   "y": 15.6
                             },
                             "o3": {
-                                  "x": 65.4,
-                                  "y": 20.1
+                                  "x": 65.6,
+                                  "y": 20.2
                             },
                             "o4": {
                                   "x": 42.4,
@@ -5595,7 +5557,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 53.7,
-                            "y": 22.6,
+                            "y": 22.7,
                             "attachedTo": "t3"
                       },
                       "gear": [],
@@ -5606,8 +5568,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 52,
-                                              "y": 17
+                                              "x": 52.4,
+                                              "y": 19.1
                                         },
                                         {
                                               "x": 45,
@@ -5691,6 +5653,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 5 Steps",
     desc: "Winger plays the sideline restart inside to the central pivot, spins behind their marker down the wing for the return ball, and crosses to the striker.",
     cue: "Pass inside from the line — spin and sprint for the return!",
+    stepCues: ["Switch play wide to Midfielder","Square across box to Left Wing","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "1-3-1",
@@ -5763,12 +5726,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 10,
-                                              "y": 54
+                                              "x": 10.8,
+                                              "y": 54.2
                                         },
                                         {
-                                              "x": 41,
-                                              "y": 56
+                                              "x": 40.2,
+                                              "y": 55.8
                                         }
                                   ]
                             },
@@ -5832,8 +5795,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 25
                             },
                             "o3": {
-                                  "x": 24,
-                                  "y": 36
+                                  "x": 20.8,
+                                  "y": 38.9
                             },
                             "o4": {
                                   "x": 69.9,
@@ -5857,12 +5820,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 41,
-                                              "y": 53
+                                              "x": 41.4,
+                                              "y": 53.2
                                         },
                                         {
-                                              "x": 17,
-                                              "y": 25
+                                              "x": 17.6,
+                                              "y": 26.8
                                         }
                                   ]
                             },
@@ -5927,8 +5890,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 9.9
                             },
                             "o1": {
-                                  "x": 28,
-                                  "y": 20
+                                  "x": 27.3,
+                                  "y": 16
                             },
                             "o2": {
                                   "x": 60,
@@ -5960,12 +5923,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 18,
-                                              "y": 23
+                                              "x": 18.7,
+                                              "y": 23.3
                                         },
                                         {
-                                              "x": 45,
-                                              "y": 17
+                                              "x": 44.6,
+                                              "y": 18.6
                                         }
                                   ]
                             }
@@ -5995,7 +5958,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t5": {
                                   "x": 48.1,
-                                  "y": 17.3
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
@@ -6026,7 +5989,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 48.1,
-                            "y": 17.3,
+                            "y": 20.5,
                             "attachedTo": "t5"
                       },
                       "gear": [],
@@ -6037,8 +6000,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 49,
-                                              "y": 14
+                                              "x": 49.1,
+                                              "y": 16.8
                                         },
                                         {
                                               "x": 54,
@@ -6122,6 +6085,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 5 Steps",
     desc: "As soon as our goalkeeper claims the ball, the right midfielder sprints wide into space for an early fast roll, dribbles past halfway, and feeds the striker.",
     cue: "Keeper catches? Sprint wide immediately for the fast roll!",
+    stepCues: ["Play out cleanly to Right Back","Right Wing drives into open grass","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "2-2-1",
@@ -6189,6 +6153,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t0",
+                                  "toId": "t4",
+                                  "pts": [
+                                        {
+                                              "x": 52.7,
+                                              "y": 86.4
+                                        },
+                                        {
+                                              "x": 75.3,
+                                              "y": 64.6
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -6198,21 +6177,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 84,
                                               "y": 46
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t0",
-                                  "toId": "t4",
-                                  "pts": [
-                                        {
-                                              "x": 53,
-                                              "y": 86
-                                        },
-                                        {
-                                              "x": 82,
-                                              "y": 48
                                         }
                                   ]
                             }
@@ -6356,8 +6320,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 21.5
                             },
                             "o2": {
-                                  "x": 68,
-                                  "y": 22
+                                  "x": 69.2,
+                                  "y": 16
                             },
                             "o3": {
                                   "x": 34,
@@ -6385,12 +6349,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 77,
-                                              "y": 23
+                                              "x": 76.3,
+                                              "y": 23.3
                                         },
                                         {
-                                              "x": 53,
-                                              "y": 18
+                                              "x": 53.7,
+                                              "y": 18.7
                                         }
                                   ]
                             }
@@ -6411,7 +6375,7 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 60
                             },
                             "t3": {
-                                  "x": 29.3,
+                                  "x": 29.1,
                                   "y": 19.8
                             },
                             "t4": {
@@ -6419,8 +6383,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 22
                             },
                             "t5": {
-                                  "x": 50,
-                                  "y": 18
+                                  "x": 50.2,
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
@@ -6429,8 +6393,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 40.1,
-                                  "y": 22.5
+                                  "x": 39.5,
+                                  "y": 22.7
                             },
                             "o2": {
                                   "x": 66,
@@ -6450,8 +6414,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 50,
-                            "y": 18,
+                            "x": 50.2,
+                            "y": 20.5,
                             "attachedTo": "t5"
                       },
                       "gear": [],
@@ -6462,8 +6426,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 50,
-                                              "y": 15
+                                              "x": 49.5,
+                                              "y": 16.8
                                         },
                                         {
                                               "x": 46,
@@ -6547,6 +6511,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 6 Steps",
     desc: "Recycle from crowded left wing to left CB, switch across to right CB, feed open right winger, square to striker, and score.",
     cue: "Two quick passes across the back unlock the wing!",
+    stepCues: ["Bounce lay-off to Defender","Switch play wide to Defender","Feed Right Wing & make support run","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "2-2-1",
@@ -6627,12 +6592,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 20,
-                                              "y": 54
+                                              "x": 19.7,
+                                              "y": 53.5
                                         },
                                         {
-                                              "x": 29,
-                                              "y": 69
+                                              "x": 28.2,
+                                              "y": 68.7
                                         }
                                   ]
                             }
@@ -6704,12 +6669,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 34,
-                                              "y": 72
+                                              "x": 33.8,
+                                              "y": 71.6
                                         },
                                         {
-                                              "x": 64,
-                                              "y": 68
+                                              "x": 64.2,
+                                              "y": 68.4
                                         }
                                   ]
                             },
@@ -6789,6 +6754,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t2",
+                                  "toId": "t4",
+                                  "pts": [
+                                        {
+                                              "x": 69.4,
+                                              "y": 62.5
+                                        },
+                                        {
+                                              "x": 80.6,
+                                              "y": 35.5
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -6798,21 +6778,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 76.3,
                                               "y": 21.9
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t2",
-                                  "toId": "t4",
-                                  "pts": [
-                                        {
-                                              "x": 70,
-                                              "y": 62
-                                        },
-                                        {
-                                              "x": 76,
-                                              "y": 22
                                         }
                                   ]
                             }
@@ -6855,8 +6820,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 24
                             },
                             "o2": {
-                                  "x": 65.5,
-                                  "y": 24.6
+                                  "x": 65.3,
+                                  "y": 26.9
                             },
                             "o3": {
                                   "x": 37.4,
@@ -6879,30 +6844,17 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 48,
-                                              "y": 20
-                                        },
-                                        {
-                                              "x": 48.2,
-                                              "y": 17.9
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t4",
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 72,
-                                              "y": 21
+                                              "x": 72.5,
+                                              "y": 21.6
                                         },
                                         {
-                                              "x": 48,
-                                              "y": 18
+                                              "x": 51.8,
+                                              "y": 20.3
                                         }
                                   ]
                             }
@@ -6931,18 +6883,18 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 19.8
                             },
                             "t5": {
-                                  "x": 48.2,
-                                  "y": 17.9
+                                  "x": 48.5,
+                                  "y": 20.4
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 53,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 38.7,
-                                  "y": 22.6
+                                  "x": 37.8,
+                                  "y": 22.8
                             },
                             "o2": {
                                   "x": 63.9,
@@ -6962,8 +6914,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 48.2,
-                            "y": 17.9,
+                            "x": 48.5,
+                            "y": 20.4,
                             "attachedTo": "t5"
                       },
                       "gear": [],
@@ -6974,8 +6926,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 15
+                                              "x": 47.9,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 45,
@@ -7059,6 +7011,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 5 Steps",
     desc: "Opponent GK plays wide; forwards press outside-in to force a central turnover to your midfielder, who slips the striker.",
     cue: "Show them inside into our midfielder’s trap!",
+    stepCues: ["Curve press as ball travels","Spring press trap — win the ball!","Feed Striker & make support run","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "2-1-2",
@@ -7132,12 +7085,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "o1",
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 12
+                                              "x": 46.6,
+                                              "y": 11.7
                                         },
                                         {
-                                              "x": 29,
-                                              "y": 21
+                                              "x": 29.4,
+                                              "y": 20.3
                                         }
                                   ]
                             }
@@ -7204,6 +7157,28 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "zone",
+                                  "x1": 38,
+                                  "y1": 30,
+                                  "x2": 60,
+                                  "y2": 44
+                            },
+                            {
+                                  "type": "pass",
+                                  "fromId": "o1",
+                                  "toId": "t3",
+                                  "pts": [
+                                        {
+                                              "x": 28.7,
+                                              "y": 24.7
+                                        },
+                                        {
+                                              "x": 47.3,
+                                              "y": 43.6
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -7224,30 +7199,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 46.3
                                         },
                                         {
-                                              "x": 47.8,
-                                              "y": 36.8
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "zone",
-                                  "x1": 38,
-                                  "y1": 30,
-                                  "x2": 60,
-                                  "y2": 44
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "o1",
-                                  "toId": "t3",
-                                  "pts": [
-                                        {
-                                              "x": 29,
-                                              "y": 24
+                                              "x": 42.6,
+                                              "y": 43
                                         },
                                         {
-                                              "x": 48,
-                                              "y": 37
+                                              "x": 47.8,
+                                              "y": 36.8
                                         }
                                   ]
                             }
@@ -7314,6 +7271,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t3",
+                                  "toId": "t5",
+                                  "pts": [
+                                        {
+                                              "x": 50.9,
+                                              "y": 34.7
+                                        },
+                                        {
+                                              "x": 60.2,
+                                              "y": 28.3
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -7322,22 +7294,7 @@ export const BUILTIN_TEMPLATES = [
                                         },
                                         {
                                               "x": 56,
-                                              "y": 18
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t3",
-                                  "toId": "t5",
-                                  "pts": [
-                                        {
-                                              "x": 50,
-                                              "y": 34
-                                        },
-                                        {
-                                              "x": 56,
-                                              "y": 18
+                                              "y": 20.5
                                         }
                                   ]
                             }
@@ -7367,12 +7324,12 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t5": {
                                   "x": 56,
-                                  "y": 18
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 48,
+                                  "x": 46.5,
                                   "y": 10
                             },
                             "o1": {
@@ -7398,7 +7355,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 56,
-                            "y": 18,
+                            "y": 20.5,
                             "attachedTo": "t5"
                       },
                       "gear": [],
@@ -7409,8 +7366,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 56,
-                                              "y": 15
+                                              "x": 55.8,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 55,
@@ -7494,6 +7451,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 4 Steps",
     desc: "From a central free kick, the striker sprints across the wall as a decoy while the right winger slips blind-side into the box for a disguised reverse pass.",
     cue: "One crosses the wall as decoy — slip the blind-side runner!",
+    stepCues: ["Feed Right Wing & make support run","Striker drives into open grass","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "2-2-1",
@@ -7561,11 +7519,30 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t3",
+                                  "toId": "t4",
+                                  "pts": [
+                                        {
+                                              "x": 49.8,
+                                              "y": 35.5
+                                        },
+                                        {
+                                              "x": 72.2,
+                                              "y": 32.5
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
                                               "x": 57.2,
                                               "y": 27.2
+                                        },
+                                        {
+                                              "x": 46.5,
+                                              "y": 16.3
                                         },
                                         {
                                               "x": 31.3,
@@ -7581,23 +7558,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 32
                                         },
                                         {
-                                              "x": 64,
-                                              "y": 17
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t3",
-                                  "toId": "t4",
-                                  "pts": [
-                                        {
-                                              "x": 49,
-                                              "y": 34
+                                              "x": 64.9,
+                                              "y": 28.6
                                         },
                                         {
-                                              "x": 63,
-                                              "y": 18
+                                              "x": 64,
+                                              "y": 17
                                         }
                                   ]
                             }
@@ -7671,8 +7637,8 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 17
                                         },
                                         {
-                                              "x": 58.7,
-                                              "y": 14.5
+                                              "x": 59,
+                                              "y": 20.4
                                         }
                                   ]
                             },
@@ -7710,8 +7676,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 32
                             },
                             "t4": {
-                                  "x": 58.7,
-                                  "y": 14.5
+                                  "x": 59,
+                                  "y": 20.4
                             },
                             "t5": {
                                   "x": 40,
@@ -7720,7 +7686,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 51,
+                                  "x": 53.5,
                                   "y": 8.4
                             },
                             "o1": {
@@ -7728,8 +7694,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 22.1
                             },
                             "o2": {
-                                  "x": 50,
-                                  "y": 24
+                                  "x": 49.2,
+                                  "y": 24.3
                             },
                             "o3": {
                                   "x": 22,
@@ -7745,8 +7711,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 58.7,
-                            "y": 14.5,
+                            "x": 59,
+                            "y": 20.4,
                             "attachedTo": "t4"
                       },
                       "gear": [],
@@ -7757,8 +7723,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 56,
-                                              "y": 12
+                                              "x": 56.9,
+                                              "y": 17.2
                                         },
                                         {
                                               "x": 45,
@@ -7839,9 +7805,10 @@ export const BUILTIN_TEMPLATES = [
     difficulty: "medium",
     standard: "FA Transition",
     title: "6v6 Sweeper Tackle & 3-Pass Counter",
-    tag: "6v6 • 5 Steps",
+    tag: "6v6 • 6 Steps",
     desc: "Sweeper steps across to win the ball in our defensive third, connects immediately with the central midfielder, releases the left winger, and finishes.",
     cue: "Win the tackle, find the middle hub, release the wing!",
+    stepCues: ["Spring press trap — win the ball!","Feed Midfielder & make support run","Square across box to Left Wing","Left Wing drives into open grass","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "1-3-1",
@@ -7909,26 +7876,26 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 52,
-                                              "y": 74
-                                        },
-                                        {
-                                              "x": 46,
-                                              "y": 70
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "o5",
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 44,
-                                              "y": 69
+                                              "x": 46.4,
+                                              "y": 69.8
+                                        },
+                                        {
+                                              "x": 49.6,
+                                              "y": 72.2
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 52,
+                                              "y": 74
                                         },
                                         {
                                               "x": 46,
@@ -8004,12 +7971,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 67
+                                              "x": 46.8,
+                                              "y": 66.3
                                         },
                                         {
-                                              "x": 50,
-                                              "y": 54
+                                              "x": 49.2,
+                                              "y": 55.7
                                         }
                                   ]
                             },
@@ -8082,8 +8049,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 24
                             },
                             "o3": {
-                                  "x": 32,
-                                  "y": 40
+                                  "x": 30,
+                                  "y": 42.3
                             },
                             "o4": {
                                   "x": 68,
@@ -8107,12 +8074,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 49
+                                              "x": 47.1,
+                                              "y": 49.5
                                         },
                                         {
-                                              "x": 22,
-                                              "y": 27
+                                              "x": 22.9,
+                                              "y": 28.5
                                         }
                                   ]
                             }
@@ -8186,8 +8153,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 26
                                         },
                                         {
-                                              "x": 32,
-                                              "y": 18
+                                              "x": 23.2,
+                                              "y": 17.2
+                                        },
+                                        {
+                                              "x": 32.2,
+                                              "y": 20
                                         }
                                   ]
                             }
@@ -8204,8 +8175,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 64
                             },
                             "t2": {
-                                  "x": 32,
-                                  "y": 18
+                                  "x": 32.2,
+                                  "y": 20
                             },
                             "t3": {
                                   "x": 50,
@@ -8226,8 +8197,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 30,
-                                  "y": 26.1
+                                  "x": 29.4,
+                                  "y": 27.7
                             },
                             "o2": {
                                   "x": 61.9,
@@ -8247,8 +8218,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 32,
-                            "y": 18,
+                            "x": 32.2,
+                            "y": 20,
                             "attachedTo": "t2"
                       },
                       "gear": [],
@@ -8259,8 +8230,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 35,
-                                              "y": 15
+                                              "x": 34.8,
+                                              "y": 17.2
                                         },
                                         {
                                               "x": 52,
@@ -8344,6 +8315,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 6 Steps",
     desc: "Defender feeds left winger and overlaps outside while winger drives inside to pin marker, slips overlap, cuts back, and scores.",
     cue: "Dribble inside — overlapper shouts \"OVER!\" outside!",
+    stepCues: ["Feed Left Wing & make support run","Left Wing drives into open grass","Feed Left Wing & make support run","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "1-3-1",
@@ -8417,12 +8389,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 39,
-                                              "y": 71
+                                              "x": 39.5,
+                                              "y": 71.2
                                         },
                                         {
-                                              "x": 26,
-                                              "y": 57
+                                              "x": 26.5,
+                                              "y": 56.8
                                         }
                                   ]
                             },
@@ -8432,6 +8404,10 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 42,
                                               "y": 74
+                                        },
+                                        {
+                                              "x": 25.4,
+                                              "y": 73.6
                                         },
                                         {
                                               "x": 16,
@@ -8566,16 +8542,16 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 32,
-                                  "y": 24
+                                  "x": 32.1,
+                                  "y": 23.6
                             },
                             "o2": {
                                   "x": 68,
                                   "y": 25
                             },
                             "o3": {
-                                  "x": 30.3,
-                                  "y": 32.4
+                                  "x": 31,
+                                  "y": 31.6
                             },
                             "o4": {
                                   "x": 67.7,
@@ -8594,26 +8570,26 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 14,
-                                              "y": 28
-                                        },
-                                        {
-                                              "x": 14,
-                                              "y": 20
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t2",
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 30,
-                                              "y": 38
+                                              "x": 30.8,
+                                              "y": 38.1
+                                        },
+                                        {
+                                              "x": 17.3,
+                                              "y": 30
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 14,
+                                              "y": 28
                                         },
                                         {
                                               "x": 14,
@@ -8656,8 +8632,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 30,
-                                  "y": 20
+                                  "x": 29.8,
+                                  "y": 13.8
                             },
                             "o2": {
                                   "x": 58.9,
@@ -8689,11 +8665,11 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 18,
-                                              "y": 20
+                                              "x": 17.8,
+                                              "y": 19.9
                                         },
                                         {
-                                              "x": 48,
+                                              "x": 43.9,
                                               "y": 19
                                         }
                                   ]
@@ -8724,12 +8700,12 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t5": {
                                   "x": 46.8,
-                                  "y": 18.8
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 48,
+                                  "x": 46.5,
                                   "y": 10
                             },
                             "o1": {
@@ -8755,7 +8731,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 46.8,
-                            "y": 18.8,
+                            "y": 20.5,
                             "attachedTo": "t5"
                       },
                       "gear": [],
@@ -8766,8 +8742,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 50,
-                                              "y": 16
+                                              "x": 48.2,
+                                              "y": 17
                                         },
                                         {
                                               "x": 55,
@@ -8851,6 +8827,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 5 Steps",
     desc: "Play UP into the central striker, bounce BACK 1-touch to the midfielder, slide THROUGH to the winger, and finish.",
     cue: "Up to striker, back to mid, through to winger!",
+    stepCues: ["Feed Midfielder & make support run","Bounce lay-off to Midfielder","Feed Right Wing & make support run","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "1-3-1",
@@ -8907,8 +8884,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 44
                             },
                             "o5": {
-                                  "x": 53.1,
-                                  "y": 60.5
+                                  "x": 54,
+                                  "y": 60.6
                             }
                       },
                       "ball": {
@@ -8919,26 +8896,26 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 52,
-                                              "y": 36
-                                        },
-                                        {
-                                              "x": 52,
-                                              "y": 40
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t1",
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 71
+                                              "x": 46.6,
+                                              "y": 71.2
+                                        },
+                                        {
+                                              "x": 51.4,
+                                              "y": 39.8
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 52,
+                                              "y": 36
                                         },
                                         {
                                               "x": 52,
@@ -9014,12 +8991,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 50,
-                                              "y": 43
+                                              "x": 50.2,
+                                              "y": 43.2
                                         },
                                         {
-                                              "x": 46,
-                                              "y": 50
+                                              "x": 47.7,
+                                              "y": 47.6
                                         }
                                   ]
                             },
@@ -9083,8 +9060,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 42
                             },
                             "o4": {
-                                  "x": 62,
-                                  "y": 38
+                                  "x": 64.8,
+                                  "y": 41.4
                             },
                             "o5": {
                                   "x": 48.6,
@@ -9106,6 +9083,21 @@ export const BUILTIN_TEMPLATES = [
                                   "y2": 26
                             },
                             {
+                                  "type": "pass",
+                                  "fromId": "t3",
+                                  "toId": "t4",
+                                  "pts": [
+                                        {
+                                              "x": 48.8,
+                                              "y": 47.4
+                                        },
+                                        {
+                                              "x": 69.1,
+                                              "y": 30.4
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -9115,21 +9107,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 64.2,
                                               "y": 19.7
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t3",
-                                  "toId": "t4",
-                                  "pts": [
-                                        {
-                                              "x": 49,
-                                              "y": 47
-                                        },
-                                        {
-                                              "x": 64,
-                                              "y": 20
                                         }
                                   ]
                             }
@@ -9164,7 +9141,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 52,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -9201,8 +9178,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 61,
-                                              "y": 17
+                                              "x": 61.6,
+                                              "y": 16.9
                                         },
                                         {
                                               "x": 45,
@@ -9286,6 +9263,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "6v6 • 5 Steps",
     desc: "Striker checks short into midfield to drag the centre-back out of position, lays off 1-touch to the hub, and the right winger sprints diagonally into the space behind.",
     cue: "Striker drops to pull defender out — winger sprints behind!",
+    stepCues: ["Feed Striker & make support run","Bounce lay-off to Midfielder","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "1-3-1",
@@ -9360,6 +9338,21 @@ export const BUILTIN_TEMPLATES = [
                                   "y2": 26
                             },
                             {
+                                  "type": "pass",
+                                  "fromId": "t1",
+                                  "toId": "t5",
+                                  "pts": [
+                                        {
+                                              "x": 50.2,
+                                              "y": 70.2
+                                        },
+                                        {
+                                              "x": 52,
+                                              "y": 34.2
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -9382,21 +9375,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 52,
                                               "y": 35
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t1",
-                                  "toId": "t5",
-                                  "pts": [
-                                        {
-                                              "x": 50,
-                                              "y": 71
-                                        },
-                                        {
-                                              "x": 54,
-                                              "y": 46
                                         }
                                   ]
                             }
@@ -9468,12 +9446,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 51,
-                                              "y": 46
+                                              "x": 50.7,
+                                              "y": 45.9
                                         },
                                         {
-                                              "x": 42,
-                                              "y": 51
+                                              "x": 43.3,
+                                              "y": 50.1
                                         }
                                   ]
                             },
@@ -9483,6 +9461,10 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 80,
                                               "y": 40
+                                        },
+                                        {
+                                              "x": 63.6,
+                                              "y": 33.8
                                         },
                                         {
                                               "x": 56,
@@ -9515,8 +9497,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 18
                             },
                             "t5": {
-                                  "x": 56.1,
-                                  "y": 40.2
+                                  "x": 56.3,
+                                  "y": 41.2
                             }
                       },
                       "oppPos": {
@@ -9525,8 +9507,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 51.7,
-                                  "y": 32.5
+                                  "x": 55.1,
+                                  "y": 33.2
                             },
                             "o2": {
                                   "x": 70,
@@ -9558,12 +9540,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 42,
-                                              "y": 49
+                                              "x": 41.6,
+                                              "y": 48.6
                                         },
                                         {
-                                              "x": 55,
-                                              "y": 20
+                                              "x": 54.4,
+                                              "y": 21.4
                                         }
                                   ]
                             }
@@ -9589,7 +9571,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t4": {
                                   "x": 56,
-                                  "y": 18
+                                  "y": 20.5
                             },
                             "t5": {
                                   "x": 54.4,
@@ -9598,7 +9580,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 50,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -9624,7 +9606,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 56,
-                            "y": 18,
+                            "y": 20.5,
                             "attachedTo": "t4"
                       },
                       "gear": [],
@@ -9635,8 +9617,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 55,
-                                              "y": 15
+                                              "x": 54.4,
+                                              "y": 17.1
                                         },
                                         {
                                               "x": 46,
@@ -9717,9 +9699,10 @@ export const BUILTIN_TEMPLATES = [
     difficulty: "advanced",
     standard: "FA Power Play",
     title: "6v6 Beating an Extra-Player Press",
-    tag: "6v6 • 5 Steps",
+    tag: "6v6 • 6 Steps",
     desc: "When opponents add +1 player under FA Power Play rules, use your goalkeeper calmly as the spare bounce player to switch sides and break behind their press.",
     cue: "Use your goalkeeper as the extra player to beat the press!",
+    stepCues: ["Bounce lay-off to GK","Feed Right Back & make support run","Feed Right Wing & make support run","Switch play wide to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "6v6",
           "formationId": "2-2-1",
@@ -9796,12 +9779,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t0",
                                   "pts": [
                                         {
-                                              "x": 29,
-                                              "y": 78
+                                              "x": 29.3,
+                                              "y": 77.9
                                         },
                                         {
-                                              "x": 47,
-                                              "y": 89
+                                              "x": 46.7,
+                                              "y": 88.1
                                         }
                                   ]
                             },
@@ -9890,12 +9873,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 53,
-                                              "y": 88
+                                              "x": 52.9,
+                                              "y": 87.5
                                         },
                                         {
-                                              "x": 76,
-                                              "y": 68
+                                              "x": 75.1,
+                                              "y": 68.5
                                         }
                                   ]
                             },
@@ -9984,12 +9967,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 79,
-                                              "y": 62
+                                              "x": 78.4,
+                                              "y": 62.2
                                         },
                                         {
-                                              "x": 82,
-                                              "y": 27
+                                              "x": 81.6,
+                                              "y": 27.8
                                         }
                                   ]
                             },
@@ -10045,8 +10028,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 29.5
                             },
                             "o2": {
-                                  "x": 66,
-                                  "y": 20
+                                  "x": 64.6,
+                                  "y": 25.8
                             },
                             "o3": {
                                   "x": 30,
@@ -10078,12 +10061,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 79,
-                                              "y": 23
+                                              "x": 78.3,
+                                              "y": 23.1
                                         },
                                         {
-                                              "x": 51,
-                                              "y": 16
+                                              "x": 51.7,
+                                              "y": 16.9
                                         }
                                   ]
                             }
@@ -10113,7 +10096,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t5": {
                                   "x": 48,
-                                  "y": 16
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
@@ -10148,7 +10131,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 48,
-                            "y": 16,
+                            "y": 20.5,
                             "attachedTo": "t5"
                       },
                       "gear": [],
@@ -10159,8 +10142,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 48,
-                                              "y": 13
+                                              "x": 47.5,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 45,
@@ -10248,6 +10231,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "7v7 • 6 Steps",
     desc: "GK plays to split left CB, down the line to left winger, dribble to byline, low cross to striker, and finish!",
     cue: "Defenders split wide — build down the wing and cross!",
+    stepCues: ["Play out cleanly to Left Back","Feed Left Wing & make support run","Left Wing drives into open grass","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-3-1",
@@ -10329,12 +10313,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 89
+                                              "x": 46.6,
+                                              "y": 89.4
                                         },
                                         {
-                                              "x": 25,
-                                              "y": 79
+                                              "x": 25.4,
+                                              "y": 79.6
                                         }
                                   ]
                             }
@@ -10409,26 +10393,26 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 16,
-                                              "y": 48
-                                        },
-                                        {
-                                              "x": 16,
-                                              "y": 38
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t1",
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 20,
-                                              "y": 70
+                                              "x": 21.1,
+                                              "y": 70.3
+                                        },
+                                        {
+                                              "x": 16.9,
+                                              "y": 51.7
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 16,
+                                              "y": 48
                                         },
                                         {
                                               "x": 16,
@@ -10527,6 +10511,10 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 25
                                         },
                                         {
+                                              "x": 56.7,
+                                              "y": 22.3
+                                        },
+                                        {
                                               "x": 50.5,
                                               "y": 18.6
                                         }
@@ -10571,8 +10559,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 29.3,
-                                  "y": 20
+                                  "x": 29.5,
+                                  "y": 25.2
                             },
                             "o2": {
                                   "x": 42.7,
@@ -10608,12 +10596,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t6",
                                   "pts": [
                                         {
-                                              "x": 22,
-                                              "y": 20
+                                              "x": 21.6,
+                                              "y": 19.8
                                         },
                                         {
-                                              "x": 50,
-                                              "y": 19
+                                              "x": 46.7,
+                                              "y": 18.8
                                         }
                                   ]
                             }
@@ -10646,13 +10634,13 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 24.4
                             },
                             "t6": {
-                                  "x": 50.4,
-                                  "y": 18.8
+                                  "x": 50.6,
+                                  "y": 20.4
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 48,
+                                  "x": 46.5,
                                   "y": 10
                             },
                             "o1": {
@@ -10660,8 +10648,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 20
                             },
                             "o2": {
-                                  "x": 41.2,
-                                  "y": 23.7
+                                  "x": 40.6,
+                                  "y": 23.9
                             },
                             "o3": {
                                   "x": 62.7,
@@ -10681,8 +10669,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 50.4,
-                            "y": 18.8,
+                            "x": 50.6,
+                            "y": 20.4,
                             "attachedTo": "t6"
                       },
                       "gear": [],
@@ -10693,8 +10681,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 51,
-                                              "y": 16
+                                              "x": 51.4,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 55,
@@ -10786,6 +10774,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "7v7 • 5 Steps",
     desc: "From a right-side restart, play inside to CM, bounce down the channel to RW, square to striker, and finish!",
     cue: "Bounce off the midfielder — sprint the open channel!",
+    stepCues: ["Feed Midfielder & make support run","Feed Right Wing & make support run","Switch play wide to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-3-1",
@@ -10867,12 +10856,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 88,
+                                              "x": 88.2,
                                               "y": 54
                                         },
                                         {
-                                              "x": 64,
-                                              "y": 54
+                                              "x": 68,
+                                              "y": 53.8
                                         }
                                   ]
                             },
@@ -10944,8 +10933,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 42
                             },
                             "o5": {
-                                  "x": 70.8,
-                                  "y": 45.2
+                                  "x": 65.4,
+                                  "y": 41
                             },
                             "o6": {
                                   "x": 55.8,
@@ -10960,6 +10949,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t4",
+                                  "toId": "t5",
+                                  "pts": [
+                                        {
+                                              "x": 66.5,
+                                              "y": 48.9
+                                        },
+                                        {
+                                              "x": 80.2,
+                                              "y": 31.2
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -10969,21 +10973,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 82.3,
                                               "y": 19.9
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t4",
-                                  "toId": "t5",
-                                  "pts": [
-                                        {
-                                              "x": 66,
-                                              "y": 48
-                                        },
-                                        {
-                                              "x": 82,
-                                              "y": 20
                                         }
                                   ]
                             }
@@ -11031,11 +11020,11 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "o2": {
                                   "x": 58.2,
-                                  "y": 21.7
+                                  "y": 25.5
                             },
                             "o3": {
                                   "x": 71.5,
-                                  "y": 22.6
+                                  "y": 25.6
                             },
                             "o4": {
                                   "x": 46,
@@ -11058,30 +11047,17 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 47,
-                                              "y": 19.8
-                                        },
-                                        {
-                                              "x": 47.5,
-                                              "y": 17.8
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t5",
                                   "toId": "t6",
                                   "pts": [
                                         {
-                                              "x": 78,
-                                              "y": 20
+                                              "x": 78.5,
+                                              "y": 19.9
                                         },
                                         {
-                                              "x": 48,
-                                              "y": 18
+                                              "x": 50.8,
+                                              "y": 19.8
                                         }
                                   ]
                             }
@@ -11114,13 +11090,13 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 19.8
                             },
                             "t6": {
-                                  "x": 47.5,
-                                  "y": 17.8
+                                  "x": 47.3,
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 53,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -11128,7 +11104,7 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 18.1
                             },
                             "o2": {
-                                  "x": 57.9,
+                                  "x": 58.4,
                                   "y": 21.4
                             },
                             "o3": {
@@ -11149,8 +11125,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 47.5,
-                            "y": 17.8,
+                            "x": 47.3,
+                            "y": 20.5,
                             "attachedTo": "t6"
                       },
                       "gear": [],
@@ -11161,8 +11137,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 15
+                                              "x": 46.9,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 45,
@@ -11251,9 +11227,10 @@ export const BUILTIN_TEMPLATES = [
     difficulty: "easy",
     standard: "FA 7v7 Restart",
     title: "7v7 Kick-Off: Pivot Drop & Wide Drive",
-    tag: "7v7 • 5 Steps",
+    tag: "7v7 • 6 Steps",
     desc: "Structured 7v7 Kick-Off: striker taps back to the central midfielder, quick diagonal ball out to the left winger, drive down the flank, and low cross.",
     cue: "Kick-off back to centre-mid — swing wide and attack the box!",
+    stepCues: ["Bounce lay-off to Midfielder","Feed Left Wing & make support run","Left Wing drives into open grass","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-3-1",
@@ -11335,11 +11312,11 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 50,
-                                              "y": 53
+                                              "y": 53.6
                                         },
                                         {
                                               "x": 50,
-                                              "y": 60
+                                              "y": 58.4
                                         }
                                   ]
                             },
@@ -11432,12 +11409,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 60
+                                              "x": 46.9,
+                                              "y": 59.8
                                         },
                                         {
-                                              "x": 16,
-                                              "y": 38
+                                              "x": 16.7,
+                                              "y": 38.4
                                         }
                                   ]
                             },
@@ -11447,6 +11424,10 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 52,
                                               "y": 40
+                                        },
+                                        {
+                                              "x": 43.6,
+                                              "y": 31.3
                                         },
                                         {
                                               "x": 48,
@@ -11541,21 +11522,12 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 48,
-                                              "y": 20
-                                        },
-                                        {
-                                              "x": 48.3,
-                                              "y": 16.8
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "run",
-                                  "pts": [
-                                        {
                                               "x": 76,
                                               "y": 29.4
+                                        },
+                                        {
+                                              "x": 74.4,
+                                              "y": 18.8
                                         },
                                         {
                                               "x": 63.8,
@@ -11602,16 +11574,16 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 8.9
                             },
                             "o1": {
-                                  "x": 28,
-                                  "y": 18
+                                  "x": 28.4,
+                                  "y": 22
                             },
                             "o2": {
                                   "x": 68.7,
                                   "y": 25.1
                             },
                             "o3": {
-                                  "x": 26,
-                                  "y": 28
+                                  "x": 25.4,
+                                  "y": 29.7
                             },
                             "o4": {
                                   "x": 50,
@@ -11639,12 +11611,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t6",
                                   "pts": [
                                         {
-                                              "x": 19,
-                                              "y": 16
+                                              "x": 19.8,
+                                              "y": 16.1
                                         },
                                         {
-                                              "x": 45,
-                                              "y": 16
+                                              "x": 44.5,
+                                              "y": 16.7
                                         }
                                   ]
                             }
@@ -11678,7 +11650,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t6": {
                                   "x": 48.1,
-                                  "y": 16.2
+                                  "y": 20.4
                             }
                       },
                       "oppPos": {
@@ -11699,8 +11671,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 28
                             },
                             "o4": {
-                                  "x": 50,
-                                  "y": 28
+                                  "x": 50.1,
+                                  "y": 28.3
                             },
                             "o5": {
                                   "x": 76,
@@ -11713,7 +11685,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 48.1,
-                            "y": 16.2,
+                            "y": 20.4,
                             "attachedTo": "t6"
                       },
                       "gear": [],
@@ -11724,8 +11696,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 49,
-                                              "y": 13
+                                              "x": 49.3,
+                                              "y": 16.8
                                         },
                                         {
                                               "x": 55,
@@ -11814,9 +11786,10 @@ export const BUILTIN_TEMPLATES = [
     difficulty: "easy",
     standard: "UEFA 7v7 Set-Piece",
     title: "7v7 Short Corner Triangle & Box Cut-Back",
-    tag: "7v7 • 4 Steps",
+    tag: "7v7 • 5 Steps",
     desc: "Leaves two defenders at halfway for counter-protection while working a crisp 3-player corner triangle on the right to feed the striker in front of goal.",
     cue: "Two defenders stay back — work a triangle at the corner!",
+    stepCues: ["Square across box to Right Wing","Bounce lay-off to Striker","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-3-1",
@@ -11897,12 +11870,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 90,
-                                              "y": 8
+                                              "x": 89.5,
+                                              "y": 7.5
                                         },
                                         {
-                                              "x": 80,
-                                              "y": 13
+                                              "x": 81.2,
+                                              "y": 11
                                         }
                                   ]
                             },
@@ -11995,12 +11968,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 76,
-                                              "y": 16
+                                              "x": 74.9,
+                                              "y": 16.1
                                         },
                                         {
-                                              "x": 70,
-                                              "y": 21
+                                              "x": 70.9,
+                                              "y": 19.5
                                         }
                                   ]
                             }
@@ -12080,12 +12053,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t6",
                                   "pts": [
                                         {
-                                              "x": 65,
-                                              "y": 21
+                                              "x": 64.2,
+                                              "y": 20.8
                                         },
                                         {
-                                              "x": 53,
-                                              "y": 17
+                                              "x": 54.2,
+                                              "y": 17.3
                                         }
                                   ]
                             }
@@ -12118,18 +12091,18 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 9.9
                             },
                             "t6": {
-                                  "x": 50,
-                                  "y": 16
+                                  "x": 50.2,
+                                  "y": 20
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 52,
+                                  "x": 53.5,
                                   "y": 7.9
                             },
                             "o1": {
-                                  "x": 40.8,
-                                  "y": 21.4
+                                  "x": 39.3,
+                                  "y": 21.6
                             },
                             "o2": {
                                   "x": 64,
@@ -12140,8 +12113,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 26
                             },
                             "o4": {
-                                  "x": 54,
-                                  "y": 26
+                                  "x": 54.8,
+                                  "y": 27.3
                             },
                             "o5": {
                                   "x": 78.6,
@@ -12153,8 +12126,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 50,
-                            "y": 16,
+                            "x": 50.2,
+                            "y": 20,
                             "attachedTo": "t6"
                       },
                       "gear": [],
@@ -12165,8 +12138,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 49,
-                                              "y": 13
+                                              "x": 49.5,
+                                              "y": 16.3
                                         },
                                         {
                                               "x": 46,
@@ -12258,6 +12231,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "7v7 • 5 Steps",
     desc: "Escape a crowded left flank via CM out to the wide-open right winger, drive diagonally into the box, and score.",
     cue: "Escape traffic — switch through midfield to the open wing!",
+    stepCues: ["Bounce lay-off to Midfielder","Feed Right Wing & make support run","Right Wing drives into open grass","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-3-1",
@@ -12346,12 +12320,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 20,
-                                              "y": 50
+                                              "x": 19.6,
+                                              "y": 49
                                         },
                                         {
-                                              "x": 48,
-                                              "y": 56
+                                              "x": 44.3,
+                                              "y": 55.1
                                         }
                                   ]
                             }
@@ -12426,6 +12400,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t4",
+                                  "toId": "t5",
+                                  "pts": [
+                                        {
+                                              "x": 51.5,
+                                              "y": 52.4
+                                        },
+                                        {
+                                              "x": 78.6,
+                                              "y": 39.6
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -12434,21 +12423,6 @@ export const BUILTIN_TEMPLATES = [
                                         },
                                         {
                                               "x": 80.1,
-                                              "y": 30
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t4",
-                                  "toId": "t5",
-                                  "pts": [
-                                        {
-                                              "x": 52,
-                                              "y": 51
-                                        },
-                                        {
-                                              "x": 80,
                                               "y": 30
                                         }
                                   ]
@@ -12531,8 +12505,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 30
                                         },
                                         {
-                                              "x": 65.9,
-                                              "y": 18.8
+                                              "x": 76.5,
+                                              "y": 19.7
+                                        },
+                                        {
+                                              "x": 65.6,
+                                              "y": 20.3
                                         }
                                   ]
                             }
@@ -12561,8 +12539,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 44.3
                             },
                             "t5": {
-                                  "x": 65.9,
-                                  "y": 18.8
+                                  "x": 65.6,
+                                  "y": 20.3
                             },
                             "t6": {
                                   "x": 45.6,
@@ -12571,7 +12549,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 52,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -12583,8 +12561,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 26.3
                             },
                             "o3": {
-                                  "x": 71.6,
-                                  "y": 25.9
+                                  "x": 72.4,
+                                  "y": 26.6
                             },
                             "o4": {
                                   "x": 35.1,
@@ -12600,8 +12578,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 65.9,
-                            "y": 18.8,
+                            "x": 65.6,
+                            "y": 20.3,
                             "attachedTo": "t5"
                       },
                       "gear": [],
@@ -12613,7 +12591,7 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 63,
-                                              "y": 16
+                                              "y": 17.6
                                         },
                                         {
                                               "x": 45,
@@ -12705,6 +12683,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "7v7 • 5 Steps",
     desc: "Twin midfielders trap the central pass, release the striker into the left channel, square to the supporting CM, and score.",
     cue: "Stay compact in the middle — win it and break!",
+    stepCues: ["Check away to open passing lane","Feed Striker & make support run","Square across box to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "3-2-1",
@@ -12781,6 +12760,13 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "zone",
+                                  "x1": 38,
+                                  "y1": 44,
+                                  "x2": 62,
+                                  "y2": 58
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -12805,13 +12791,6 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 45.4
                                         }
                                   ]
-                            },
-                            {
-                                  "type": "zone",
-                                  "x1": 38,
-                                  "y1": 44,
-                                  "x2": 62,
-                                  "y2": 58
                             }
                       ]
                 },
@@ -12884,6 +12863,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t4",
+                                  "toId": "t6",
+                                  "pts": [
+                                        {
+                                              "x": 46.3,
+                                              "y": 46.2
+                                        },
+                                        {
+                                              "x": 43.3,
+                                              "y": 37.6
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -12906,21 +12900,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 57.5,
                                               "y": 20.8
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t4",
-                                  "toId": "t6",
-                                  "pts": [
-                                        {
-                                              "x": 46,
-                                              "y": 47
-                                        },
-                                        {
-                                              "x": 36,
-                                              "y": 24
                                         }
                                   ]
                             }
@@ -12995,30 +12974,17 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 57.5,
-                                              "y": 20.8
-                                        },
-                                        {
-                                              "x": 57.7,
-                                              "y": 18.8
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t6",
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 40,
-                                              "y": 23
+                                              "x": 39.8,
+                                              "y": 23.6
                                         },
                                         {
-                                              "x": 58,
-                                              "y": 19
+                                              "x": 53.7,
+                                              "y": 21.4
                                         }
                                   ]
                             }
@@ -13047,8 +13013,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 41.7
                             },
                             "t5": {
-                                  "x": 57.7,
-                                  "y": 18.8
+                                  "x": 57.5,
+                                  "y": 20.4
                             },
                             "t6": {
                                   "x": 35.2,
@@ -13057,7 +13023,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 48,
+                                  "x": 46.5,
                                   "y": 10
                             },
                             "o1": {
@@ -13065,8 +13031,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 17.9
                             },
                             "o2": {
-                                  "x": 66.1,
-                                  "y": 24.4
+                                  "x": 66.9,
+                                  "y": 24.7
                             },
                             "o3": {
                                   "x": 32,
@@ -13086,8 +13052,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 57.7,
-                            "y": 18.8,
+                            "x": 57.5,
+                            "y": 20.4,
                             "attachedTo": "t5"
                       },
                       "gear": [],
@@ -13098,8 +13064,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 57,
-                                              "y": 16
+                                              "x": 57.1,
+                                              "y": 16.6
                                         },
                                         {
                                               "x": 55,
@@ -13191,6 +13157,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "7v7 • 6 Steps",
     desc: "When the right-back is pressed after a goal kick, don’t force it down the line: recycle calmly through the GK to switch to the wide-open left side.",
     cue: "Blocked on one side? Bounce off your keeper to switch sides!",
+    stepCues: ["Play out cleanly to Right Back","Bounce lay-off to GK","Feed Left Back & make support run","Zip firm pass to Left Wing","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-3-1",
@@ -13271,12 +13238,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 53,
-                                              "y": 89
+                                              "x": 53.4,
+                                              "y": 89.4
                                         },
                                         {
-                                              "x": 75,
-                                              "y": 79
+                                              "x": 74.6,
+                                              "y": 79.6
                                         }
                                   ]
                             },
@@ -13369,12 +13336,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t0",
                                   "pts": [
                                         {
-                                              "x": 75,
-                                              "y": 80
+                                              "x": 74.5,
+                                              "y": 79.6
                                         },
                                         {
-                                              "x": 55,
-                                              "y": 89
+                                              "x": 55.5,
+                                              "y": 88.4
                                         }
                                   ]
                             }
@@ -13454,12 +13421,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 49,
-                                              "y": 88
+                                              "x": 48.7,
+                                              "y": 88.1
                                         },
                                         {
-                                              "x": 23,
-                                              "y": 74
+                                              "x": 23.3,
+                                              "y": 73.9
                                         }
                                   ]
                             },
@@ -13552,25 +13519,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 20,
-                                              "y": 68
+                                              "x": 19.7,
+                                              "y": 68.2
                                         },
                                         {
-                                              "x": 16,
-                                              "y": 31
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 48,
-                                              "y": 18
-                                        },
-                                        {
-                                              "x": 48.3,
-                                              "y": 16.9
+                                              "x": 16.3,
+                                              "y": 31.8
                                         }
                                   ]
                             }
@@ -13609,12 +13563,12 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 46,
+                                  "x": 53.5,
                                   "y": 8.9
                             },
                             "o1": {
-                                  "x": 28,
-                                  "y": 20
+                                  "x": 28.6,
+                                  "y": 20.7
                             },
                             "o2": {
                                   "x": 66,
@@ -13650,8 +13604,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 19,
-                                              "y": 21
+                                              "x": 18.9,
+                                              "y": 21.5
                                         },
                                         {
                                               "x": 45,
@@ -13743,6 +13697,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "7v7 • 5 Steps",
     desc: "Right winger plays an inside 1-2 off the striker to break into the penalty box, then squares across the face of goal for the opposite winger arriving at the far post.",
     cue: "Back-post winger always sprints in to finish across goal!",
+    stepCues: ["Feed Striker & make support run","Square across box to Right Wing","Switch play wide to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "3-2-1",
@@ -13802,8 +13757,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 24
                             },
                             "o5": {
-                                  "x": 74,
-                                  "y": 36
+                                  "x": 74.1,
+                                  "y": 35.7
                             },
                             "o6": {
                                   "x": 48,
@@ -13823,12 +13778,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t6",
                                   "pts": [
                                         {
-                                              "x": 75,
-                                              "y": 42
+                                              "x": 74.6,
+                                              "y": 42.3
                                         },
                                         {
-                                              "x": 57,
-                                              "y": 33
+                                              "x": 57.4,
+                                              "y": 33.7
                                         }
                                   ]
                             },
@@ -13855,6 +13810,10 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 21.5,
                                               "y": 46.9
+                                        },
+                                        {
+                                              "x": 32.2,
+                                              "y": 39.9
                                         },
                                         {
                                               "x": 31.2,
@@ -13905,8 +13864,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 20.5
                             },
                             "o2": {
-                                  "x": 68,
-                                  "y": 24
+                                  "x": 69.9,
+                                  "y": 27.5
                             },
                             "o3": {
                                   "x": 24,
@@ -13917,8 +13876,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 23.9
                             },
                             "o5": {
-                                  "x": 76,
-                                  "y": 32
+                                  "x": 77.6,
+                                  "y": 33.3
                             },
                             "o6": {
                                   "x": 48,
@@ -13938,12 +13897,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 57,
-                                              "y": 30
+                                              "x": 57.1,
+                                              "y": 29.8
                                         },
                                         {
-                                              "x": 73,
-                                              "y": 17
+                                              "x": 72.9,
+                                              "y": 18.2
                                         }
                                   ]
                             },
@@ -13996,15 +13955,15 @@ export const BUILTIN_TEMPLATES = [
                       "oppPos": {
                             "o0": {
                                   "x": 56,
-                                  "y": 9
+                                  "y": 8.6
                             },
                             "o1": {
                                   "x": 28,
                                   "y": 22
                             },
                             "o2": {
-                                  "x": 66,
-                                  "y": 20
+                                  "x": 65.9,
+                                  "y": 20.9
                             },
                             "o3": {
                                   "x": 24,
@@ -14036,12 +13995,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 73,
-                                              "y": 16
+                                              "x": 72.2,
+                                              "y": 15.7
                                         },
                                         {
-                                              "x": 43,
-                                              "y": 13
+                                              "x": 43.8,
+                                              "y": 13.3
                                         }
                                   ]
                             }
@@ -14066,16 +14025,16 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 62
                             },
                             "t4": {
-                                  "x": 40,
-                                  "y": 13
+                                  "x": 39.1,
+                                  "y": 20.6
                             },
                             "t5": {
                                   "x": 75,
                                   "y": 15.5
                             },
                             "t6": {
-                                  "x": 56.5,
-                                  "y": 25.2
+                                  "x": 56.8,
+                                  "y": 25.5
                             }
                       },
                       "oppPos": {
@@ -14096,8 +14055,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 38
                             },
                             "o4": {
-                                  "x": 47.9,
-                                  "y": 19.7
+                                  "x": 50.1,
+                                  "y": 19.1
                             },
                             "o5": {
                                   "x": 76,
@@ -14109,8 +14068,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 40,
-                            "y": 13,
+                            "x": 39.1,
+                            "y": 20.6,
                             "attachedTo": "t4"
                       },
                       "gear": [],
@@ -14121,8 +14080,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 41,
-                                              "y": 10
+                                              "x": 39.9,
+                                              "y": 16.9
                                         },
                                         {
                                               "x": 44,
@@ -14214,6 +14173,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "7v7 • 5 Steps",
     desc: "Play UP to the dropping striker, lay BACK 1-touch to midfield, slip THROUGH to the blind-side winger, and score.",
     cue: "Up to striker, bounce back, slip the runner!",
+    stepCues: ["Feed Midfielder & make support run","Bounce lay-off to Midfielder","Feed Right Wing & make support run","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-3-1",
@@ -14290,6 +14250,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t1",
+                                  "toId": "t6",
+                                  "pts": [
+                                        {
+                                              "x": 33.8,
+                                              "y": 70.6
+                                        },
+                                        {
+                                              "x": 50.2,
+                                              "y": 39.4
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -14298,21 +14273,6 @@ export const BUILTIN_TEMPLATES = [
                                         },
                                         {
                                               "x": 51.9,
-                                              "y": 40
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t1",
-                                  "toId": "t6",
-                                  "pts": [
-                                        {
-                                              "x": 34,
-                                              "y": 70
-                                        },
-                                        {
-                                              "x": 52,
                                               "y": 40
                                         }
                                   ]
@@ -14393,12 +14353,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 50,
-                                              "y": 43
+                                              "x": 49.8,
+                                              "y": 43.2
                                         },
                                         {
-                                              "x": 46,
-                                              "y": 50
+                                              "x": 46.1,
+                                              "y": 48.8
                                         }
                                   ]
                             },
@@ -14470,8 +14430,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 40
                             },
                             "o5": {
-                                  "x": 60,
-                                  "y": 40
+                                  "x": 63.3,
+                                  "y": 44.8
                             },
                             "o6": {
                                   "x": 50.8,
@@ -14493,6 +14453,21 @@ export const BUILTIN_TEMPLATES = [
                                   "y2": 26
                             },
                             {
+                                  "type": "pass",
+                                  "fromId": "t4",
+                                  "toId": "t5",
+                                  "pts": [
+                                        {
+                                              "x": 49,
+                                              "y": 47.6
+                                        },
+                                        {
+                                              "x": 71,
+                                              "y": 32.6
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -14500,23 +14475,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 30.4
                                         },
                                         {
-                                              "x": 65.7,
-                                              "y": 19.8
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t4",
-                                  "toId": "t5",
-                                  "pts": [
-                                        {
-                                              "x": 49,
-                                              "y": 47
+                                              "x": 64.8,
+                                              "y": 29.1
                                         },
                                         {
-                                              "x": 66,
-                                              "y": 20
+                                              "x": 65.7,
+                                              "y": 19.8
                                         }
                                   ]
                             }
@@ -14555,7 +14519,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 52,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -14597,7 +14561,7 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 63,
-                                              "y": 17
+                                              "y": 17.1
                                         },
                                         {
                                               "x": 45,
@@ -14689,6 +14653,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "7v7 • 6 Steps",
     desc: "Right back feeds RW and overlaps outside while RW dribbles inside, slips overlap on the byline, crosses back-post, and scores.",
     cue: "Winger comes inside — defender overlaps to cross!",
+    stepCues: ["Feed Right Wing & make support run","Right Wing drives into open grass","Feed Right Wing & make support run","Switch play wide to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-3-1",
@@ -14770,12 +14735,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 74,
-                                              "y": 68
+                                              "x": 73.3,
+                                              "y": 68.4
                                         },
                                         {
-                                              "x": 80,
-                                              "y": 50
+                                              "x": 78.7,
+                                              "y": 53.6
                                         }
                                   ]
                             },
@@ -14785,6 +14750,10 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 72,
                                               "y": 72
+                                        },
+                                        {
+                                              "x": 84.3,
+                                              "y": 70.3
                                         },
                                         {
                                               "x": 86,
@@ -14963,26 +14932,26 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 86,
-                                              "y": 28
-                                        },
-                                        {
-                                              "x": 86,
-                                              "y": 21
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t5",
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 70,
-                                              "y": 35
+                                              "x": 69.6,
+                                              "y": 36.5
+                                        },
+                                        {
+                                              "x": 82.6,
+                                              "y": 29.7
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 86,
+                                              "y": 28
                                         },
                                         {
                                               "x": 86,
@@ -15033,12 +15002,12 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 14.1
                             },
                             "o2": {
-                                  "x": 46.5,
-                                  "y": 24
+                                  "x": 46.6,
+                                  "y": 27.7
                             },
                             "o3": {
-                                  "x": 70,
-                                  "y": 22
+                                  "x": 69.8,
+                                  "y": 15.7
                             },
                             "o4": {
                                   "x": 40,
@@ -15061,6 +15030,21 @@ export const BUILTIN_TEMPLATES = [
                       "gear": [],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t2",
+                                  "toId": "t3",
+                                  "pts": [
+                                        {
+                                              "x": 82.2,
+                                              "y": 21.1
+                                        },
+                                        {
+                                              "x": 39.1,
+                                              "y": 22.2
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -15068,23 +15052,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 22.3
                                         },
                                         {
-                                              "x": 40.3,
-                                              "y": 16.8
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t2",
-                                  "toId": "t3",
-                                  "pts": [
-                                        {
-                                              "x": 82,
-                                              "y": 20
+                                              "x": 40.7,
+                                              "y": 26.8
                                         },
                                         {
-                                              "x": 40,
-                                              "y": 17
+                                              "x": 40.2,
+                                              "y": 19.8
                                         }
                                   ]
                             }
@@ -15105,16 +15078,16 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 20
                             },
                             "t3": {
-                                  "x": 40.3,
-                                  "y": 16.8
+                                  "x": 40.2,
+                                  "y": 19.8
                             },
                             "t4": {
                                   "x": 50,
                                   "y": 46.7
                             },
                             "t5": {
-                                  "x": 65.8,
-                                  "y": 34.4
+                                  "x": 66.4,
+                                  "y": 34.7
                             },
                             "t6": {
                                   "x": 54.6,
@@ -15123,16 +15096,16 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 53,
+                                  "x": 53.5,
                                   "y": 9.9
                             },
                             "o1": {
-                                  "x": 32.4,
-                                  "y": 22.8
+                                  "x": 30.3,
+                                  "y": 23.4
                             },
                             "o2": {
-                                  "x": 47.4,
-                                  "y": 24.5
+                                  "x": 48.4,
+                                  "y": 25.2
                             },
                             "o3": {
                                   "x": 69,
@@ -15143,8 +15116,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 35
                             },
                             "o5": {
-                                  "x": 56.3,
-                                  "y": 29.7
+                                  "x": 57.1,
+                                  "y": 30.2
                             },
                             "o6": {
                                   "x": 50,
@@ -15152,8 +15125,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 40.3,
-                            "y": 16.8,
+                            "x": 40.2,
+                            "y": 19.8,
                             "attachedTo": "t3"
                       },
                       "gear": [],
@@ -15164,8 +15137,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 42,
-                                              "y": 14
+                                              "x": 41.1,
+                                              "y": 16.1
                                         },
                                         {
                                               "x": 45,
@@ -15254,9 +15227,10 @@ export const BUILTIN_TEMPLATES = [
     difficulty: "advanced",
     standard: "La Masia 7v7",
     title: "7v7 2-1-2-1 Box Midfield Through-Ball",
-    tag: "7v7 • 5 Steps",
+    tag: "7v7 • 6 Steps",
     desc: "Uses the 2-1-2-1 central diamond to outnumber a flat midfield: pivot connects left-to-right across the half-spaces before threading the striker in behind.",
     cue: "Dominate the middle diamond — draw them narrow then slip in!",
+    stepCues: ["Zip firm pass to Midfielder","Feed Midfielder & make support run","Feed Striker & make support run","Zip firm pass to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-1-2-1",
@@ -15344,12 +15318,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 31,
-                                              "y": 74
+                                              "x": 31.2,
+                                              "y": 73.9
                                         },
                                         {
-                                              "x": 47,
-                                              "y": 63
+                                              "x": 46.6,
+                                              "y": 63.6
                                         }
                                   ]
                             }
@@ -15404,8 +15378,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 41.5
                             },
                             "o4": {
-                                  "x": 46,
-                                  "y": 52
+                                  "x": 46.8,
+                                  "y": 51.1
                             },
                             "o5": {
                                   "x": 78,
@@ -15429,12 +15403,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 60
+                                              "x": 47.3,
+                                              "y": 59.2
                                         },
                                         {
-                                              "x": 32,
-                                              "y": 46
+                                              "x": 33.5,
+                                              "y": 46.8
                                         }
                                   ]
                             },
@@ -15527,12 +15501,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t5",
                                   "pts": [
                                         {
-                                              "x": 33,
-                                              "y": 43
+                                              "x": 34,
+                                              "y": 42.8
                                         },
                                         {
-                                              "x": 61,
-                                              "y": 33
+                                              "x": 60.4,
+                                              "y": 33.3
                                         }
                                   ]
                             },
@@ -15625,12 +15599,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t6",
                                   "pts": [
                                         {
-                                              "x": 62,
-                                              "y": 29
+                                              "x": 61.8,
+                                              "y": 28.9
                                         },
                                         {
-                                              "x": 54,
-                                              "y": 17
+                                              "x": 55,
+                                              "y": 19.3
                                         }
                                   ]
                             }
@@ -15664,7 +15638,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t6": {
                                   "x": 52.2,
-                                  "y": 15.2
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
@@ -15699,7 +15673,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 52.2,
-                            "y": 15.2,
+                            "y": 20.5,
                             "attachedTo": "t6"
                       },
                       "gear": [],
@@ -15710,8 +15684,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 52,
-                                              "y": 12
+                                              "x": 52.7,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 55,
@@ -15803,6 +15777,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "7v7 • 5 Steps",
     desc: "Striker curves their run to block the pass back to the GK while the right winger and centre-mid lock onto the full-back, winning possession high to score.",
     cue: "Curve your run to cut off the keeper — trap on the sideline!",
+    stepCues: ["Curve press as ball travels","Spring press trap — win the ball!","Zip firm pass to Striker","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "7v7",
           "formationId": "2-3-1",
@@ -15883,12 +15858,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "o2",
                                   "pts": [
                                         {
-                                              "x": 53,
-                                              "y": 11
+                                              "x": 53.4,
+                                              "y": 10.7
                                         },
                                         {
-                                              "x": 73,
-                                              "y": 21
+                                              "x": 72.6,
+                                              "y": 20.3
                                         }
                                   ]
                             },
@@ -16006,11 +15981,11 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 73,
-                                              "y": 25
+                                              "y": 24.2
                                         },
                                         {
-                                              "x": 62,
-                                              "y": 34
+                                              "x": 63.2,
+                                              "y": 33.4
                                         }
                                   ]
                             }
@@ -16090,12 +16065,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t6",
                                   "pts": [
                                         {
-                                              "x": 58,
-                                              "y": 31
+                                              "x": 58.4,
+                                              "y": 30.5
                                         },
                                         {
-                                              "x": 53,
-                                              "y": 18
+                                              "x": 53.9,
+                                              "y": 20.4
                                         }
                                   ]
                             }
@@ -16129,12 +16104,12 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t6": {
                                   "x": 52.1,
-                                  "y": 16.2
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 47.7,
+                                  "x": 46.5,
                                   "y": 8.5
                             },
                             "o1": {
@@ -16164,7 +16139,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 52.1,
-                            "y": 16.2,
+                            "y": 20.5,
                             "attachedTo": "t6"
                       },
                       "gear": [],
@@ -16175,8 +16150,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 52,
-                                              "y": 13
+                                              "x": 52.6,
+                                              "y": 16.7
                                         },
                                         {
                                               "x": 55,
@@ -16268,6 +16243,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Blank Grass • 5 Steps",
     desc: "Complete 4-side rondo circuit: outside players slide along the cone lines to give 2 diagonal angles on every pass.",
     cue: "Slide along your line — always give two passing angles!",
+    stepCues: ["Crisp pass to Player #2 & sprint on","Square across box to Player #4","Bounce lay-off to Player #3","Bounce lay-off to Player #1","Clean first touch — ready to repeat!"],
     build: () => ({
           "pitchMode": "blank",
           "formationId": "drill-diamond",
@@ -16345,12 +16321,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 75
+                                              "x": 47,
+                                              "y": 75.6
                                         },
                                         {
-                                              "x": 20,
-                                              "y": 54
+                                              "x": 23,
+                                              "y": 56.4
                                         }
                                   ]
                             },
@@ -16433,12 +16409,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 22,
-                                              "y": 50
+                                              "x": 21.7,
+                                              "y": 50.6
                                         },
                                         {
-                                              "x": 36,
-                                              "y": 22
+                                              "x": 34.3,
+                                              "y": 25.4
                                         }
                                   ]
                             },
@@ -16521,12 +16497,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 40,
-                                              "y": 24
+                                              "x": 39.6,
+                                              "y": 23.2
                                         },
                                         {
-                                              "x": 80,
-                                              "y": 36
+                                              "x": 76.4,
+                                              "y": 34.8
                                         }
                                   ]
                             },
@@ -16609,12 +16585,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t0",
                                   "pts": [
                                         {
-                                              "x": 78,
-                                              "y": 40
+                                              "x": 78.5,
+                                              "y": 39.5
                                         },
                                         {
-                                              "x": 62,
-                                              "y": 78
+                                              "x": 63.5,
+                                              "y": 74.5
                                         }
                                   ]
                             }
@@ -16695,6 +16671,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Half Pitch • 5 Steps",
     desc: "Weave the first poles, exit the final pole, burst through the blue cone gate, finish low past GK, and rotate queues.",
     cue: "Small touches through poles, big touch through the gate!",
+    stepCues: ["Close-control dribble with head up","Close-control dribble with head up","Close-control dribble with head up","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -16786,12 +16763,12 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 76
                                         },
                                         {
-                                              "x": 29,
-                                              "y": 62
+                                              "x": 29.6,
+                                              "y": 61.7
                                         },
                                         {
-                                              "x": 41,
-                                              "y": 50
+                                              "x": 42.2,
+                                              "y": 50.2
                                         }
                                   ]
                             }
@@ -16801,8 +16778,8 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 41,
-                                  "y": 50
+                                  "x": 42.2,
+                                  "y": 50.2
                             },
                             "t2": {
                                   "x": 75,
@@ -16824,8 +16801,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 41,
-                            "y": 50,
+                            "x": 42.2,
+                            "y": 50.2,
                             "attachedTo": "t0"
                       },
                       "gear": [
@@ -16871,12 +16848,12 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "dribble",
                                   "pts": [
                                         {
-                                              "x": 41,
-                                              "y": 50
+                                              "x": 42.2,
+                                              "y": 50.2
                                         },
                                         {
-                                              "x": 30,
-                                              "y": 38
+                                              "x": 30.3,
+                                              "y": 38.5
                                         },
                                         {
                                               "x": 35,
@@ -16993,7 +16970,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 47,
+                                  "x": 46.5,
                                   "y": 10
                             }
                       },
@@ -17047,8 +17024,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 40,
-                                              "y": 18
+                                              "x": 40.5,
+                                              "y": 17.1
                                         },
                                         {
                                               "x": 56,
@@ -17066,8 +17043,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 18.5
                             },
                             "t2": {
-                                  "x": 75,
-                                  "y": 74
+                                  "x": 73.7,
+                                  "y": 73.6
                             },
                             "t1": {
                                   "x": 35,
@@ -17145,6 +17122,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Blank Grass • 5 Steps",
     desc: "Complete 4-cone clockwise passing circuit: every pass & follow rotates all four stations back to the start.",
     cue: "Step off your cone, open body, pass firm & follow!",
+    stepCues: ["Crisp pass to Player #2 & sprint on","Square across box to Player #4","Bounce lay-off to Player #3","Switch play wide to Player #1","Clean first touch — ready to repeat!"],
     build: () => ({
           "pitchMode": "blank",
           "formationId": "drill-diamond",
@@ -17156,26 +17134,26 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 50,
-                                  "y": 84
+                                  "x": 49.6,
+                                  "y": 80.9
                             },
                             "t1": {
-                                  "x": 18,
-                                  "y": 50
+                                  "x": 14.8,
+                                  "y": 49.8
                             },
                             "t2": {
-                                  "x": 82,
-                                  "y": 50
+                                  "x": 85.2,
+                                  "y": 49.8
                             },
                             "t3": {
-                                  "x": 50,
-                                  "y": 18
+                                  "x": 49.8,
+                                  "y": 21.1
                             }
                       },
                       "oppPos": {},
                       "ball": {
-                            "x": 50,
-                            "y": 84,
+                            "x": 49.6,
+                            "y": 80.9,
                             "attachedTo": "t0"
                       },
                       "gear": [
@@ -17217,12 +17195,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 50,
-                                              "y": 84
+                                              "x": 46.8,
+                                              "y": 78.4
                                         },
                                         {
-                                              "x": 18,
-                                              "y": 50
+                                              "x": 17.6,
+                                              "y": 52.3
                                         }
                                   ]
                             },
@@ -17230,12 +17208,16 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 50,
-                                              "y": 84
+                                              "x": 49.6,
+                                              "y": 80.9
                                         },
                                         {
-                                              "x": 22,
-                                              "y": 54
+                                              "x": 30.9,
+                                              "y": 73
+                                        },
+                                        {
+                                              "x": 21.3,
+                                              "y": 55.1
                                         }
                                   ]
                             }
@@ -17245,26 +17227,26 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 22,
-                                  "y": 54
+                                  "x": 21.3,
+                                  "y": 55.1
                             },
                             "t1": {
-                                  "x": 18,
-                                  "y": 46
+                                  "x": 17.8,
+                                  "y": 45.9
                             },
                             "t2": {
-                                  "x": 82,
-                                  "y": 50
+                                  "x": 85.2,
+                                  "y": 49.8
                             },
                             "t3": {
-                                  "x": 50,
-                                  "y": 18
+                                  "x": 49.9,
+                                  "y": 21.1
                             }
                       },
                       "oppPos": {},
                       "ball": {
-                            "x": 18,
-                            "y": 46,
+                            "x": 17.8,
+                            "y": 45.9,
                             "attachedTo": "t1"
                       },
                       "gear": [
@@ -17306,12 +17288,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 18,
-                                              "y": 46
+                                              "x": 20.8,
+                                              "y": 43.6
                                         },
                                         {
-                                              "x": 50,
-                                              "y": 18
+                                              "x": 46.9,
+                                              "y": 23.4
                                         }
                                   ]
                             },
@@ -17319,8 +17301,12 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 18,
-                                              "y": 46
+                                              "x": 17.8,
+                                              "y": 45.9
+                                        },
+                                        {
+                                              "x": 26.1,
+                                              "y": 29.2
                                         },
                                         {
                                               "x": 43.5,
@@ -17334,26 +17320,26 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 18,
-                                  "y": 50
+                                  "x": 14.8,
+                                  "y": 49.8
                             },
                             "t1": {
                                   "x": 43.5,
                                   "y": 22.6
                             },
                             "t2": {
-                                  "x": 82,
-                                  "y": 50
+                                  "x": 85.2,
+                                  "y": 49.8
                             },
                             "t3": {
-                                  "x": 54.3,
-                                  "y": 19.9
+                                  "x": 54.5,
+                                  "y": 20
                             }
                       },
                       "oppPos": {},
                       "ball": {
-                            "x": 54.3,
-                            "y": 19.9,
+                            "x": 54.5,
+                            "y": 20,
                             "attachedTo": "t3"
                       },
                       "gear": [
@@ -17395,12 +17381,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 54,
-                                              "y": 20
+                                              "x": 57.2,
+                                              "y": 22.6
                                         },
                                         {
-                                              "x": 82,
-                                              "y": 50
+                                              "x": 82.5,
+                                              "y": 47.2
                                         }
                                   ]
                             },
@@ -17408,12 +17394,16 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 54.3,
-                                              "y": 19.9
+                                              "x": 54.5,
+                                              "y": 20
                                         },
                                         {
-                                              "x": 78,
-                                              "y": 46
+                                              "x": 71.4,
+                                              "y": 27.7
+                                        },
+                                        {
+                                              "x": 78.6,
+                                              "y": 44.9
                                         }
                                   ]
                             }
@@ -17423,26 +17413,26 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 18,
-                                  "y": 50
+                                  "x": 14.8,
+                                  "y": 49.8
                             },
                             "t1": {
-                                  "x": 50,
-                                  "y": 18
+                                  "x": 49.9,
+                                  "y": 21.1
                             },
                             "t2": {
-                                  "x": 82,
-                                  "y": 54
+                                  "x": 82.2,
+                                  "y": 54.1
                             },
                             "t3": {
-                                  "x": 78,
-                                  "y": 46
+                                  "x": 78.6,
+                                  "y": 44.9
                             }
                       },
                       "oppPos": {},
                       "ball": {
-                            "x": 82,
-                            "y": 54,
+                            "x": 82.2,
+                            "y": 54.1,
                             "attachedTo": "t2"
                       },
                       "gear": [
@@ -17484,11 +17474,11 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t0",
                                   "pts": [
                                         {
-                                              "x": 82,
-                                              "y": 54
+                                              "x": 78.4,
+                                              "y": 53.9
                                         },
                                         {
-                                              "x": 18,
+                                              "x": 18.6,
                                               "y": 50
                                         }
                                   ]
@@ -17497,12 +17487,12 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 18,
-                                              "y": 50
+                                              "x": 14.8,
+                                              "y": 49.8
                                         },
                                         {
-                                              "x": 49.5,
-                                              "y": 84.2
+                                              "x": 47.6,
+                                              "y": 81.2
                                         }
                                   ]
                             }
@@ -17512,26 +17502,26 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 49.5,
-                                  "y": 84.2
+                                  "x": 47.6,
+                                  "y": 81.2
                             },
                             "t1": {
-                                  "x": 50,
-                                  "y": 18
+                                  "x": 49.8,
+                                  "y": 21.1
                             },
                             "t2": {
                                   "x": 59.9,
                                   "y": 80.7
                             },
                             "t3": {
-                                  "x": 82,
-                                  "y": 50
+                                  "x": 85.2,
+                                  "y": 49.8
                             }
                       },
                       "oppPos": {},
                       "ball": {
-                            "x": 49.5,
-                            "y": 84.2,
+                            "x": 47.6,
+                            "y": 81.2,
                             "attachedTo": "t0"
                       },
                       "gear": [
@@ -17584,6 +17574,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Blank Grass • 5 Steps",
     desc: "Fundamental 3-cone triangle: middle receiver checks off their cone, opens their body to take the ball on the back foot, and plays crisp to the next corner.",
     cue: "Check away from your cone — open body and take it back-foot!",
+    stepCues: ["Crisp pass to Player #2 & sprint on","Close-control dribble with head up","Square across box to Player #3","Bounce lay-off to Player #1","Clean first touch — ready to repeat!"],
     build: () => ({
           "pitchMode": "blank",
           "formationId": "drill-diamond",
@@ -17599,8 +17590,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 84
                             },
                             "t1": {
-                                  "x": 28,
-                                  "y": 50
+                                  "x": 29.4,
+                                  "y": 51.4
                             },
                             "t2": {
                                   "x": 74,
@@ -17635,30 +17626,30 @@ export const BUILTIN_TEMPLATES = [
                       ],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 28,
-                                              "y": 50
-                                        },
-                                        {
-                                              "x": 18,
-                                              "y": 52
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t0",
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 81
+                                              "x": 48,
+                                              "y": 80.8
                                         },
                                         {
-                                              "x": 20,
-                                              "y": 54
+                                              "x": 31.4,
+                                              "y": 54.6
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 29.4,
+                                              "y": 51.4
+                                        },
+                                        {
+                                              "x": 18,
+                                              "y": 52
                                         }
                                   ]
                             }
@@ -17782,12 +17773,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 23,
-                                              "y": 40
+                                              "x": 23.5,
+                                              "y": 40.5
                                         },
                                         {
-                                              "x": 71,
-                                              "y": 20
+                                              "x": 70.5,
+                                              "y": 19.5
                                         }
                                   ]
                             },
@@ -17797,6 +17788,10 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 20,
                                               "y": 42
+                                        },
+                                        {
+                                              "x": 39.2,
+                                              "y": 26.1
                                         },
                                         {
                                               "x": 64,
@@ -17809,8 +17804,8 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 28,
-                                  "y": 52
+                                  "x": 28.1,
+                                  "y": 52.2
                             },
                             "t1": {
                                   "x": 64,
@@ -17849,6 +17844,21 @@ export const BUILTIN_TEMPLATES = [
                       ],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t2",
+                                  "toId": "t0",
+                                  "pts": [
+                                        {
+                                              "x": 71,
+                                              "y": 20.3
+                                        },
+                                        {
+                                              "x": 31.1,
+                                              "y": 49.9
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "dribble",
                                   "pts": [
                                         {
@@ -17862,26 +17872,11 @@ export const BUILTIN_TEMPLATES = [
                                   ]
                             },
                             {
-                                  "type": "pass",
-                                  "fromId": "t2",
-                                  "toId": "t0",
-                                  "pts": [
-                                        {
-                                              "x": 76,
-                                              "y": 32
-                                        },
-                                        {
-                                              "x": 52,
-                                              "y": 80
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 28,
-                                              "y": 52
+                                              "x": 28.1,
+                                              "y": 52.2
                                         },
                                         {
                                               "x": 50,
@@ -17899,7 +17894,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t1": {
                                   "x": 72,
-                                  "y": 20
+                                  "y": 19.1
                             },
                             "t2": {
                                   "x": 78,
@@ -17947,6 +17942,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Blank Grass • 5 Steps",
     desc: "Classic Tuesday night technical warm-up: pass firmly down the outside of the cone square to your teammate’s back foot, then sprint to follow your pass.",
     cue: "Firm pass to their back foot — sprint straight to follow it!",
+    stepCues: ["Crisp pass to Player #2 & sprint on","Switch play wide to Player #3","Bounce lay-off to Player #4","Switch play wide to Player #5","Clean first touch — ready to repeat!"],
     build: () => ({
           "pitchMode": "blank",
           "formationId": "drill-diamond",
@@ -17958,20 +17954,20 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 20,
-                                  "y": 78
+                                  "x": 18.2,
+                                  "y": 79
                             },
                             "t1": {
-                                  "x": 18,
-                                  "y": 22
+                                  "x": 17.5,
+                                  "y": 21.8
                             },
                             "t2": {
                                   "x": 80,
                                   "y": 18
                             },
                             "t3": {
-                                  "x": 82,
-                                  "y": 78
+                                  "x": 82.5,
+                                  "y": 78.2
                             },
                             "t4": {
                                   "x": 14,
@@ -17980,8 +17976,8 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {},
                       "ball": {
-                            "x": 20,
-                            "y": 78,
+                            "x": 18.2,
+                            "y": 79,
                             "attachedTo": "t0"
                       },
                       "gear": [
@@ -18017,12 +18013,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 20,
-                                              "y": 74
+                                              "x": 18.2,
+                                              "y": 75.2
                                         },
                                         {
-                                              "x": 18,
-                                              "y": 26
+                                              "x": 17.5,
+                                              "y": 25.6
                                         }
                                   ]
                             },
@@ -18030,8 +18026,12 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 20,
-                                              "y": 78
+                                              "x": 18.2,
+                                              "y": 79
+                                        },
+                                        {
+                                              "x": 11.6,
+                                              "y": 56.2
                                         },
                                         {
                                               "x": 20,
@@ -18047,8 +18047,8 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 88
                                         },
                                         {
-                                              "x": 20,
-                                              "y": 80
+                                              "x": 19.8,
+                                              "y": 80.2
                                         }
                                   ]
                             }
@@ -18061,26 +18061,26 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 34
                             },
                             "t1": {
-                                  "x": 18,
-                                  "y": 22
+                                  "x": 17.5,
+                                  "y": 21.8
                             },
                             "t2": {
                                   "x": 80,
                                   "y": 18
                             },
                             "t3": {
-                                  "x": 82,
-                                  "y": 78
+                                  "x": 82.5,
+                                  "y": 78.2
                             },
                             "t4": {
-                                  "x": 20,
-                                  "y": 80
+                                  "x": 19.8,
+                                  "y": 80.2
                             }
                       },
                       "oppPos": {},
                       "ball": {
-                            "x": 18,
-                            "y": 22,
+                            "x": 17.5,
+                            "y": 21.8,
                             "attachedTo": "t1"
                       },
                       "gear": [
@@ -18116,12 +18116,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 22,
-                                              "y": 21
+                                              "x": 21.3,
+                                              "y": 21.6
                                         },
                                         {
-                                              "x": 76,
-                                              "y": 18
+                                              "x": 76.2,
+                                              "y": 18.2
                                         }
                                   ]
                             },
@@ -18129,8 +18129,12 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 18,
-                                              "y": 22
+                                              "x": 17.5,
+                                              "y": 21.8
+                                        },
+                                        {
+                                              "x": 41.2,
+                                              "y": 12.4
                                         },
                                         {
                                               "x": 66,
@@ -18146,8 +18150,8 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 34
                                         },
                                         {
-                                              "x": 18,
-                                              "y": 22
+                                              "x": 17.5,
+                                              "y": 21.8
                                         }
                                   ]
                             }
@@ -18156,8 +18160,8 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 18,
-                                  "y": 22
+                                  "x": 17.5,
+                                  "y": 21.8
                             },
                             "t1": {
                                   "x": 66,
@@ -18168,12 +18172,12 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 18
                             },
                             "t3": {
-                                  "x": 82,
-                                  "y": 78
+                                  "x": 82.5,
+                                  "y": 78.2
                             },
                             "t4": {
-                                  "x": 20,
-                                  "y": 80
+                                  "x": 19.8,
+                                  "y": 80.2
                             }
                       },
                       "oppPos": {},
@@ -18215,12 +18219,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 80,
-                                              "y": 22
+                                              "x": 80.2,
+                                              "y": 21.8
                                         },
                                         {
-                                              "x": 82,
-                                              "y": 74
+                                              "x": 82.3,
+                                              "y": 74.4
                                         }
                                   ]
                             },
@@ -18230,6 +18234,10 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 80,
                                               "y": 18
+                                        },
+                                        {
+                                              "x": 88.5,
+                                              "y": 41.7
                                         },
                                         {
                                               "x": 82,
@@ -18255,8 +18263,8 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 18,
-                                  "y": 22
+                                  "x": 17.5,
+                                  "y": 21.8
                             },
                             "t1": {
                                   "x": 80,
@@ -18267,18 +18275,18 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 66
                             },
                             "t3": {
-                                  "x": 82,
-                                  "y": 78
+                                  "x": 82.5,
+                                  "y": 78.2
                             },
                             "t4": {
-                                  "x": 20,
-                                  "y": 80
+                                  "x": 19.8,
+                                  "y": 80.2
                             }
                       },
                       "oppPos": {},
                       "ball": {
-                            "x": 82,
-                            "y": 78,
+                            "x": 82.5,
+                            "y": 78.2,
                             "attachedTo": "t3"
                       },
                       "gear": [
@@ -18314,12 +18322,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t4",
                                   "pts": [
                                         {
-                                              "x": 78,
-                                              "y": 79
+                                              "x": 78.7,
+                                              "y": 78.3
                                         },
                                         {
-                                              "x": 24,
-                                              "y": 80
+                                              "x": 23.6,
+                                              "y": 80.1
                                         }
                                   ]
                             },
@@ -18327,8 +18335,12 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 82,
-                                              "y": 78
+                                              "x": 82.5,
+                                              "y": 78.2
+                                        },
+                                        {
+                                              "x": 58.5,
+                                              "y": 86.6
                                         },
                                         {
                                               "x": 34,
@@ -18344,8 +18356,8 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 66
                                         },
                                         {
-                                              "x": 82,
-                                              "y": 78
+                                              "x": 82.5,
+                                              "y": 78.2
                                         }
                                   ]
                             }
@@ -18354,30 +18366,30 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 18,
-                                  "y": 22
+                                  "x": 17.5,
+                                  "y": 21.8
                             },
                             "t1": {
                                   "x": 80,
                                   "y": 18
                             },
                             "t2": {
-                                  "x": 82,
-                                  "y": 78
+                                  "x": 82.5,
+                                  "y": 78.2
                             },
                             "t3": {
                                   "x": 34,
                                   "y": 80
                             },
                             "t4": {
-                                  "x": 20,
-                                  "y": 80
+                                  "x": 19.8,
+                                  "y": 80.2
                             }
                       },
                       "oppPos": {},
                       "ball": {
-                            "x": 20,
-                            "y": 80,
+                            "x": 19.8,
+                            "y": 80.2,
                             "attachedTo": "t4"
                       },
                       "gear": [
@@ -18421,6 +18433,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Blank Grass • 5 Steps",
     desc: "Server plays into the striker’s feet with a tight defender behind: fake toward the left mini-goal to shift the defender, spin right, and score!",
     cue: "Feel the defender behind you — fake one way, spin the other!",
+    stepCues: ["Zip firm pass to Player #2","Close-control dribble with head up","Close-control dribble with head up","Pass-finish into mini-goal!","GOAL! Reset quickly for next rep"],
     build: () => ({
           "pitchMode": "blank",
           "formationId": "drill-diamond",
@@ -18440,7 +18453,7 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 78
+                                  "y": 76.9
                             },
                             "t1": {
                                   "x": 50,
@@ -18455,7 +18468,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 50,
-                            "y": 78,
+                            "y": 76.9,
                             "attachedTo": "t0"
                       },
                       "gear": [
@@ -18486,24 +18499,11 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 50,
-                                              "y": 75
+                                              "y": 73.1
                                         },
                                         {
                                               "x": 50,
-                                              "y": 51
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 50,
-                                              "y": 36
-                                        },
-                                        {
-                                              "x": 50,
-                                              "y": 39.8
+                                              "y": 51.8
                                         }
                                   ]
                             }
@@ -18695,7 +18695,7 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 73,
-                                              "y": 25
+                                              "y": 24.3
                                         },
                                         {
                                               "x": 76,
@@ -18764,6 +18764,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Half Pitch • 4 Steps",
     desc: "Ball carrier drives straight at the defender to freeze them, slips the spare attacker in stride, and finishes past GK.",
     cue: "Drive AT the defender — pass at the last moment!",
+    stepCues: ["Close-control dribble with head up","Crisp pass to Player #2 & sprint on","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -18902,26 +18903,26 @@ export const BUILTIN_TEMPLATES = [
                                   "y2": 30
                             },
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 66,
-                                              "y": 34
-                                        },
-                                        {
-                                              "x": 63,
-                                              "y": 22
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t0",
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 45
+                                              "x": 46.2,
+                                              "y": 46
+                                        },
+                                        {
+                                              "x": 62.8,
+                                              "y": 36
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 66,
+                                              "y": 34
                                         },
                                         {
                                               "x": 63,
@@ -18945,7 +18946,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 53,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -18979,7 +18980,7 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 60,
+                                              "x": 60.7,
                                               "y": 19
                                         },
                                         {
@@ -19049,6 +19050,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Blank Grass • 5 Steps",
     desc: "Pass wide, bounce back to draw both defenders narrow, thread the split pass right between them, and switch out.",
     cue: "Move it fast — 3 bonus points for splitting defenders!",
+    stepCues: ["Zip firm pass to Player #2","Bounce lay-off to Player #1","Square across box to Player #4","Bounce lay-off to Player #3","Clean first touch — ready to repeat!"],
     build: () => ({
           "pitchMode": "blank",
           "formationId": "drill-diamond",
@@ -19135,12 +19137,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 77
+                                              "x": 47.2,
+                                              "y": 77.4
                                         },
                                         {
-                                              "x": 18,
-                                              "y": 50
+                                              "x": 20.8,
+                                              "y": 52.6
                                         }
                                   ]
                             }
@@ -19168,8 +19170,8 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 30,
-                                  "y": 58
+                                  "x": 30.1,
+                                  "y": 57.9
                             },
                             "o1": {
                                   "x": 44,
@@ -19214,12 +19216,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t0",
                                   "pts": [
                                         {
-                                              "x": 20,
-                                              "y": 54
+                                              "x": 20.1,
+                                              "y": 53.2
                                         },
                                         {
-                                              "x": 38,
-                                              "y": 80
+                                              "x": 35.9,
+                                              "y": 76.8
                                         }
                                   ]
                             }
@@ -19300,12 +19302,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 40,
-                                              "y": 76
+                                              "x": 38.9,
+                                              "y": 76.3
                                         },
                                         {
-                                              "x": 52,
-                                              "y": 20
+                                              "x": 51.1,
+                                              "y": 23.7
                                         }
                                   ]
                             }
@@ -19379,12 +19381,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 56,
-                                              "y": 23
+                                              "x": 54.7,
+                                              "y": 22.7
                                         },
                                         {
-                                              "x": 82,
-                                              "y": 50
+                                              "x": 79.3,
+                                              "y": 47.3
                                         }
                                   ]
                             }
@@ -19469,6 +19471,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Half Pitch • 5 Steps",
     desc: "Sell the fake toward the amber gate with a defender chasing, chop across, burst through the lime gate, and score.",
     cue: "Check your shoulder — fake one gate, burst through the other!",
+    stepCues: ["Close-control dribble with head up","Close-control dribble with head up","Close-control dribble with head up","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -19705,7 +19708,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 53,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -19751,8 +19754,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 63,
-                                              "y": 19
+                                              "x": 63.4,
+                                              "y": 19.2
                                         },
                                         {
                                               "x": 45,
@@ -19829,6 +19832,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Half Pitch • 5 Steps",
     desc: "UEFA Y-shape passing pattern: server plays into the central pivot, bounces back, threads an angled through-pass around the pole into the runner’s stride to score.",
     cue: "Bounce short to set the angle — weight the pass into stride!",
+    stepCues: ["Crisp pass to Player #2 & sprint on","Bounce lay-off to Player #1","Zip firm pass to Player #3","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -19848,15 +19852,15 @@ export const BUILTIN_TEMPLATES = [
                       "teamPos": {
                             "t0": {
                                   "x": 50,
-                                  "y": 80
+                                  "y": 78.9
                             },
                             "t1": {
                                   "x": 44,
                                   "y": 54
                             },
                             "t2": {
-                                  "x": 78,
-                                  "y": 38
+                                  "x": 78.9,
+                                  "y": 38.7
                             }
                       },
                       "oppPos": {
@@ -19867,7 +19871,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 50,
-                            "y": 80,
+                            "y": 78.9,
                             "attachedTo": "t0"
                       },
                       "gear": [
@@ -19903,12 +19907,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 49,
-                                              "y": 77
+                                              "x": 49.1,
+                                              "y": 75.2
                                         },
                                         {
-                                              "x": 45,
-                                              "y": 57
+                                              "x": 44.9,
+                                              "y": 57.7
                                         }
                                   ]
                             },
@@ -19917,7 +19921,7 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 50,
-                                              "y": 80
+                                              "y": 78.9
                                         },
                                         {
                                               "x": 56,
@@ -19939,8 +19943,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 54
                             },
                             "t2": {
-                                  "x": 78,
-                                  "y": 38
+                                  "x": 78.9,
+                                  "y": 38.7
                             }
                       },
                       "oppPos": {
@@ -19987,12 +19991,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t0",
                                   "pts": [
                                         {
-                                              "x": 46,
-                                              "y": 56
+                                              "x": 46.7,
+                                              "y": 56.7
                                         },
                                         {
-                                              "x": 54,
-                                              "y": 64
+                                              "x": 53.3,
+                                              "y": 63.3
                                         }
                                   ]
                             },
@@ -20000,8 +20004,8 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 78,
-                                              "y": 38
+                                              "x": 78.9,
+                                              "y": 38.7
                                         },
                                         {
                                               "x": 68,
@@ -20071,12 +20075,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 58,
-                                              "y": 63
+                                              "x": 57,
+                                              "y": 62.3
                                         },
                                         {
                                               "x": 67,
-                                              "y": 23
+                                              "y": 23.7
                                         }
                                   ]
                             }
@@ -20095,7 +20099,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "t2": {
                                   "x": 66,
-                                  "y": 18
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
@@ -20106,7 +20110,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "ball": {
                             "x": 66,
-                            "y": 18,
+                            "y": 20.5,
                             "attachedTo": "t2"
                       },
                       "gear": [
@@ -20142,8 +20146,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 63,
-                                              "y": 16
+                                              "x": 63.3,
+                                              "y": 17.8
                                         },
                                         {
                                               "x": 45,
@@ -20222,6 +20226,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Half Pitch • 5 Steps",
     desc: "Midfielder feeds the overlapping left winger past the slalom pole, then times two coordinated box runs (one near post, one penalty spot) to finish the low cross.",
     cue: "One attacks near post, one holds the spot — head up to cross!",
+    stepCues: ["Crisp pass to Player #2 & sprint on","Close-control dribble with head up","Switch play wide to Player #3","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -20240,8 +20245,8 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 50,
-                                  "y": 70
+                                  "x": 50.4,
+                                  "y": 68.9
                             },
                             "t1": {
                                   "x": 16,
@@ -20259,8 +20264,8 @@ export const BUILTIN_TEMPLATES = [
                             }
                       },
                       "ball": {
-                            "x": 50,
-                            "y": 70,
+                            "x": 50.4,
+                            "y": 68.9,
                             "attachedTo": "t0"
                       },
                       "gear": [
@@ -20285,6 +20290,21 @@ export const BUILTIN_TEMPLATES = [
                       ],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t0",
+                                  "toId": "t1",
+                                  "pts": [
+                                        {
+                                              "x": 46.9,
+                                              "y": 67.4
+                                        },
+                                        {
+                                              "x": 19.5,
+                                              "y": 55.5
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -20294,21 +20314,6 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 14,
                                               "y": 30
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t0",
-                                  "toId": "t1",
-                                  "pts": [
-                                        {
-                                              "x": 47,
-                                              "y": 68
-                                        },
-                                        {
-                                              "x": 16,
-                                              "y": 32
                                         }
                                   ]
                             }
@@ -20457,12 +20462,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 19,
-                                              "y": 15
+                                              "x": 19.8,
+                                              "y": 14.6
                                         },
                                         {
-                                              "x": 51,
-                                              "y": 20
+                                              "x": 50.2,
+                                              "y": 19.4
                                         }
                                   ]
                             }
@@ -20522,8 +20527,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 54,
-                                              "y": 17
+                                              "x": 54.4,
+                                              "y": 16.2
                                         },
                                         {
                                               "x": 56,
@@ -20596,6 +20601,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Blank Grass • 5 Steps",
     desc: "String quick passes in the bottom 3v1 box to draw the chaser in, then thread a split pass into the target player in the top box and transition up to support.",
     cue: "Three quick passes to draw the chaser — split to the next box!",
+    stepCues: ["Crisp pass to Player #2 & sprint on","Switch play wide to Player #3","Square across box to Player #4","Bounce lay-off to Player #2","Clean first touch — ready to repeat!"],
     build: () => ({
           "pitchMode": "blank",
           "formationId": "drill-diamond",
@@ -20686,12 +20692,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 78
+                                              "x": 46.9,
+                                              "y": 77.8
                                         },
                                         {
-                                              "x": 30,
-                                              "y": 66
+                                              "x": 31.1,
+                                              "y": 66.2
                                         }
                                   ]
                             },
@@ -20703,8 +20709,8 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 66
                                         },
                                         {
-                                              "x": 38.9,
-                                              "y": 66.2
+                                              "x": 39,
+                                              "y": 69.2
                                         }
                                   ]
                             }
@@ -20732,8 +20738,8 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 38.9,
-                                  "y": 66.2
+                                  "x": 39,
+                                  "y": 69.2
                             }
                       },
                       "ball": {
@@ -20786,12 +20792,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 31,
-                                              "y": 64
+                                              "x": 31.7,
+                                              "y": 63.8
                                         },
                                         {
-                                              "x": 69,
-                                              "y": 62
+                                              "x": 68.2,
+                                              "y": 62.2
                                         }
                                   ]
                             },
@@ -20799,8 +20805,8 @@ export const BUILTIN_TEMPLATES = [
                                   "type": "run",
                                   "pts": [
                                         {
-                                              "x": 38.9,
-                                              "y": 66.2
+                                              "x": 39,
+                                              "y": 69.2
                                         },
                                         {
                                               "x": 58,
@@ -20886,12 +20892,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 70,
-                                              "y": 59
+                                              "x": 70.2,
+                                              "y": 58.7
                                         },
                                         {
-                                              "x": 52,
-                                              "y": 25
+                                              "x": 51.8,
+                                              "y": 25.3
                                         }
                                   ]
                             },
@@ -20999,12 +21005,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 24
+                                              "x": 46.7,
+                                              "y": 23.8
                                         },
                                         {
-                                              "x": 30,
-                                              "y": 33
+                                              "x": 31.3,
+                                              "y": 32.2
                                         }
                                   ]
                             },
@@ -21108,6 +21114,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "4 Mini-Goals • 5 Steps",
     desc: "Drive at the left mini-goal to draw defenders, recycle to the pivot, switch to the right attacker, and score in the open goal.",
     cue: "Draw defenders to one side — switch to the open goal!",
+    stepCues: ["Close-control dribble with head up","Bounce lay-off to Player #2","Crisp pass to Player #3 & sprint on","Pass-finish into mini-goal!","GOAL! Reset quickly for next rep"],
     build: () => ({
           "pitchMode": "blank",
           "formationId": "drill-diamond",
@@ -21307,12 +21314,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 27,
-                                              "y": 37
+                                              "x": 26.8,
+                                              "y": 36.6
                                         },
                                         {
-                                              "x": 48,
-                                              "y": 56
+                                              "x": 45.2,
+                                              "y": 53.4
                                         }
                                   ]
                             }
@@ -21393,6 +21400,21 @@ export const BUILTIN_TEMPLATES = [
                       ],
                       "drawings": [
                             {
+                                  "type": "pass",
+                                  "fromId": "t1",
+                                  "toId": "t2",
+                                  "pts": [
+                                        {
+                                              "x": 50.9,
+                                              "y": 53.5
+                                        },
+                                        {
+                                              "x": 73.1,
+                                              "y": 34.5
+                                        }
+                                  ]
+                            },
+                            {
                                   "type": "run",
                                   "pts": [
                                         {
@@ -21401,21 +21423,6 @@ export const BUILTIN_TEMPLATES = [
                                         },
                                         {
                                               "x": 76.1,
-                                              "y": 22
-                                        }
-                                  ]
-                            },
-                            {
-                                  "type": "pass",
-                                  "fromId": "t1",
-                                  "toId": "t2",
-                                  "pts": [
-                                        {
-                                              "x": 52,
-                                              "y": 53
-                                        },
-                                        {
-                                              "x": 76,
                                               "y": 22
                                         }
                                   ]
@@ -21502,8 +21509,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 76,
-                                              "y": 19
+                                              "x": 76.1,
+                                              "y": 18.7
                                         },
                                         {
                                               "x": 76,
@@ -21604,6 +21611,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Half Pitch • 5 Steps",
     desc: "Attack breaks down, defenders counter toward the mini-goals, attackers swarm in 5 seconds to win it back, slip, and score!",
     cue: "Lost the ball? 5-second pack hunt to win it back!",
+    stepCues: ["Close-control dribble with head up","Show ball-carrier toward touchline","Crisp pass to Player #3 & sprint on","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -21769,11 +21777,22 @@ export const BUILTIN_TEMPLATES = [
                       ],
                       "drawings": [
                             {
+                                  "type": "zone",
+                                  "x1": 18,
+                                  "y1": 48,
+                                  "x2": 38,
+                                  "y2": 66
+                            },
+                            {
                                   "type": "dribble",
                                   "pts": [
                                         {
                                               "x": 36.7,
                                               "y": 38.7
+                                        },
+                                        {
+                                              "x": 25.4,
+                                              "y": 49.8
                                         },
                                         {
                                               "x": 26.2,
@@ -21787,6 +21806,10 @@ export const BUILTIN_TEMPLATES = [
                                         {
                                               "x": 43.4,
                                               "y": 45.4
+                                        },
+                                        {
+                                              "x": 41.3,
+                                              "y": 56.4
                                         },
                                         {
                                               "x": 30.3,
@@ -21806,13 +21829,6 @@ export const BUILTIN_TEMPLATES = [
                                               "y": 53.4
                                         }
                                   ]
-                            },
-                            {
-                                  "type": "zone",
-                                  "x1": 18,
-                                  "y1": 48,
-                                  "x2": 38,
-                                  "y2": 66
                             }
                       ],
                       "customOppCount": 3
@@ -21843,7 +21859,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "o2": {
                                   "x": 54,
-                                  "y": 48
+                                  "y": 48.1
                             }
                       },
                       "ball": {
@@ -21867,26 +21883,26 @@ export const BUILTIN_TEMPLATES = [
                       ],
                       "drawings": [
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 64,
-                                              "y": 34
-                                        },
-                                        {
-                                              "x": 60,
-                                              "y": 21
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t0",
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 34,
-                                              "y": 55
+                                              "x": 33.4,
+                                              "y": 55.7
+                                        },
+                                        {
+                                              "x": 60.9,
+                                              "y": 36.2
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 64,
+                                              "y": 34
                                         },
                                         {
                                               "x": 60,
@@ -21914,7 +21930,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 52,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -21952,8 +21968,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 58,
-                                              "y": 18
+                                              "x": 57.9,
+                                              "y": 17.9
                                         },
                                         {
                                               "x": 45,
@@ -22030,6 +22046,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Half Pitch • 6 Steps",
     desc: "Circulate in the cone box, play UP to the top player, bounce BACK, slip THROUGH to the breakout runner, and score.",
     cue: "Keep the rondo moving — bounce off top to break out!",
+    stepCues: ["Zip firm pass to Player #2","Zip firm pass to Player #4","Bounce lay-off to Player #2","Crisp pass to Player #3 & sprint on","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -22080,7 +22097,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "o1": {
                                   "x": 44,
-                                  "y": 66
+                                  "y": 65.9
                             },
                             "o2": {
                                   "x": 56,
@@ -22126,11 +22143,11 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 47,
-                                              "y": 75
+                                              "y": 75.6
                                         },
                                         {
-                                              "x": 30,
-                                              "y": 62
+                                              "x": 33,
+                                              "y": 64.4
                                         }
                                   ]
                             }
@@ -22208,12 +22225,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t3",
                                   "pts": [
                                         {
-                                              "x": 33,
-                                              "y": 59
+                                              "x": 32.6,
+                                              "y": 59.7
                                         },
                                         {
-                                              "x": 50,
-                                              "y": 46
+                                              "x": 47,
+                                              "y": 48.3
                                         }
                                   ]
                             }
@@ -22291,12 +22308,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 47,
-                                              "y": 48
+                                              "x": 46.9,
+                                              "y": 47.9
                                         },
                                         {
-                                              "x": 36,
-                                              "y": 56
+                                              "x": 35.8,
+                                              "y": 55.8
                                         }
                                   ]
                             },
@@ -22341,12 +22358,12 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 47,
-                                  "y": 56
+                                  "x": 46.7,
+                                  "y": 56.3
                             },
                             "o2": {
-                                  "x": 50.6,
-                                  "y": 45.6
+                                  "x": 54.3,
+                                  "y": 50.5
                             }
                       },
                       "ball": {
@@ -22389,26 +22406,26 @@ export const BUILTIN_TEMPLATES = [
                                   "y2": 28
                             },
                             {
-                                  "type": "run",
-                                  "pts": [
-                                        {
-                                              "x": 66,
-                                              "y": 36
-                                        },
-                                        {
-                                              "x": 60,
-                                              "y": 22
-                                        }
-                                  ]
-                            },
-                            {
                                   "type": "pass",
                                   "fromId": "t1",
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 40,
-                                              "y": 53
+                                              "x": 38.7,
+                                              "y": 53.9
+                                        },
+                                        {
+                                              "x": 62.8,
+                                              "y": 38.1
+                                        }
+                                  ]
+                            },
+                            {
+                                  "type": "run",
+                                  "pts": [
+                                        {
+                                              "x": 66,
+                                              "y": 36
                                         },
                                         {
                                               "x": 60,
@@ -22440,7 +22457,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 52,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
@@ -22490,8 +22507,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 58,
-                                              "y": 19
+                                              "x": 57.9,
+                                              "y": 18.8
                                         },
                                         {
                                               "x": 45,
@@ -22581,9 +22598,10 @@ export const BUILTIN_TEMPLATES = [
     difficulty: "advanced",
     standard: "La Masia Positional",
     title: "2v2 + Magic Man Directional Box",
-    tag: "Blank Grass • 5 Steps",
+    tag: "Blank Grass • 6 Steps",
     desc: "Directional possession game with a central all-time attacker (\"Magic Man\"): combine to create 3v2 triangles, pull defenders narrow, and score into the open mini-goal.",
     cue: "Use the central Magic Man to always create a 2v1 triangle!",
+    stepCues: ["Crisp pass to Player #2 & sprint on","Crisp pass to Player #3 & sprint on","Crisp pass to Player #2 & sprint on","Square across box to Player #1","Pass-finish into mini-goal!","GOAL! Reset quickly for next rep"],
     build: () => ({
           "pitchMode": "blank",
           "formationId": "drill-diamond",
@@ -22621,8 +22639,8 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 38,
-                                  "y": 58
+                                  "x": 37.8,
+                                  "y": 57.8
                             },
                             "o1": {
                                   "x": 64,
@@ -22667,12 +22685,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 33,
-                                              "y": 73
+                                              "x": 32.4,
+                                              "y": 73.1
                                         },
                                         {
-                                              "x": 48,
-                                              "y": 55
+                                              "x": 47.6,
+                                              "y": 54.9
                                         }
                                   ]
                             },
@@ -22755,11 +22773,11 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 53,
-                                              "y": 52
+                                              "x": 54.1,
+                                              "y": 51.9
                                         },
                                         {
-                                              "x": 73,
+                                              "x": 72.2,
                                               "y": 52
                                         }
                                   ]
@@ -22801,8 +22819,8 @@ export const BUILTIN_TEMPLATES = [
                                   "y": 42
                             },
                             "o1": {
-                                  "x": 68,
-                                  "y": 42
+                                  "x": 68.9,
+                                  "y": 40.6
                             }
                       },
                       "ball": {
@@ -22843,12 +22861,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 73,
-                                              "y": 50
+                                              "x": 72.8,
+                                              "y": 49.9
                                         },
                                         {
-                                              "x": 51,
-                                              "y": 35
+                                              "x": 51.2,
+                                              "y": 36.1
                                         }
                                   ]
                             },
@@ -22885,8 +22903,8 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 37.2,
-                                  "y": 34
+                                  "x": 36.8,
+                                  "y": 35
                             },
                             "o1": {
                                   "x": 63.9,
@@ -22931,12 +22949,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t0",
                                   "pts": [
                                         {
-                                              "x": 45,
-                                              "y": 32
+                                              "x": 45.2,
+                                              "y": 32.5
                                         },
                                         {
-                                              "x": 29,
-                                              "y": 25
+                                              "x": 29.5,
+                                              "y": 25.5
                                         }
                                   ]
                             }
@@ -23090,6 +23108,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Half Pitch • 5 Steps",
     desc: "Trains strikers to follow every shot in: edge-of-box strike is parried wide by the goalkeeper, and the weak-side forward reacts fastest to beat the defender to the rebound.",
     cue: "Never admire a shot — follow every strike in for the rebound!",
+    stepCues: ["Crisp pass to Player #2 & sprint on","Strike low on target to test GK","GK parries — follow in for rebound!","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -23161,12 +23180,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 64,
-                                              "y": 51
+                                              "x": 63.9,
+                                              "y": 50.8
                                         },
                                         {
-                                              "x": 56,
-                                              "y": 38
+                                              "x": 56.1,
+                                              "y": 39.2
                                         }
                                   ]
                             },
@@ -23237,12 +23256,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "o0",
                                   "pts": [
                                         {
-                                              "x": 53,
-                                              "y": 33
+                                              "x": 53.4,
+                                              "y": 32.2
                                         },
                                         {
-                                              "x": 50,
-                                              "y": 12
+                                              "x": 50.6,
+                                              "y": 13.8
                                         }
                                   ]
                             },
@@ -23265,8 +23284,8 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 62,
-                                  "y": 44
+                                  "x": 60.7,
+                                  "y": 45.4
                             },
                             "t1": {
                                   "x": 54,
@@ -23313,12 +23332,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t2",
                                   "pts": [
                                         {
-                                              "x": 45,
-                                              "y": 11
+                                              "x": 44.5,
+                                              "y": 11.5
                                         },
                                         {
-                                              "x": 36,
-                                              "y": 15
+                                              "x": 37.5,
+                                              "y": 14.5
                                         }
                                   ]
                             }
@@ -23328,31 +23347,31 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 62,
+                                  "x": 58.8,
                                   "y": 42
                             },
                             "t1": {
-                                  "x": 54,
-                                  "y": 24
+                                  "x": 54.2,
+                                  "y": 24.1
                             },
                             "t2": {
-                                  "x": 34,
-                                  "y": 16
+                                  "x": 33.7,
+                                  "y": 20.5
                             }
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 48,
+                                  "x": 53.5,
                                   "y": 10
                             },
                             "o1": {
-                                  "x": 44,
-                                  "y": 20
+                                  "x": 44.8,
+                                  "y": 19.8
                             }
                       },
                       "ball": {
-                            "x": 34,
-                            "y": 16,
+                            "x": 33.7,
+                            "y": 20.5,
                             "attachedTo": "t2"
                       },
                       "gear": [
@@ -23376,8 +23395,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 36,
-                                              "y": 13
+                                              "x": 35.3,
+                                              "y": 17.1
                                         },
                                         {
                                               "x": 44,
@@ -23391,7 +23410,7 @@ export const BUILTIN_TEMPLATES = [
                 {
                       "teamPos": {
                             "t0": {
-                                  "x": 62,
+                                  "x": 58.8,
                                   "y": 42
                             },
                             "t1": {
@@ -23448,6 +23467,7 @@ export const BUILTIN_TEMPLATES = [
     tag: "Half Pitch • 5 Steps",
     desc: "Build-up pair try to play out through wide halfway gates; pressing pair curve their run to trap on the sideline, win possession, play a 1-2, and score.",
     cue: "One shows them down the line — partner steps in to steal & score!",
+    stepCues: ["Curve press as ball travels","Spring press trap — win the ball!","Square across box to Player #1","First-time strike into the corner!","GOAL! Hold balanced shape"],
     build: () => ({
           "pitchMode": "half",
           "formationId": "half-attack",
@@ -23537,11 +23557,11 @@ export const BUILTIN_TEMPLATES = [
                                   "pts": [
                                         {
                                               "x": 47,
-                                              "y": 12
+                                              "y": 12.3
                                         },
                                         {
-                                              "x": 28,
-                                              "y": 26
+                                              "x": 29,
+                                              "y": 25.7
                                         }
                                   ]
                             },
@@ -23644,12 +23664,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t1",
                                   "pts": [
                                         {
-                                              "x": 23,
+                                              "x": 23.4,
                                               "y": 31
                                         },
                                         {
-                                              "x": 22,
-                                              "y": 36
+                                              "x": 22.6,
+                                              "y": 35
                                         }
                                   ]
                             }
@@ -23674,7 +23694,7 @@ export const BUILTIN_TEMPLATES = [
                             },
                             "o1": {
                                   "x": 24,
-                                  "y": 27.9
+                                  "y": 27.8
                             },
                             "o2": {
                                   "x": 64,
@@ -23719,12 +23739,12 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": "t0",
                                   "pts": [
                                         {
-                                              "x": 25,
-                                              "y": 34
+                                              "x": 25.2,
+                                              "y": 33.9
                                         },
                                         {
-                                              "x": 44,
-                                              "y": 21
+                                              "x": 42.8,
+                                              "y": 22.1
                                         }
                                   ]
                             }
@@ -23744,7 +23764,7 @@ export const BUILTIN_TEMPLATES = [
                       },
                       "oppPos": {
                             "o0": {
-                                  "x": 48,
+                                  "x": 46.5,
                                   "y": 10
                             },
                             "o1": {
@@ -23794,8 +23814,8 @@ export const BUILTIN_TEMPLATES = [
                                   "toId": null,
                                   "pts": [
                                         {
-                                              "x": 48,
-                                              "y": 17
+                                              "x": 47.5,
+                                              "y": 16.5
                                         },
                                         {
                                               "x": 55,

@@ -3543,7 +3543,10 @@
     <div id="tacticsCoachingCueBar" class="hidden shrink-0 bg-slate-950 border border-amber-400/50 rounded-xl px-2.5 py-1.5 flex items-center justify-between gap-2 animate-fadeIn">
       <div class="flex items-center gap-2 min-w-0">
         <span id="tacticsCoachingCueDiffBadge" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 font-mono-sport font-black text-[9px] uppercase shrink-0">EASY CUE</span>
-        <span id="tacticsCoachingCueText" class="text-[10.5px] font-bold text-amber-200 leading-snug"></span>
+        <div class="flex flex-col min-w-0">
+          <span id="tacticsCoachingStepBeat" class="hidden text-[9.5px] font-mono-sport font-black text-emerald-300 uppercase tracking-wide leading-tight truncate"></span>
+          <span id="tacticsCoachingCueText" class="text-[10.5px] font-bold text-amber-200 leading-snug"></span>
+        </div>
       </div>
       <button type="button" onclick="dismissTacticsCoachingCue()" class="text-slate-400 hover:text-white text-xs px-1 shrink-0 cursor-pointer" title="Dismiss coaching cue">✕</button>
     </div>
@@ -3566,6 +3569,7 @@
       <div class="flex items-center gap-1 shrink-0">
         <button type="button" onclick="nudgeTacticsStep(-1)" class="px-1.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-mono-sport font-black text-[10px] cursor-pointer" title="Previous Step" aria-label="Previous Step">◀</button>
         <button type="button" onclick="nudgeTacticsStep(1)" class="px-1.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-mono-sport font-black text-[10px] cursor-pointer" title="Next Step" aria-label="Next Step">▶</button>
+        <button id="tacticsLoopBtn" type="button" onclick="toggleTacticsAnimLoop()" class="px-1.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white font-mono-sport font-black text-[10px] cursor-pointer" title="Loop animation continuously for huddle talks" aria-label="Toggle Loop Playback">↻</button>
         <button id="tacticsSpeedBtn" type="button" onclick="toggleTacticsAnimSpeed()" class="px-1.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-mono-sport font-black text-[10px] cursor-pointer" title="Toggle playback speed (1x / 0.5x teaching speed)">
           1×
         </button>

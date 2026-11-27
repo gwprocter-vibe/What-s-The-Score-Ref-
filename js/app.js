@@ -1003,6 +1003,7 @@ window.selectTacticsStep = tactics.selectTacticsStep;
 window.addTacticsStep = tactics.addTacticsStep;
 window.deleteLastTacticsStep = tactics.deleteLastTacticsStep;
 window.toggleTacticsAnimSpeed = tactics.toggleTacticsAnimSpeed;
+window.toggleTacticsAnimLoop = tactics.toggleTacticsAnimLoop;
 window.togglePlayTacticsMove = tactics.togglePlayTacticsMove;
 window.stopTacticsAnimation = tactics.stopTacticsAnimation;
 window.openTacticsPlaybook = tactics.openTacticsPlaybook;

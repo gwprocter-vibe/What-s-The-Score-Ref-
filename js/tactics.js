@@ -241,6 +241,7 @@ let board = {
   activeTool: 'move', // 'move' | 'pass' | 'run' | 'dribble' | 'zone'
   isAnimatorOpen: false,
   animSpeed: 1, // 1 | 0.5
+  animLoop: false,
   activeStepIdx: 0,
   teamMeta: {
     side: 'home',
@@ -324,6 +325,7 @@ function saveWorkingBoard() {
       activeCue: board.activeCue,
       isAnimatorOpen: board.isAnimatorOpen,
       animSpeed: board.animSpeed,
+      animLoop: Boolean(board.animLoop),
       activeStepIdx: board.activeStepIdx,
       teamRoster: board.teamRoster,
       benchRoster: board.benchRoster,
@@ -945,6 +947,14 @@ export function toggleTacticsAnimSpeed() {
   renderAllUI();
 }
 
+export function toggleTacticsAnimLoop() {
+  board.animLoop = !board.animLoop;
+  hapticFeedback('tap');
+  saveWorkingBoard();
+  renderAllUI();
+  score.showMatchToast(board.animLoop ? 'Loop ON — continuous huddle replay' : 'Loop OFF — plays once', '↻', 1400);
+}
+
 function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
@@ -1118,6 +1128,12 @@ if (typeof window !== 'undefined') {
     const proj = projectDrawingOntoScene(pass, sc);
     return proj.pts[proj.pts.length - 1];
   };
+  window.__evaluateMidStepForTest = (stepIdx, rawT = 0.5) => {
+    const a = board.steps[stepIdx];
+    const b = board.steps[stepIdx + 1];
+    if (!a || !b) return null;
+    return interpolateBetweenSteps(a, b, rawT, false);
+  };
 }
 
 // Auto-synthesize a final completion step if a user drew pass/run/dribble arrows on their last custom step without adding Step N+1!
@@ -1227,6 +1243,34 @@ function interpolateBetweenSteps(stepA, stepB, rawT, showNextStepDrawings = fals
     const b = stepB.oppPos?.[tok.id] || a;
     oppPos[tok.id] = samplePolylineBetween(a, b, aDrawings, ['run', 'dribble'], t);
   });
+
+  // Smooth mid-flight collision avoidance (sin(pi * t) envelope keeps t=0 & t=1 100% exact while arcing runners around defenders!)
+  if (t > 0.04 && t < 0.96) {
+    const env = Math.sin(Math.PI * t);
+    const minMidPx = 28 * env;
+    const allMid = [
+      ...Object.entries(teamPos).map(([id, pt]) => ({ grp: 'team', id, pt })),
+      ...Object.entries(oppPos).map(([id, pt]) => ({ grp: 'opp', id, pt }))
+    ];
+    for (let pass = 0; pass < 6; pass++) {
+      for (let i = 0; i < allMid.length; i++) {
+        for (let j = i + 1; j < allMid.length; j++) {
+          const u = allMid[i], v = allMid[j];
+          let dxPx = (v.pt.x - u.pt.x) * 3.0;
+          let dyPx = (v.pt.y - u.pt.y) * 4.2;
+          let dPx = Math.hypot(dxPx, dyPx);
+          if (dPx >= minMidPx) continue;
+          if (dPx < 0.01) { dxPx = 1; dyPx = 0; dPx = 1; }
+          const push = (minMidPx - dPx) * 0.55;
+          const nx = dxPx / dPx, ny = dyPx / dPx;
+          u.pt.x = clamp(u.pt.x - (nx * push) / 3.0, 5, 95);
+          u.pt.y = clamp(u.pt.y - (ny * push) / 4.2, 4, 95);
+          v.pt.x = clamp(v.pt.x + (nx * push) / 3.0, 5, 95);
+          v.pt.y = clamp(v.pt.y + (ny * push) / 4.2, 4, 95);
+        }
+      }
+    }
+  }
 
   const startBall = stepA.ball || { x: 50, y: 50, attachedTo: null };
   const endBall = stepB.ball || startBall;
@@ -1343,32 +1387,42 @@ export function togglePlayTacticsMove() {
   selectedPitchTokenId = null;
   hapticFeedback('tap');
 
-  const startedAt = performance.now() - resumeOffset;
+  let loopStartAt = performance.now() - resumeOffset;
   renderAllUI();
   requestAnimationFrame(() => { resizeTacticsCanvas(); drawTacticsCanvas(); });
 
   const tick = (now) => {
     if (!isAnimating || isAnimPaused) return;
-    const elapsed = now - startedAt;
+    let elapsed = now - loopStartAt;
     animPausedElapsedMs = elapsed;
 
     if (elapsed >= metrics.totalMs) {
-      isAnimating = false;
-      isAnimPaused = false;
-      animPausedElapsedMs = 0;
-      animRafId = null;
-      animRenderOverride = null;
-      board.activeStepIdx = board.steps.length - 1;
-      renderAllUI();
-      requestAnimationFrame(() => { resizeTacticsCanvas(); drawTacticsCanvas(); });
-      return;
+      if (board.animLoop) {
+        loopStartAt = now;
+        elapsed = 0;
+        animPausedElapsedMs = 0;
+      } else {
+        isAnimating = false;
+        isAnimPaused = false;
+        animPausedElapsedMs = 0;
+        animRafId = null;
+        animRenderOverride = null;
+        board.activeStepIdx = board.steps.length - 1;
+        renderAllUI();
+        requestAnimationFrame(() => { resizeTacticsCanvas(); drawTacticsCanvas(); });
+        return;
+      }
     }
 
     const frame = evaluatePlaybackFrame(playSteps, elapsed, metrics);
+    const prevIdx = board.activeStepIdx;
     board.activeStepIdx = clamp(frame.uiStepIdx, 0, board.steps.length - 1);
     animRenderOverride = frame.scene;
 
     renderAnimatorBarUI();
+    if (board.activeStepIdx !== prevIdx) {
+      renderCoachingCueBarUI();
+    }
     drawTacticsCanvas();
     animRafId = requestAnimationFrame(tick);
   };
@@ -1659,7 +1713,8 @@ export function loadBuiltinTacticsTemplate(templateId) {
     difficulty: tpl.difficulty || 'easy',
     category: tpl.category || 'match',
     standard: tpl.standard || '',
-    cue: tpl.cue || ''
+    cue: tpl.cue || '',
+    stepCues: Array.isArray(tpl.stepCues) ? [...tpl.stepCues] : []
   };
 
   adjustRosterCountForPitchMode(getTeamSizeForMode(board.pitchMode));
@@ -2000,6 +2055,7 @@ function renderAnimatorBarUI() {
   const bar = document.getElementById('tacticsAnimatorBar');
   const stepsEl = document.getElementById('tacticsStepPills');
   const speedBtn = document.getElementById('tacticsSpeedBtn');
+  const loopBtn = document.getElementById('tacticsLoopBtn');
   const playBtn = document.getElementById('tacticsPlayMoveBtn');
   if (!bar) return;
 
@@ -2027,6 +2083,12 @@ function renderAnimatorBarUI() {
 
   if (speedBtn) {
     speedBtn.innerText = `${board.animSpeed}×`;
+  }
+
+  if (loopBtn) {
+    loopBtn.className = board.animLoop
+      ? 'px-1.5 py-1 rounded-lg bg-emerald-500/25 border border-emerald-400 text-emerald-300 font-mono-sport font-black text-[10px] cursor-pointer shadow-sm'
+      : 'px-1.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white font-mono-sport font-black text-[10px] cursor-pointer';
   }
 
   if (playBtn) {
@@ -2072,6 +2134,7 @@ function renderToolDockUI() {
 function renderCoachingCueBarUI() {
   const bar = document.getElementById('tacticsCoachingCueBar');
   const badgeEl = document.getElementById('tacticsCoachingCueDiffBadge');
+  const beatEl = document.getElementById('tacticsCoachingStepBeat');
   const textEl = document.getElementById('tacticsCoachingCueText');
   if (!bar || !textEl) return;
 
@@ -2082,6 +2145,17 @@ function renderCoachingCueBarUI() {
 
   bar.classList.remove('hidden');
   textEl.innerText = board.activeCue.cue;
+
+  if (beatEl) {
+    const stepBeat = board.activeCue.stepCues?.[board.activeStepIdx];
+    if (stepBeat && board.steps.length > 1) {
+      beatEl.classList.remove('hidden');
+      beatEl.innerText = `STEP ${board.activeStepIdx + 1}/${board.steps.length} • ${stepBeat}`;
+    } else {
+      beatEl.classList.add('hidden');
+      beatEl.innerText = '';
+    }
+  }
 
   if (badgeEl) {
     const diff = board.activeCue.difficulty || 'easy';
@@ -2594,7 +2668,7 @@ function drawWavyPath(ctx, pxPts) {
   }
 }
 
-function drawTacticalStroke(ctx, d, w, h, pad, isSunlight) {
+function drawTacticalStroke(ctx, d, w, h, pad, isSunlight, scene = null) {
   ctx.save();
   if (d.type === 'zone') {
     const p1 = normToPx(d.x1, d.y1, w, h, pad);
@@ -2646,12 +2720,51 @@ function drawTacticalStroke(ctx, d, w, h, pad, isSunlight) {
     drawWavyPath(ctx, pts);
     ctx.stroke();
   } else {
-    // Detect Shot-on-Goal: pass arrow (2-point template OR multi-point hand-drawn stroke) aimed into goal mouth!
+    // 1. Pressing Steal / Interception (Opponent -> Coached Team turnover) OR GK Parry Deflection!
+    const isStealTurnover = d.fromId && d.toId && d.fromId.startsWith('o') && d.toId.startsWith('t') && d.fromId !== 'o0';
+    const isGkParry = d.fromId === 'o0' && d.toId && d.toId.startsWith('t');
+    if (isStealTurnover || isGkParry) {
+      const accent = isGkParry ? '#fbbf24' : '#fb7185';
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.8;
+      ctx.setLineDash([6, 4]);
+      drawSmoothCurve(ctx, pts);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      const tail = pts[Math.max(0, pts.length - 3)];
+      const tip = pts[pts.length - 1];
+      drawArrowhead(ctx, tail.x, tail.y, tip.x, tip.y, accent, 10);
+
+      // Crisp micro-badge ("STEAL ✕" or "PARRY") at turnover midpoint
+      const mid = pts[Math.floor(pts.length / 2)] || tip;
+      const badgeTxt = isGkParry ? 'PARRY' : 'STEAL ✕';
+      ctx.font = '700 8.5px "Chakra Petch", sans-serif';
+      const bw = ctx.measureText(badgeTxt).width + 8;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 1.3;
+      roundRectPath(ctx, mid.x - bw / 2, mid.y - 7, bw, 14, 4);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#fde047';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badgeTxt, mid.x, mid.y + 0.5);
+      ctx.restore();
+      return;
+    }
+
+    // 2. Detect Shot-on-Goal: strike into main goal mouth, shot tested on GK (save/rebound), OR shot into ANY placed mini-goal prop!
     const rawTip = d.pts[d.pts.length - 1];
-    const isShot = !d.toId && rawTip && (
-      (board.pitchMode !== 'blank' && rawTip.x >= 35 && rawTip.x <= 65 && rawTip.y <= 5.5) ||
-      (board.pitchMode === 'blank' && rawTip.y <= 13 && (rawTip.x >= 18 && rawTip.x <= 30 || rawTip.x >= 70 && rawTip.x <= 82))
+    const activeGear = scene?.gear || board.steps[board.activeStepIdx]?.gear || [];
+    const hitsMiniGoal = !d.toId && rawTip && activeGear.some(g =>
+      g.kind === 'mini-goal' && Math.abs(rawTip.x - g.x) <= 7.5 && Math.abs(rawTip.y - g.y) <= 5.5
     );
+    const isSavedShotOnGk = Boolean(d.fromId && d.fromId.startsWith('t') && d.toId === 'o0');
+    const isShot = isSavedShotOnGk || hitsMiniGoal || (!d.toId && rawTip && (
+      (board.pitchMode !== 'blank' && rawTip.x >= 35 && rawTip.x <= 65 && rawTip.y <= 5.8) ||
+      (board.pitchMode === 'blank' && rawTip.y <= 13 && (rawTip.x >= 18 && rawTip.x <= 30 || rawTip.x >= 70 && rawTip.x <= 82))
+    ));
     if (isShot && pts.length >= 2) {
       const p0 = pts[0];
       const pN = pts[pts.length - 1];
@@ -2839,9 +2952,9 @@ function renderSceneOntoContext(ctx, w, h, pad, scene, options = { isSunlight: f
   }
 
   // 1. Saved Tactical Drawings + Live In-Progress Stroke
-  (scene.drawings || []).forEach(d => drawTacticalStroke(ctx, projectDrawingOntoScene(d, scene), w, h, pad, isSunlight));
+  (scene.drawings || []).forEach(d => drawTacticalStroke(ctx, projectDrawingOntoScene(d, scene), w, h, pad, isSunlight, scene));
   if (activePointer && activePointer.liveDrawing) {
-    drawTacticalStroke(ctx, activePointer.liveDrawing, w, h, pad, isSunlight);
+    drawTacticalStroke(ctx, activePointer.liveDrawing, w, h, pad, isSunlight, scene);
   }
 
   // 2. Training Gear Props
@@ -3702,6 +3815,7 @@ export function initTacticsBoardIfNeeded() {
     board.activeCue = saved.activeCue || null;
     board.isAnimatorOpen = Boolean(saved.isAnimatorOpen);
     board.animSpeed = saved.animSpeed === 0.5 ? 0.5 : 1;
+    board.animLoop = Boolean(saved.animLoop);
     board.activeStepIdx = clamp(saved.activeStepIdx || 0, 0, Math.max(0, saved.steps.length - 1));
     board.teamRoster = Array.isArray(saved.teamRoster) ? saved.teamRoster : [];
     board.benchRoster = Array.isArray(saved.benchRoster) ? saved.benchRoster : [];
