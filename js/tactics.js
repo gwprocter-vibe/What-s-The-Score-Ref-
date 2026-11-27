@@ -1,5 +1,5 @@
 // What's The Score Ref - 100% Offline Touchline Tactics Board Engine (v132)
-// Supports 5v5 (with U9 Retreat Line), 6v6, 7v7, Half-Pitch Set-Piece Zoom & Blank Training Grass,
+// Supports 5v5, 6v6, 7v7, Half-Pitch Set-Piece Zoom & Blank Training Grass,
 // Read-only live Squad/Kit import, Magnetic Ball Snap, Vector Arrows, Collapsible Step Animator,
 // Tucked-away Playbook & Gear sheet, and 1600x2000 HD PNG + Animated Video Clip export.
 
@@ -16,11 +16,11 @@ const MAX_STEPS = 8;
 const MAX_UNDO = 30;
 
 export const PITCH_MODES = {
-  '5v5': { label: '5v5', fullLabel: '5v5 Mini-Soccer', teamSize: 5, hasRetreatOption: true },
-  '6v6': { label: '6v6', fullLabel: '6v6 Tournament', teamSize: 6, hasRetreatOption: false },
-  '7v7': { label: '7v7', fullLabel: '7v7 Youth', teamSize: 7, hasRetreatOption: false },
-  'half': { label: 'Half Pitch', fullLabel: 'Half-Pitch Set Piece', teamSize: 5, hasRetreatOption: false },
-  'blank': { label: 'Blank Grass', fullLabel: 'Training Grass', teamSize: 5, hasRetreatOption: false }
+  '5v5': { label: '5v5', fullLabel: '5v5 Mini-Soccer', teamSize: 5 },
+  '6v6': { label: '6v6', fullLabel: '6v6 Tournament', teamSize: 6 },
+  '7v7': { label: '7v7', fullLabel: '7v7 Youth', teamSize: 7 },
+  'half': { label: 'Half Pitch', fullLabel: 'Half-Pitch Set Piece', teamSize: 5 },
+  'blank': { label: 'Blank Grass', fullLabel: 'Training Grass', teamSize: 5 }
 };
 
 export const FORMATIONS = {
@@ -177,7 +177,7 @@ export const FORMATIONS = {
   ]
 };
 
-function getDefaultOppCoords(count, oppBehindRetreat = false, pitchMode = '5v5') {
+function getDefaultOppCoords(count, pitchMode = '5v5') {
   if (pitchMode === 'half') {
     const halfBase = [
       { x: 50, y: 11, label: 'GK', isGk: true },
@@ -188,19 +188,6 @@ function getDefaultOppCoords(count, oppBehindRetreat = false, pitchMode = '5v5')
       { x: 50, y: 34, label: '6' }
     ];
     return halfBase.slice(0, count);
-  }
-
-  if (oppBehindRetreat) {
-    const retreatSet = [
-      { x: 50, y: 10, label: 'GK', isGk: true },
-      { x: 30, y: 25, label: '2' },
-      { x: 70, y: 25, label: '3' },
-      { x: 35, y: 44, label: '4' },
-      { x: 65, y: 44, label: '5' },
-      { x: 50, y: 36, label: '6' },
-      { x: 20, y: 44, label: '7' }
-    ];
-    return retreatSet.slice(0, count);
   }
 
   if (count >= 7) {
@@ -244,7 +231,6 @@ export { BUILTIN_TEMPLATES };
 let board = {
   pitchMode: '5v5',
   formationId: '1-2-1',
-  retreatLine: true,
   lanesMode: 'off', // 'off' | 'lanes' | 'thirds'
   oppMode: 'even',  // 'off' | 'even' | 'powerplay'
   customTeamCount: 0,
@@ -306,7 +292,6 @@ function pushUndoSnapshot() {
   const snap = {
     pitchMode: board.pitchMode,
     formationId: board.formationId,
-    retreatLine: board.retreatLine,
     lanesMode: board.lanesMode,
     oppMode: board.oppMode,
     customTeamCount: board.customTeamCount || 0,
@@ -330,7 +315,6 @@ function saveWorkingBoard() {
     const payload = {
       pitchMode: board.pitchMode,
       formationId: board.formationId,
-      retreatLine: board.retreatLine,
       lanesMode: board.lanesMode,
       oppMode: board.oppMode,
       customTeamCount: board.customTeamCount || 0,
@@ -509,7 +493,7 @@ function ensureStepTokensIntegrity() {
   const formations = FORMATIONS[board.pitchMode] || FORMATIONS['5v5'];
   const activeForm = formations.find(f => f.id === board.formationId) || formations[0];
   const oppCount = getOppCountForState();
-  const oppDefaults = getDefaultOppCoords(oppCount, Boolean(activeForm?.oppBehindRetreat && board.retreatLine), board.pitchMode);
+  const oppDefaults = getDefaultOppCoords(oppCount, board.pitchMode);
 
   if (Array.isArray(board.customOppRoster) && board.customOppRoster.length === oppCount && board.oppMode === 'off') {
     board.oppRoster = cloneDeep(board.customOppRoster);
@@ -591,7 +575,7 @@ export function applyFormationToBoard(formationId, options = { recordUndo: true 
   }
 
   const oppCount = getOppCountForState();
-  const oppCoords = getDefaultOppCoords(oppCount, Boolean(chosen.oppBehindRetreat && board.retreatLine), board.pitchMode);
+  const oppCoords = getDefaultOppCoords(oppCount, board.pitchMode);
   board.oppRoster = oppCoords.map((o, idx) => ({
     id: `o${idx}`,
     label: o.label || (idx === 0 ? 'GK' : String(idx + 1)),
@@ -708,7 +692,6 @@ export function setTacticsPitchMode(mode) {
   board.pitchMode = mode;
   const list = FORMATIONS[mode] || FORMATIONS['5v5'];
   board.formationId = list[0].id;
-  board.retreatLine = mode === '5v5';
   board.oppMode = mode === 'blank' ? 'off' : 'even';
   board.lanesMode = 'off';
   board.isAnimatorOpen = false;
@@ -723,15 +706,6 @@ export function onTacticsPitchSelectChange(val) {
 export function onTacticsFormationSelectChange(val) {
   hapticFeedback('tap');
   applyFormationToBoard(val, { recordUndo: true });
-}
-
-export function toggleTacticsRetreatLine() {
-  if (board.pitchMode !== '5v5') return;
-  pushUndoSnapshot();
-  board.retreatLine = !board.retreatLine;
-  hapticFeedback('tap');
-  saveWorkingBoard();
-  renderAllUI();
 }
 
 export function cycleTacticsLanes() {
@@ -1459,13 +1433,11 @@ function resetPitchForPlaybookCategory(category) {
   if (category === 'training') {
     board.pitchMode = 'blank';
     board.formationId = 'drill-diamond';
-    board.retreatLine = false;
     board.oppMode = 'off';
   } else {
     board.pitchMode = lastMatchPitchMode || '5v5';
     const list = FORMATIONS[board.pitchMode] || FORMATIONS['5v5'];
     board.formationId = list[0].id;
-    board.retreatLine = board.pitchMode === '5v5';
     board.oppMode = 'even';
   }
 
@@ -1669,14 +1641,12 @@ export function loadBuiltinTacticsTemplate(templateId) {
   board.customOppRoster = null;
   board.activeCue = null;
   board.lanesMode = 'off';
-  board.retreatLine = false;
   selectedBenchNumber = null;
 
   const built = tpl.build();
   playbookTab = tpl.category === 'training' ? 'training' : 'match';
   board.pitchMode = built.pitchMode;
   board.formationId = built.formationId;
-  board.retreatLine = Boolean(built.retreatLine);
   board.lanesMode = built.lanesMode || 'off';
   board.oppMode = built.oppMode || 'off';
   board.customTeamCount = built.customTeamCount || 0;
@@ -1758,7 +1728,6 @@ export function saveCurrentTacticsToPlaybook() {
     snapshot: {
       pitchMode: board.pitchMode,
       formationId: board.formationId,
-      retreatLine: board.retreatLine,
       lanesMode: board.lanesMode,
       oppMode: board.oppMode,
       customTeamCount: board.customTeamCount || 0,
@@ -1798,7 +1767,6 @@ export function loadSavedPlaybookEntry(entryId) {
   playbookTab = inferSavedEntryCategory(found);
   board.pitchMode = snap.pitchMode || '5v5';
   board.formationId = snap.formationId || '1-2-1';
-  board.retreatLine = Boolean(snap.retreatLine);
   board.lanesMode = snap.lanesMode || 'off';
   board.oppMode = snap.oppMode || 'off';
   board.customTeamCount = snap.customTeamCount || 0;
@@ -1943,18 +1911,6 @@ function renderTopControlsUI() {
     openLibBtn.className = isTrainMode
       ? 'flex-1 py-1 px-2 rounded-lg text-[10px] font-black border bg-emerald-500/20 border-emerald-400/70 text-emerald-200 hover:text-white transition cursor-pointer text-center truncate'
       : 'flex-1 py-1 px-2 rounded-lg text-[10px] font-black border bg-purple-500/20 border-purple-400/70 text-purple-200 hover:text-white transition cursor-pointer text-center truncate';
-  }
-
-  const retreatBtn = document.getElementById('tacticsRetreatBtn');
-  if (retreatBtn) {
-    const supported = board.pitchMode === '5v5';
-    retreatBtn.classList.toggle('hidden', !supported);
-    if (supported) {
-      retreatBtn.className = board.retreatLine
-        ? 'px-2 py-1 rounded-lg text-[10px] font-black border bg-amber-500/20 border-amber-400 text-amber-300 transition cursor-pointer shrink-0'
-        : 'px-2 py-1 rounded-lg text-[10px] font-bold border bg-slate-900 border-slate-700 text-slate-400 hover:text-white transition cursor-pointer shrink-0';
-      retreatBtn.innerText = board.retreatLine ? 'Retreat: ON' : 'Retreat: OFF';
-    }
   }
 
   const lanesBtn = document.getElementById('tacticsLanesBtn');
@@ -2566,34 +2522,6 @@ function drawPitchSurfaceAndLines(ctx, w, h, pad, isSunlight) {
   const boxH = board.pitchMode === '7v7' ? ph * 0.165 : ph * 0.145;
   ctx.strokeRect(cx - boxW / 2, top, boxW, boxH);
   ctx.strokeRect(cx - boxW / 2, bottom - boxH, boxW, boxH);
-
-  // U9 Halfway Retreat Line Cue (5v5)
-  if (board.pitchMode === '5v5' && board.retreatLine) {
-    const retreatY = cy - 4;
-    ctx.strokeStyle = '#fbbf24';
-    ctx.lineWidth = 2.4;
-    ctx.setLineDash([7, 5]);
-    ctx.beginPath();
-    ctx.moveTo(left + 2, retreatY);
-    ctx.lineTo(right - 2, retreatY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    const tagText = 'U9 RETREAT LINE';
-    ctx.font = '700 9.5px "Chakra Petch", sans-serif';
-    const tw = ctx.measureText(tagText).width + 10;
-    const tx = right - tw - 6;
-    const ty = retreatY - 17;
-    ctx.fillStyle = 'rgba(7, 9, 14, 0.86)';
-    ctx.fillRect(tx, ty, tw, 14);
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.75)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(tx, ty, tw, 14);
-    ctx.fillStyle = '#fde68a';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(tagText, tx + tw / 2, ty + 7.5);
-  }
 
   ctx.restore();
 }
@@ -3765,7 +3693,6 @@ export function initTacticsBoardIfNeeded() {
   if (saved) {
     board.pitchMode = PITCH_MODES[saved.pitchMode] ? saved.pitchMode : '5v5';
     board.formationId = saved.formationId || '1-2-1';
-    board.retreatLine = typeof saved.retreatLine === 'boolean' ? saved.retreatLine : true;
     board.lanesMode = saved.lanesMode || 'off';
     board.oppMode = saved.oppMode || 'even';
     board.customTeamCount = saved.customTeamCount || 0;

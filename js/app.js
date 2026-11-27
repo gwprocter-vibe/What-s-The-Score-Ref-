@@ -989,7 +989,6 @@ window.closeTacticsBoard = tactics.closeTacticsBoard;
 window.setTacticsPitchMode = tactics.setTacticsPitchMode;
 window.onTacticsPitchSelectChange = tactics.onTacticsPitchSelectChange;
 window.onTacticsFormationSelectChange = tactics.onTacticsFormationSelectChange;
-window.toggleTacticsRetreatLine = tactics.toggleTacticsRetreatLine;
 window.cycleTacticsLanes = tactics.cycleTacticsLanes;
 window.cycleTacticsOpposition = tactics.cycleTacticsOpposition;
 window.setTacticsTool = tactics.setTacticsTool;
