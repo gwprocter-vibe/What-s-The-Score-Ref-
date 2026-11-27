@@ -11,6 +11,60 @@ export function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+const STAR_MINI_SVG = '<svg class="w-3 h-3 shrink-0 inline-block" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+
+export function getMomentVectorSvg(tag, cls = 'w-4 h-4 text-amber-400 shrink-0') {
+  const t = String(tag || '').toLowerCase();
+  if (t.includes('press')) {
+    return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`;
+  }
+  if (t.includes('pass')) {
+    return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1" fill="currentColor"></circle></svg>`;
+  }
+  if (t.includes('drib')) {
+    return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18c3-5 6 3 9-3s5 2 7-9"></path><polyline points="16 5 20 6 19 10"></polyline></svg>`;
+  }
+  if (t.includes('shot')) {
+    return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polygon points="12 7.5 15.5 10.2 14.2 14.5 9.8 14.5 8.5 10.2" fill="currentColor" stroke="none"></polygon></svg>`;
+  }
+  if (t.includes('tack')) {
+    return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`;
+  }
+  if (t.includes('track')) {
+    return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>`;
+  }
+  if (t.includes('save')) {
+    return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v4"></path><path d="M14 10V4a2 2 0 0 0-4 0v6"></path><path d="M10 10.5V6a2 2 0 0 0-4 0v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path></svg>`;
+  }
+  return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 12 12 22 2 12 12 2"></polygon><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>`;
+}
+
+function getToastVectorSvg(iconKey) {
+  const k = String(iconKey || '').toLowerCase();
+  if (k === 'check' || k === '✓' || k === '✅' || k === '💾' || k === '📸' || k === '🎬' || k === '📋') {
+    return '<svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+  }
+  if (k === 'clock' || k === '⏱️' || k === '🧊') {
+    return '<svg class="w-3.5 h-3.5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 2.5"></path><path d="M9 2h6"></path></svg>';
+  }
+  if (k === 'star' || k === '⭐') {
+    return '<svg class="w-3.5 h-3.5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+  }
+  if (k === 'link' || k === '🔗') {
+    return '<svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>';
+  }
+  if (k === 'lock' || k === '🔒') {
+    return '<svg class="w-3.5 h-3.5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
+  }
+  if (k === 'info' || k === 'alert' || k === 'ℹ️' || k === '⚠️') {
+    return '<svg class="w-3.5 h-3.5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+  }
+  if (k === '✕') {
+    return '<svg class="w-3.5 h-3.5 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+  }
+  return '<svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polygon points="12 8 15.5 10.5 14.2 14.5 9.8 14.5 8.5 10.5 12 8" fill="currentColor" stroke="none"></polygon></svg>';
+}
+
 let pendingConcludedGoalTeam = null;
 let pendingConcludedGoalPeriod = '2nd Half';
 let pendingConcludedGoalSeconds = 900;
@@ -145,7 +199,7 @@ export function setCoachTeam(team, showToast = true) {
   renderTouchlineBarUI();
   notifyScoreChange();
   if (showToast && prev !== coachTeam) {
-    showMatchToast(`⭐ Coaching: ${teams[coachTeam]?.name || (coachTeam === 'home' ? 'Home' : 'Away')}`, '⭐', 2200);
+    showMatchToast(`Coaching: ${teams[coachTeam]?.name || (coachTeam === 'home' ? 'Home' : 'Away')}`, 'star', 2200);
   }
 }
 
@@ -329,14 +383,14 @@ export function openSquadInitialsModal(team = coachTeam) {
   if (homeBtn && awayBtn) {
     if (coachTeam === 'home') {
       homeBtn.className = 'py-2 px-2.5 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-amber-500 text-slate-950 shadow';
-      homeBtn.innerHTML = `<span>⭐</span><span class="truncate">${safeHome}</span>`;
+      homeBtn.innerHTML = `${STAR_MINI_SVG}<span class="truncate">${safeHome}</span>`;
       awayBtn.className = 'py-2 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700';
       awayBtn.innerHTML = `<span class="truncate">${safeAway}</span>`;
     } else {
       homeBtn.className = 'py-2 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700';
       homeBtn.innerHTML = `<span class="truncate">${safeHome}</span>`;
       awayBtn.className = 'py-2 px-2.5 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 transition cursor-pointer bg-amber-500 text-slate-950 shadow';
-      awayBtn.innerHTML = `<span>⭐</span><span class="truncate">${safeAway}</span>`;
+      awayBtn.innerHTML = `${STAR_MINI_SVG}<span class="truncate">${safeAway}</span>`;
     }
   }
 
@@ -364,7 +418,7 @@ export function saveSquadInitials() {
   notifyScoreChange();
   hapticFeedback('success');
   if (window.closeModal) window.closeModal('squadInitialsModal');
-  showTouchlineToast(`⭐ ${t.name} squad initials saved`);
+  showTouchlineToast(`${t.name} squad initials saved`);
 }
 
 export function getAppMode() {
@@ -512,7 +566,7 @@ export function rotateBenchPlayersIn() {
     const p = roster.find(x => x.number === n);
     return p?.initials ? `#${n} ${p.initials}` : `#${n}`;
   }).join(', ');
-  showTouchlineToast(`🔄 Subbed ON: ${onLabels}`);
+  showTouchlineToast(`Subbed ON: ${onLabels}`);
 }
 
 export function resetSquadRotation() {
@@ -783,7 +837,7 @@ export function isKickoffChosen() {
 let matchToastTimeout = null;
 let matchToastHideTimeout = null;
 
-export function showMatchToast(message, icon = '⚽', duration = 3000) {
+export function showMatchToast(message, icon = 'ball', duration = 3000) {
   const toast = document.getElementById('matchNotificationToast');
   const toastText = document.getElementById('matchNotificationToastText');
   const toastIcon = document.getElementById('matchNotificationToastIcon');
@@ -793,7 +847,7 @@ export function showMatchToast(message, icon = '⚽', duration = 3000) {
   if (matchToastHideTimeout) clearTimeout(matchToastHideTimeout);
 
   toastText.innerText = message;
-  if (toastIcon) toastIcon.innerText = icon;
+  if (toastIcon) toastIcon.innerHTML = getToastVectorSvg(icon);
 
   toast.classList.remove('hidden');
   requestAnimationFrame(() => {
@@ -922,7 +976,7 @@ export function setupKickoffLongPress() {
       }
       badge.classList.remove('scale-95', 'brightness-125');
       if (!isLongPress) {
-        showMatchToast('Hold KO icon to switch kick-off', 'ℹ️', 2000);
+        showMatchToast('Hold KO icon to switch kick-off', 'info', 2000);
         hapticFeedback('tap');
       }
       isLongPress = false;
@@ -1599,7 +1653,7 @@ export function renderAttributionModal() {
 
   if (pendingAttributionStage === 1) {
     if (cardEl) {
-      cardEl.className = 'bg-slate-900 border-2 border-emerald-500/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-emerald-500/30';
+      cardEl.className = 'bg-[#0d111a] border border-slate-700/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in';
     }
     if (titleEl) titleEl.innerText = 'Who scored?';
     if (fastModeLabel) fastModeLabel.classList.remove('hidden');
@@ -1608,7 +1662,7 @@ export function renderAttributionModal() {
     ownGoalBtn?.classList.remove('hidden');
     if (quickSkipBtn) {
       quickSkipBtn.className = 'py-2.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1';
-      quickSkipBtn.innerHTML = `<span>⚡</span><span>${pendingAttributionExistingIndex !== null ? 'Clear Credit' : 'Uncredited Goal'}</span>`;
+      quickSkipBtn.innerHTML = `<span>${pendingAttributionExistingIndex !== null ? 'Clear Credit' : 'Uncredited Goal'}</span>`;
     }
 
     if (chipContainer) {
@@ -1619,14 +1673,14 @@ export function renderAttributionModal() {
         const initialsText = hasInitials ? escapeHtml(player.initials) : `#${player.number}`;
 
         const btnClass = isSelected
-          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-200 text-slate-950 shadow-xl shadow-emerald-500/30 scale-[1.03] ring-2 ring-emerald-300'
-          : 'bg-slate-800/90 hover:bg-slate-700 border-slate-700/80 hover:border-emerald-400/80 text-white shadow-md hover:scale-[1.02]';
+          ? 'bg-emerald-500 border-emerald-300 text-slate-950 shadow-md scale-[1.02] ring-2 ring-emerald-300'
+          : 'bg-slate-900 hover:bg-slate-800 border-slate-800 hover:border-emerald-400/70 text-white';
 
         return `
           <button type="button" onclick="window.selectAttributionScorer(${player.number})"
-            class="relative p-2.5 sm:p-3 rounded-2xl border-2 flex flex-col items-center justify-between min-h-[72px] sm:min-h-[82px] active:scale-95 transition cursor-pointer group ${btnClass}">
+            class="relative p-2.5 sm:p-3 rounded-2xl border flex flex-col items-center justify-between min-h-[72px] sm:min-h-[82px] active:scale-95 transition cursor-pointer group ${btnClass}">
             <div class="flex items-center justify-between w-full">
-              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/30 text-slate-950' : 'bg-slate-950/90 text-amber-300 border border-amber-400/40'}">
+              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/25 text-slate-950' : 'bg-slate-950 text-amber-300 border border-slate-800'}">
                 ${badgeText}
               </span>
               ${isSelected ? '<span class="text-sm font-black text-slate-950">✓</span>' : '<span class="text-[10px] text-emerald-400/60 font-black opacity-0 group-hover:opacity-100 transition">GOAL</span>'}
@@ -1640,7 +1694,7 @@ export function renderAttributionModal() {
     }
   } else {
     if (cardEl) {
-      cardEl.className = 'bg-slate-900 border-2 border-sky-500/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in ring-1 ring-sky-500/30';
+      cardEl.className = 'bg-[#0d111a] border border-slate-700/80 rounded-2xl max-w-md w-full p-4 sm:p-5 max-h-[92vh] flex flex-col shadow-2xl animate-fade-in';
     }
     if (titleEl) titleEl.innerText = 'Who assisted?';
     fastModeLabel?.classList.add('hidden');
@@ -1650,7 +1704,7 @@ export function renderAttributionModal() {
     }
     ownGoalBtn?.classList.add('hidden');
     if (quickSkipBtn) {
-      quickSkipBtn.className = 'py-3 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1 shadow-md';
+      quickSkipBtn.className = 'py-3 px-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs sm:text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-1 shadow';
       quickSkipBtn.innerHTML = '<span>No Assist</span>';
     }
 
@@ -1663,14 +1717,14 @@ export function renderAttributionModal() {
         const initialsText = hasInitials ? escapeHtml(player.initials) : `#${player.number}`;
 
         const btnClass = isSelected
-          ? 'bg-gradient-to-br from-sky-500 to-sky-600 border-sky-200 text-slate-950 shadow-xl shadow-sky-500/30 scale-[1.03] ring-2 ring-sky-300'
-          : 'bg-slate-800/90 hover:bg-slate-700 border-slate-700/80 hover:border-sky-400/80 text-white shadow-md hover:scale-[1.02]';
+          ? 'bg-sky-400 border-sky-200 text-slate-950 shadow-md scale-[1.02] ring-2 ring-sky-200'
+          : 'bg-slate-900 hover:bg-slate-800 border-slate-800 hover:border-sky-400/70 text-white';
 
         return `
           <button type="button" onclick="window.selectAttributionAssist(${player.number})"
-            class="relative p-2.5 sm:p-3 rounded-2xl border-2 flex flex-col items-center justify-between min-h-[72px] sm:min-h-[82px] active:scale-95 transition cursor-pointer group ${btnClass}">
+            class="relative p-2.5 sm:p-3 rounded-2xl border flex flex-col items-center justify-between min-h-[72px] sm:min-h-[82px] active:scale-95 transition cursor-pointer group ${btnClass}">
             <div class="flex items-center justify-between w-full">
-              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/30 text-slate-950' : 'bg-slate-950/90 text-amber-300 border border-amber-400/40'}">
+              <span class="font-mono-sport font-black text-xs sm:text-sm px-2 py-0.5 rounded-lg ${isSelected ? 'bg-slate-950/25 text-slate-950' : 'bg-slate-950 text-amber-300 border border-slate-800'}">
                 ${badgeText}
               </span>
               ${isSelected ? '<span class="text-sm font-black text-slate-950">✓</span>' : '<span class="text-[10px] text-sky-400/60 font-black opacity-0 group-hover:opacity-100 transition">ASSIST</span>'}
@@ -2092,14 +2146,14 @@ export function renderGoalTimeline() {
 
       let attributionHtml = '';
       if (g.isOwnGoal) {
-        attributionHtml = `<span class="text-amber-400 font-bold text-[11px] flex items-center gap-1"><span>⚠️</span><span>Own Goal</span></span>`;
+        attributionHtml = `<span class="text-amber-400 font-bold text-[11px]">Own Goal</span>`;
       } else if (g.scorer) {
         const sLabel = g.scorer.initials ? `#${g.scorer.number} ${escapeHtml(g.scorer.initials)}` : `#${g.scorer.number}`;
         const aLabel = g.assist ? (g.assist.initials ? `#${g.assist.number} ${escapeHtml(g.assist.initials)}` : `#${g.assist.number}`) : '';
         attributionHtml = `
           <div class="flex items-center gap-2 text-[11px]">
-            <span class="text-emerald-400 font-bold">⚽ ${sLabel}</span>
-            ${aLabel ? `<span class="text-sky-300 font-bold">🅰️ ${aLabel}</span>` : ''}
+            <span class="text-emerald-400 font-bold inline-flex items-center gap-1">${ballSvg}<span>${sLabel}</span></span>
+            ${aLabel ? `<span class="text-sky-300 font-bold">ast. ${aLabel}</span>` : ''}
           </div>
         `;
       } else {
@@ -2229,7 +2283,7 @@ export function openEditTeamModal(side) {
       coachRoleSection.classList.remove('hidden');
       if (side === coachTeam) {
         coachToggleBtn.className = 'py-1 px-2.5 rounded-lg font-black text-xs transition cursor-pointer bg-amber-500 text-slate-950 shadow flex items-center gap-1';
-        coachToggleBtn.innerHTML = `<span>⭐</span><span>Selected (My Team)</span>`;
+        coachToggleBtn.innerHTML = `${STAR_MINI_SVG}<span>Selected (My Team)</span>`;
       } else {
         coachToggleBtn.className = 'py-1 px-2.5 rounded-lg font-bold text-xs transition cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 flex items-center gap-1';
         coachToggleBtn.innerHTML = `<span>⇄</span><span>Set as My Team</span>`;
@@ -2411,7 +2465,7 @@ export function recordInlineMomentForPlayer(playerNumber) {
       : ((t.roster || []).find(p => p.number === playerNumber) || { number: playerNumber, initials: '' });
     setCoachPotm(player);
     activeInlineTag = null;
-    showTouchlineToast(coachNotes.potm ? `⭐ POTM set: #${coachNotes.potm.number}${coachNotes.potm.initials ? ' ' + coachNotes.potm.initials : ''}` : '⭐ POTM cleared');
+    showTouchlineToast(coachNotes.potm ? `POTM set: #${coachNotes.potm.number}${coachNotes.potm.initials ? ' ' + coachNotes.potm.initials : ''}` : 'POTM cleared');
     renderTouchlineBarUI();
     return;
   }
@@ -2445,7 +2499,7 @@ export function recordInlineMomentForPlayer(playerNumber) {
         }
       }
     }
-    showTouchlineToast(`✕ Removed ${pLabel} from ${tag}`);
+    showTouchlineToast(`Removed ${pLabel} from ${tag}`);
     renderTouchlineBarUI();
     renderCoachMomentsModal();
     notifyScoreChange();
@@ -2474,7 +2528,7 @@ export function recordInlineMomentForPlayer(playerNumber) {
       if (!p || p === 'team') return 'Entire Team';
       return p.initials ? `#${p.number} ${p.initials}` : `#${p.number}`;
     }).join(', ');
-    showTouchlineToast(`✓ Logged ${icon} ${tag} (${currentNames})`);
+    showTouchlineToast(`Logged ${tag} (${currentNames})`);
   }
 
   clearTimeout(inlineTagTimeout);
@@ -2526,8 +2580,8 @@ export function renderCoachMomentsModal() {
     return `
       <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 shadow-sm">
         <div class="flex items-center gap-2.5 min-w-0 overflow-hidden">
-          <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-base shrink-0">
-            ${escapeHtml(m.icon || '📋')}
+          <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+            ${getMomentVectorSvg(m.tag, 'w-4 h-4 text-amber-400 shrink-0')}
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -2578,7 +2632,7 @@ export function copyCoachMoments() {
 
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(() => {
-      showTouchlineToast('📋 Moments copied to clipboard!');
+      showTouchlineToast('Moments copied to clipboard!');
       hapticFeedback('success');
     }).catch(() => fallbackCopyText(text));
   } else {
@@ -2594,7 +2648,7 @@ function fallbackCopyText(text) {
   ta.select();
   try {
     document.execCommand('copy');
-    showTouchlineToast('📋 Moments copied to clipboard!');
+    showTouchlineToast('Moments copied to clipboard!');
     hapticFeedback('success');
   } catch (_) {
     showTouchlineToast('Failed to copy moments');
@@ -2610,11 +2664,11 @@ export function renderCoachNotesPotmPicker() {
     const isSelected = coachNotes.potm && coachNotes.potm.number === p.number;
     const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
     const btnClass = isSelected
-      ? 'py-1 px-2.5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs border border-yellow-200 shadow transition cursor-pointer flex items-center gap-1'
+      ? 'py-1 px-2.5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs border border-amber-200 shadow transition cursor-pointer flex items-center gap-1'
       : 'py-1 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs border border-slate-700 transition cursor-pointer';
     return `
       <button type="button" onclick="setCoachPotm({ number: ${p.number}, initials: '${escapeHtml(p.initials || '')}' })" class="${btnClass}">
-        ${isSelected ? '⭐ ' : ''}<span>${label}</span>
+        ${isSelected ? STAR_MINI_SVG : ''}<span>${label}</span>
       </button>
     `;
   }).join('');
@@ -2710,11 +2764,11 @@ export function renderTouchlineBarUI() {
         const isSelected = coachNotes.potm && coachNotes.potm.number === p.number;
         const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
         const btnClass = isSelected
-          ? 'py-1 px-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs border-2 border-yellow-200 shadow scale-105 transition cursor-pointer flex items-center gap-1'
+          ? 'py-1 px-2.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs border border-amber-200 shadow transition cursor-pointer flex items-center gap-1'
           : 'py-1 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs border border-slate-700 transition cursor-pointer';
         return `
           <button type="button" onclick="setCoachPotm({ number: ${p.number}, initials: '${escapeHtml(p.initials || '')}' })" class="${btnClass}">
-            ${isSelected ? '⭐ ' : ''}<span>${label}</span>
+            ${isSelected ? STAR_MINI_SVG : ''}<span>${label}</span>
           </button>
         `;
       }).join('');
@@ -2723,12 +2777,12 @@ export function renderTouchlineBarUI() {
       if (actionsContainer) {
         if (hasPotm) {
           actionsContainer.innerHTML = `
-            <div class="mt-2 pt-2 border-t border-amber-500/30 flex flex-col gap-1.5 animate-fadeIn">
-              <button type="button" onclick="openReportModal()" class="w-full py-2 px-3 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
-                <span>📋</span><span>Open Match Report &amp; Share Card ›</span>
+            <div class="mt-2 pt-2 border-t border-slate-800 flex flex-col gap-1.5 animate-fadeIn">
+              <button type="button" onclick="openReportModal()" class="w-full py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
+                <span>Open Match Report &amp; Share Card ›</span>
               </button>
-              <div class="flex items-center justify-between text-[10px] text-amber-300/80 px-0.5">
-                <span>⭐ POTM: #${coachNotes.potm.number}${coachNotes.potm.initials ? ' ' + escapeHtml(coachNotes.potm.initials) : ''}</span>
+              <div class="flex items-center justify-between text-[10px] text-amber-300/90 px-0.5">
+                <span class="inline-flex items-center gap-1">${STAR_MINI_SVG}<span>POTM: #${coachNotes.potm.number}${coachNotes.potm.initials ? ' ' + escapeHtml(coachNotes.potm.initials) : ''}</span></span>
                 <button type="button" onclick="toggleFullTimeMomentTags()" class="text-amber-400 hover:text-white font-bold underline cursor-pointer">
                   ${showFullTimeMomentTags ? 'Hide Quick Tags ▴' : 'Show Quick Tags ▾'}
                 </button>
@@ -2763,7 +2817,7 @@ export function renderTouchlineBarUI() {
 
       if (activeInlineTag === 'POTM') {
         if (activePrompt) {
-          activePrompt.innerHTML = `<span>⭐ <strong>Select POTM</strong> (Tap again to clear):</span>`;
+          activePrompt.innerHTML = `<span class="inline-flex items-center gap-1 text-amber-300">${STAR_MINI_SVG}<strong>Select POTM</strong> <span class="text-slate-400 font-normal">(Tap again to clear)</span>:</span>`;
         }
         if (chipsEl) {
           const roster = teams[coachTeam]?.roster || [];
@@ -2771,11 +2825,11 @@ export function renderTouchlineBarUI() {
             const isSelected = coachNotes.potm && coachNotes.potm.number === p.number;
             const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
             const btnClass = isSelected
-              ? 'py-1.5 px-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs border-2 border-yellow-200 shadow-md scale-105 transition cursor-pointer flex items-center gap-1'
+              ? 'py-1.5 px-2.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs border border-amber-200 shadow-md transition cursor-pointer flex items-center gap-1'
               : 'py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs border border-slate-700 transition cursor-pointer';
             return `
               <button type="button" onclick="recordInlineMomentForPlayer(${p.number})" class="${btnClass}">
-                ${isSelected ? '⭐ ' : ''}<span>${label}</span>
+                ${isSelected ? STAR_MINI_SVG : ''}<span>${label}</span>
               </button>
             `;
           }).join('');
@@ -2784,7 +2838,7 @@ export function renderTouchlineBarUI() {
         const tagged = activeInlineTag.taggedPlayers || {};
         const countTagged = Object.keys(tagged).length;
         if (activePrompt) {
-          activePrompt.innerHTML = `<span>Who showed <strong>${escapeHtml(activeInlineTag.icon)} ${escapeHtml(activeInlineTag.tag)}</strong>?${countTagged > 0 ? ` <span class="text-amber-400 font-bold">(${countTagged} tagged)</span>` : ''}</span>`;
+          activePrompt.innerHTML = `<span class="inline-flex items-center gap-1.5">${getMomentVectorSvg(activeInlineTag.tag, 'w-3.5 h-3.5 text-amber-400 shrink-0')}<span>Who showed <strong>${escapeHtml(activeInlineTag.tag)}</strong>?${countTagged > 0 ? ` <span class="text-amber-400 font-bold">(${countTagged} tagged)</span>` : ''}</span></span>`;
         }
         if (chipsEl) {
           const roster = teams[coachTeam]?.roster || [];
@@ -2795,8 +2849,8 @@ export function renderTouchlineBarUI() {
           let html = '';
           if (allowsEntireTeam) {
             html += `
-              <button type="button" onclick="recordInlineMomentForPlayer('team')" class="${isTeamTagged ? 'py-1.5 px-2.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs border-2 border-yellow-200 shadow-md scale-105 transition cursor-pointer flex items-center gap-1' : 'py-1.5 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs border border-slate-600 transition cursor-pointer'}">
-                ${isTeamTagged ? '✓ ' : ''}👥 Entire Team
+              <button type="button" onclick="recordInlineMomentForPlayer('team')" class="${isTeamTagged ? 'py-1.5 px-2.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs border border-amber-200 shadow-md transition cursor-pointer flex items-center gap-1' : 'py-1.5 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs border border-slate-600 transition cursor-pointer'}">
+                ${isTeamTagged ? '✓ ' : ''}Entire Team
               </button>
             `;
           }

@@ -1963,9 +1963,7 @@ function renderTopControlsUI() {
   const openLibBtn = document.getElementById('tacticsOpenLibraryBtn');
   if (openLibBtn) {
     openLibBtn.innerText = isTrainMode ? 'Drill Library' : 'Match Plays';
-    openLibBtn.className = isTrainMode
-      ? 'flex-1 py-1 px-2 rounded-lg text-[10px] font-black border bg-emerald-500/20 border-emerald-400/70 text-emerald-200 hover:text-white transition cursor-pointer text-center truncate'
-      : 'flex-1 py-1 px-2 rounded-lg text-[10px] font-black border bg-purple-500/20 border-purple-400/70 text-purple-200 hover:text-white transition cursor-pointer text-center truncate';
+    openLibBtn.className = 'flex-1 py-1 px-2 rounded-lg text-[10px] font-black border bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-100 hover:text-white transition cursor-pointer text-center truncate';
   }
 
   const lanesBtn = document.getElementById('tacticsLanesBtn');
@@ -1973,7 +1971,7 @@ function renderTopControlsUI() {
     const labelMap = { off: 'Lanes: Off', lanes: '3 Lanes', thirds: '3 Thirds' };
     lanesBtn.innerText = labelMap[board.lanesMode] || 'Lanes: Off';
     lanesBtn.className = board.lanesMode !== 'off'
-      ? 'px-2 py-1 rounded-lg text-[10px] font-black border bg-sky-500/20 border-sky-400 text-sky-300 transition cursor-pointer shrink-0'
+      ? 'px-2 py-1 rounded-lg text-[10px] font-black border bg-emerald-500/15 border-emerald-400/70 text-emerald-300 transition cursor-pointer shrink-0'
       : 'px-2 py-1 rounded-lg text-[10px] font-bold border bg-slate-900 border-slate-700 text-slate-400 hover:text-white transition cursor-pointer shrink-0';
   }
 
@@ -1983,12 +1981,12 @@ function renderTopControlsUI() {
     const oppLabels = {
       off: 'Opp: Off',
       even: `Opp: ${sz}`,
-      powerplay: `Opp: ${sz + 1} ⚡`
+      powerplay: `Opp: ${sz + 1} (+1)`
     };
     oppBtn.innerText = oppLabels[board.oppMode] || 'Opp: Off';
     oppBtn.className = board.oppMode !== 'off'
-      ? 'px-2 py-1 rounded-lg text-[10px] font-black border bg-blue-500/20 border-blue-400 text-blue-200 transition cursor-pointer shrink-0'
-      : 'px-2 py-1 rounded-lg text-[10px] font-bold border bg-slate-900 border-slate-700 text-slate-400 hover:text-white transition cursor-pointer shrink-0';
+      ? 'px-2 py-1 rounded-lg text-[10px] font-bold border bg-slate-900 border-slate-600 text-slate-200 hover:text-white transition cursor-pointer shrink-0'
+      : 'px-2 py-1 rounded-lg text-[10px] font-bold border bg-slate-900 border-slate-800 text-slate-500 hover:text-white transition cursor-pointer shrink-0';
   }
 
   const animToggleBtn = document.getElementById('tacticsAnimToggleBtn');
@@ -2194,9 +2192,7 @@ function renderPlaybookModalUI() {
   gearSection?.classList.toggle('hidden', !isTrain);
 
   if (builtinHeading) {
-    builtinHeading.innerText = isTrain
-      ? 'Academy Session Drills (Full Step-by-Step)'
-      : 'Academy Match Plays by Squad Size (Full Step-by-Step)';
+    builtinHeading.innerText = isTrain ? 'Session Drills' : 'Match Plays';
   }
   if (savedHeading) {
     savedHeading.innerText = isTrain ? 'My Saved Training Drills' : 'My Saved Match Plays';
@@ -2221,7 +2217,7 @@ function renderPlaybookModalUI() {
         '7v7': allTabTemplates.filter(t => t.squadFormat === '7v7').length
       };
       const fmtPills = [
-        { id: 'all', label: `All (${fmtCounts.all})` },
+        { id: 'all', label: `All Sizes (${fmtCounts.all})` },
         { id: '5v5', label: `5v5 (${fmtCounts['5v5']})` },
         { id: '6v6', label: `6v6 (${fmtCounts['6v6']})` },
         { id: '7v7', label: `7v7 (${fmtCounts['7v7']})` }
@@ -2229,7 +2225,7 @@ function renderPlaybookModalUI() {
       fmtBar.innerHTML = fmtPills.map(p => {
         const isAct = playbookFormatFilter === p.id;
         const cls = isAct
-          ? 'playbook-diff-chip flex-1 py-1.5 px-1.5 rounded-lg border border-sky-300 bg-sky-400 text-slate-950 font-black text-[10.5px] shadow-sm transition cursor-pointer text-center whitespace-nowrap'
+          ? 'playbook-diff-chip flex-1 py-1.5 px-1.5 rounded-lg border border-white bg-slate-200 text-slate-950 font-black text-[10.5px] shadow-sm transition cursor-pointer text-center whitespace-nowrap'
           : 'playbook-diff-chip flex-1 py-1.5 px-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-[10.5px] transition cursor-pointer text-center whitespace-nowrap';
         return `<button type="button" onclick="setTacticsFormatFilter('${p.id}')" class="${cls}">${p.label}</button>`;
       }).join('');
@@ -2242,7 +2238,7 @@ function renderPlaybookModalUI() {
 
   const starredIds = loadStarredPlaybookIds();
 
-  // Render Difficulty + ★ Starred Filter Pills with Counts
+  // Render Difficulty + ★ Saved Filter Pills with Counts
   const diffBar = document.getElementById('tacticsDifficultyFilterBar');
   if (diffBar) {
     const counts = {
@@ -2253,8 +2249,8 @@ function renderPlaybookModalUI() {
       advanced: formatFilteredTemplates.filter(t => t.difficulty === 'advanced').length
     };
     const pills = [
-      { id: 'all', label: `All (${counts.all})`, activeCls: 'bg-slate-200 text-slate-950 border-white font-black' },
-      { id: 'starred', label: `★ (${counts.starred})`, activeCls: 'bg-amber-300 text-slate-950 border-white font-black' },
+      { id: 'all', label: `All Levels (${counts.all})`, activeCls: 'bg-slate-200 text-slate-950 border-white font-black' },
+      { id: 'starred', label: `★ Saved (${counts.starred})`, activeCls: 'bg-amber-300 text-slate-950 border-white font-black' },
       { id: 'easy', label: `Easy (${counts.easy})`, activeCls: 'bg-emerald-500 text-slate-950 border-emerald-300 font-black' },
       { id: 'medium', label: `Med (${counts.medium})`, activeCls: 'bg-amber-400 text-slate-950 border-yellow-200 font-black' },
       { id: 'advanced', label: `Adv (${counts.advanced})`, activeCls: 'bg-rose-500 text-white border-rose-300 font-black' }
@@ -3628,11 +3624,11 @@ function buildHighResTacticalCardCanvas() {
 
   ctx.fillStyle = '#64748b';
   ctx.font = '700 22px "Chakra Petch", sans-serif';
-  ctx.fillText("WHAT'S THE SCORE REF?  •  GRASSROOTS MATCHDAY & TACTICS COMPANION", 76, 1924);
+  ctx.fillText("WHAT'S THE SCORE REF?  •  GRASSROOTS TACTICS BOARD", 76, 1924);
 
   ctx.fillStyle = '#10b981';
   ctx.textAlign = 'right';
-  ctx.fillText('whatsthescoreref.vercel.app', W - 76, 1924);
+  ctx.fillText('Harrogate & Wharfedale U9', W - 76, 1924);
 
   return out;
 }
@@ -3670,7 +3666,7 @@ export async function shareTacticsPng() {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 3000);
-  score.showMatchToast('HD Tactics PNG saved!', '📸', 2200);
+  score.showMatchToast('Tactics graphic saved!', 'check', 2200);
 }
 
 export async function shareTacticsVideo() {

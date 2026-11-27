@@ -307,9 +307,9 @@ body.sunlight-mode #fieldLockBtn svg {
   stroke: #FFE600 !important;
 }
 body.sunlight-mode #resetMatchBtn {
-  background-color: #cc0000 !important;
-  border: 2px solid #ffffff !important;
-  color: #ffffff !important;
+  background-color: #000000 !important;
+  border: 2px solid #ff4d4d !important;
+  color: #ff6666 !important;
 }
 body.sunlight-mode.zen-mode #fieldLockBtn {
   background: #FFE600 !important;

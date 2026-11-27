@@ -527,13 +527,26 @@ export function renderReportMomentsUI() {
   }
 }
 
+export function getMomentVectorSvg(tag = '', cls = 'w-3.5 h-3.5 text-amber-400 shrink-0') {
+  const t = String(tag || '').toLowerCase();
+  if (t.includes('press')) return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`;
+  if (t.includes('pass')) return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="19" r="2.5"></circle><circle cx="19" cy="5" r="2.5"></circle><path d="M7.5 16.5L16.5 7.5"></path><polyline points="11 5 19 5 19 13"></polyline></svg>`;
+  if (t.includes('dribb')) return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c4-4 4-8 8-8s4-4 8-8"></path><circle cx="20" cy="4" r="2.2" fill="currentColor"></circle></svg>`;
+  if (t.includes('shot')) return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19V6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v13"></path><circle cx="16" cy="10" r="2.8"></circle><path d="M7 17l6.5-5"></path></svg>`;
+  if (t.includes('tackl')) return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`;
+  if (t.includes('track')) return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"></path></svg>`;
+  if (t.includes('save')) return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v4"></path><path d="M14 10V4a2 2 0 0 0-4 0v6"></path><path d="M10 10.5V6a2 2 0 0 0-4 0v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path></svg>`;
+  if (t.includes('posit')) return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.2"></circle><circle cx="5" cy="12" r="2.2"></circle><circle cx="19" cy="12" r="2.2"></circle><circle cx="12" cy="19" r="2.2"></circle><path d="M12 7.2v9.6M7.2 12h9.6" stroke-dasharray="2 2"></path></svg>`;
+  return `<svg class="${cls}" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+}
+
 function renderMomentRowHtml(m) {
   const pLabel = escapeHtml(formatMomentPlayers(m));
   const periodTag = escapeHtml(m.period === '1st Half' ? '1H' : (m.period === '2nd Half' ? '2H' : (m.period || '1H')));
   return `
     <div class="p-2 rounded-lg bg-slate-900/90 border border-slate-800/80 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
-        <span class="text-base shrink-0">${escapeHtml(m.icon || '⭐')}</span>
+        <span class="w-6 h-6 rounded-md bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">${getMomentVectorSvg(m.tag, 'w-3.5 h-3.5 text-amber-400')}</span>
         <div class="min-w-0">
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="text-amber-400 font-mono-sport font-black text-[11px]">${escapeHtml(m.time)}</span>
@@ -568,12 +581,13 @@ export function renderReportPotmUI() {
     return roster.map(p => {
       const isSelected = currentPotm && currentPotm.number === p.number;
       const label = p.initials ? `#${p.number} ${escapeHtml(p.initials)}` : `#${p.number}`;
+      const starSvg = `<svg class="w-3 h-3 fill-current shrink-0" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
       const btnClass = isSelected
-        ? 'py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs border-2 border-yellow-200 shadow-md scale-105 transition cursor-pointer flex items-center gap-1'
+        ? 'py-1.5 px-3 rounded-xl bg-amber-400 text-slate-950 font-black text-xs border border-amber-200 shadow-sm transition cursor-pointer flex items-center gap-1'
         : 'py-1.5 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs border border-slate-700 transition cursor-pointer';
       return `
         <button type="button" onclick="setReportScopePotm(${matchNum}, ${p.number})" class="${btnClass}">
-          ${isSelected ? '⭐ ' : ''}<span>${label}</span>
+          ${isSelected ? starSvg : ''}<span>${label}</span>
         </button>
       `;
     }).join('');
@@ -912,6 +926,112 @@ function drawCanvasKitJersey(ctx, cx, cy, scaleSize, fillHex) {
   ctx.restore();
 }
 
+function drawCanvasStar(ctx, cx, cy, outerR, fillHex = '#fbbf24') {
+  const innerR = outerR * 0.45;
+  ctx.save();
+  ctx.fillStyle = fillHex;
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? outerR : innerR;
+    const angle = -Math.PI / 2 + (i * Math.PI) / 5;
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCanvasFootball(ctx, cx, cy, r, color = '#38bdf8') {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const px = cx + Math.cos(a) * (r * 0.46);
+    const py = cy + Math.sin(a) * (r * 0.46);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCanvasMomentGlyph(ctx, tag, cx, cy) {
+  const t = String(tag || '').toLowerCase();
+  ctx.save();
+  ctx.fillStyle = 'rgba(245, 158, 11, 0.16)';
+  roundRect(ctx, cx - 12, cy - 12, 24, 24, 6);
+  ctx.fill();
+  ctx.strokeStyle = '#fbbf24';
+  ctx.fillStyle = '#fbbf24';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  if (t.includes('press')) {
+    ctx.beginPath();
+    ctx.moveTo(cx + 1, cy - 7);
+    ctx.lineTo(cx - 5, cy + 1);
+    ctx.lineTo(cx, cy + 1);
+    ctx.lineTo(cx - 1, cy + 7);
+    ctx.lineTo(cx + 5, cy - 1);
+    ctx.lineTo(cx, cy - 1);
+    ctx.closePath();
+    ctx.fill();
+  } else if (t.includes('pass')) {
+    ctx.beginPath();
+    ctx.moveTo(cx - 5, cy + 5);
+    ctx.lineTo(cx + 5, cy - 5);
+    ctx.moveTo(cx, cy - 5);
+    ctx.lineTo(cx + 5, cy - 5);
+    ctx.lineTo(cx + 5, cy);
+    ctx.stroke();
+  } else if (t.includes('dribb')) {
+    ctx.beginPath();
+    ctx.moveTo(cx - 6, cy + 5);
+    ctx.quadraticCurveTo(cx - 2, cy - 5, cx, cy);
+    ctx.quadraticCurveTo(cx + 2, cy + 5, cx + 6, cy - 5);
+    ctx.stroke();
+  } else if (t.includes('shot')) {
+    ctx.strokeRect(cx - 6, cy - 5, 12, 9);
+    ctx.beginPath();
+    ctx.arc(cx + 2, cy - 0.5, 2, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (t.includes('tackl') || t.includes('save')) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 6.5);
+    ctx.lineTo(cx + 5.5, cy - 4);
+    ctx.lineTo(cx + 5.5, cy + 1);
+    ctx.quadraticCurveTo(cx + 5.5, cy + 5.5, cx, cy + 7);
+    ctx.quadraticCurveTo(cx - 5.5, cy + 5.5, cx - 5.5, cy + 1);
+    ctx.lineTo(cx - 5.5, cy - 4);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (t.includes('track')) {
+    ctx.beginPath();
+    ctx.moveTo(cx - 2, cy - 5);
+    ctx.lineTo(cx - 6, cy - 1);
+    ctx.lineTo(cx - 2, cy + 3);
+    ctx.moveTo(cx - 6, cy - 1);
+    ctx.lineTo(cx + 3, cy - 1);
+    ctx.arc(cx + 3, cy + 2.5, 3.5, -Math.PI / 2, Math.PI / 2);
+    ctx.lineTo(cx - 1, cy + 6);
+    ctx.stroke();
+  } else {
+    drawCanvasStar(ctx, cx, cy, 6, '#fbbf24');
+  }
+  ctx.restore();
+}
+
 function drawCardBaseAndHeader(ctx, logoImg, subtitleRight, statusBadgeText, isFT = true) {
   // Deep Obsidian + Floodlight Stadium Radial Glow
   const bgGrad = ctx.createLinearGradient(0, 0, 0, 1000);
@@ -1104,9 +1224,10 @@ export function generateCombinedMatchCardCanvas(callback) {
       ...m2.goals.map(g => ({ ...g, match: 2 }))
     ];
 
+    drawCanvasFootball(ctx, 73, 461, 6.5, '#38bdf8');
     ctx.fillStyle = '#38bdf8';
-    ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(`⚽ DOUBLE-HEADER GOALS (${allGoals.length} TOTAL)`, 65, 466);
+    ctx.font = '900 14.5px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(`DOUBLE-HEADER GOALS (${allGoals.length} TOTAL)`, 86, 466);
 
     ctx.strokeStyle = '#1e293b';
     ctx.beginPath();
@@ -1145,15 +1266,15 @@ export function generateCombinedMatchCardCanvas(callback) {
         ctx.fill();
 
         let scorerText = '';
-        if (g.isOwnGoal) scorerText = ' • ⚠️ OG';
+        if (g.isOwnGoal) scorerText = ' • Own Goal';
         else if (g.scorer) {
           const sInit = g.scorer.initials ? `#${g.scorer.number} ${g.scorer.initials}` : `#${g.scorer.number}`;
-          const aInit = g.assist ? ` (🅰️ #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
-          scorerText = ` • ⚽ ${sInit}${aInit}`;
+          const aInit = g.assist ? ` (ast. #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
+          scorerText = ` • ${sInit}${aInit}`;
         }
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = '800 13.5px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+        ctx.font = '800 13.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.fillText(truncateText(ctx, `${g.teamName}${scorerText}`, 415), 208, rowY);
 
         ctx.fillStyle = '#cbd5e1';
@@ -1191,15 +1312,16 @@ export function generateCombinedMatchCardCanvas(callback) {
     if (m1.coachNotes?.potm) potmParts.push(`M1: #${m1.coachNotes.potm.number}${m1.coachNotes.potm.initials ? ' ' + m1.coachNotes.potm.initials : ''}`);
     if (m2.coachNotes?.potm) potmParts.push(`M2: #${m2.coachNotes.potm.number}${m2.coachNotes.potm.initials ? ' ' + m2.coachNotes.potm.initials : ''}`);
     if (potmParts.length > 0) {
+      drawCanvasStar(ctx, 72, 940, 5.5, '#fbbf24');
       ctx.fillStyle = '#fbbf24';
-      ctx.font = '900 11.5px monospace';
-      ctx.fillText(`⭐ POTM: ${potmParts.join('  •  ')}`, 65, 944);
+      ctx.font = '900 11.5px "Chakra Petch", monospace';
+      ctx.fillText(`POTM: ${potmParts.join('  •  ')}`, 83, 944);
     }
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '700 11px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('whatsthescoreref.vercel.app • 100% Offline PWA', 735, 912);
+    ctx.fillText("What's The Score Ref? • Grassroots Matchday", 735, 912);
     ctx.fillStyle = '#fbbf24';
     ctx.font = '900 11px "Chakra Petch", monospace';
     ctx.fillText('RESPECT • FAIR PLAY', 735, 934);
@@ -1351,8 +1473,10 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
 
         ctx.fillStyle = '#38bdf8';
         ctx.fillRect(40, 415, 720, 3);
-        ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
-        ctx.fillText('⚽ MATCH GOALS & TIMELINE', 65, 442);
+        drawCanvasFootball(ctx, 73, 437, 6, '#38bdf8');
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '900 13px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('MATCH GOALS & TIMELINE', 85, 442);
 
         ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
         roundRect(ctx, 640, 427, 95, 20, 6);
@@ -1398,13 +1522,13 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
           ctx.fill();
 
           ctx.fillStyle = '#ffffff';
-          ctx.font = '800 13px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+          ctx.font = '800 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
           let scorerText = '';
-          if (g.isOwnGoal) scorerText = ' • ⚠️ Own Goal';
+          if (g.isOwnGoal) scorerText = ' • Own Goal';
           else if (g.scorer) {
             const sInit = g.scorer.initials ? `#${g.scorer.number} ${g.scorer.initials}` : `#${g.scorer.number}`;
-            const aInit = g.assist ? ` (🅰️ #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
-            scorerText = ` • ⚽ ${sInit}${aInit}`;
+            const aInit = g.assist ? ` (ast. #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
+            scorerText = ` • ${sInit}${aInit}`;
           }
           ctx.fillText(truncateText(ctx, `${g.teamName}${scorerText}`, 360), 196, goalRowY);
 
@@ -1435,8 +1559,10 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
 
         ctx.fillStyle = '#f59e0b';
         ctx.fillRect(40, 612, 720, 3);
-        ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
-        ctx.fillText('⭐ TOUCHLINE MATCH MOMENTS', 65, 638);
+        drawCanvasStar(ctx, 73, 633, 6.2, '#fbbf24');
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '900 13px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('TOUCHLINE MATCH MOMENTS', 85, 638);
 
         ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
         roundRect(ctx, 625, 623, 110, 20, 6);
@@ -1469,18 +1595,16 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          ctx.font = '15px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(m.icon || '⭐', boxX + 20, boxY + 25);
+          drawCanvasMomentGlyph(ctx, m.tag, boxX + 21, boxY + 20);
 
           ctx.fillStyle = '#ffffff';
-          ctx.font = '800 11.5px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+          ctx.font = '800 11.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
           ctx.textAlign = 'left';
-          ctx.fillText(truncateText(ctx, m.tag, 190), boxX + 38, boxY + 17);
+          ctx.fillText(truncateText(ctx, m.tag, 190), boxX + 40, boxY + 17);
 
           ctx.fillStyle = '#fcd34d';
           ctx.font = '700 10.5px monospace';
-          ctx.fillText(truncateText(ctx, `[${m.time}] ${pTag} • ${pLabel}`, 280), boxX + 38, boxY + 31);
+          ctx.fillText(truncateText(ctx, `[${m.time}] ${pTag} • ${pLabel}`, 280), boxX + 40, boxY + 31);
         });
 
         if (moments.length > maxMoments) {
@@ -1501,7 +1625,7 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
         ctx.fillStyle = '#94a3b8';
         ctx.font = '700 12px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`⚽ Match Result: ${home} ${homeScore} - ${awayScore} ${away} • Clean sheet / No goals recorded`, 400, 442);
+        ctx.fillText(`Match Result: ${home} ${homeScore} - ${awayScore} ${away} • Clean sheet / No goals recorded`, 400, 442);
         ctx.textAlign = 'left';
 
         ctx.fillStyle = '#0d1424';
@@ -1513,8 +1637,10 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
 
         ctx.fillStyle = '#f59e0b';
         ctx.fillRect(40, 468, 720, 3);
-        ctx.font = '900 14px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
-        ctx.fillText('⭐ TOUCHLINE MATCH MOMENTS', 65, 497);
+        drawCanvasStar(ctx, 73, 492, 6.5, '#fbbf24');
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '900 14px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('TOUCHLINE MATCH MOMENTS', 86, 497);
 
         ctx.strokeStyle = '#1e293b';
         ctx.beginPath();
@@ -1538,12 +1664,10 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          ctx.font = '16px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(m.icon || '⭐', boxX + 24, boxY + 33);
+          drawCanvasMomentGlyph(ctx, m.tag, boxX + 24, boxY + 27);
 
           ctx.fillStyle = '#ffffff';
-          ctx.font = '800 12.5px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+          ctx.font = '800 12.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
           ctx.textAlign = 'left';
           ctx.fillText(truncateText(ctx, m.tag, 270), boxX + 46, boxY + 22);
 
@@ -1563,8 +1687,10 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
 
       ctx.fillStyle = '#38bdf8';
       ctx.fillRect(40, 425, 720, 3);
-      ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
-      ctx.fillText('⚽ MATCH TIMELINE & GOAL LOG', 65, 462);
+      drawCanvasFootball(ctx, 73, 457, 6.5, '#38bdf8');
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '900 14.5px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText('MATCH TIMELINE & GOAL LOG', 86, 462);
 
       ctx.strokeStyle = '#1e293b';
       ctx.beginPath();
@@ -1608,13 +1734,13 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
           ctx.fill();
 
           ctx.fillStyle = '#ffffff';
-          ctx.font = '800 14px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI", Roboto, sans-serif';
+          ctx.font = '800 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
           let scorerText = '';
-          if (g.isOwnGoal) scorerText = ' • ⚠️ Own Goal';
+          if (g.isOwnGoal) scorerText = ' • Own Goal';
           else if (g.scorer) {
             const sInit = g.scorer.initials ? `#${g.scorer.number} ${g.scorer.initials}` : `#${g.scorer.number}`;
-            const aInit = g.assist ? ` (🅰️ #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
-            scorerText = ` • ⚽ ${sInit}${aInit}`;
+            const aInit = g.assist ? ` (ast. #${g.assist.number}${g.assist.initials ? ' ' + g.assist.initials : ''})` : '';
+            scorerText = ` • ${sInit}${aInit}`;
           }
           ctx.fillText(truncateText(ctx, `${g.teamName}${scorerText}`, 360), 235, rowY);
 
@@ -1668,15 +1794,16 @@ export function generateMatchCardCanvas(scopeOrCb, callbackArg) {
       ctx.strokeStyle = '#f59e0b';
       ctx.lineWidth = 1;
       ctx.stroke();
+      drawCanvasStar(ctx, 76, 941, 4.8, '#fbbf24');
       ctx.fillStyle = '#fbbf24';
-      ctx.font = '900 11px monospace';
-      ctx.fillText(`⭐ PLAYER OF THE MATCH: ${potmStr}`, 75, 945);
+      ctx.font = '900 11px "Chakra Petch", monospace';
+      ctx.fillText(`PLAYER OF THE MATCH: ${potmStr}`, 86, 945);
     }
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '700 11px "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('whatsthescoreref.vercel.app • 100% Offline PWA', 735, 912);
+    ctx.fillText("What's The Score Ref? • Grassroots Matchday", 735, 912);
     ctx.fillStyle = '#fbbf24';
     ctx.font = '900 11px "Chakra Petch", monospace';
     ctx.fillText('RESPECT • FAIR PLAY', 735, 934);
@@ -1702,7 +1829,7 @@ export function openMatchCardModal(overrideScope = null) {
   const previewContainer = document.getElementById('matchCardPreviewContainer');
   if (!previewContainer) return;
   if (overrideScope) activeReportScope = overrideScope;
-  previewContainer.innerHTML = '<div class="text-center py-12 text-slate-500 text-xs animate-pulse">Generating HD 1600×2000 graphic...</div>';
+  previewContainer.innerHTML = '<div class="text-center py-12 text-slate-500 text-xs">Preparing match card...</div>';
 
   const currentScope = activeReportScope;
   generateMatchCardCanvas(currentScope, (canvas) => {
@@ -1718,8 +1845,8 @@ export function openMatchCardModal(overrideScope = null) {
     const isComb = currentScope === 'combined';
     const matchNum = currentScope === 'm2' ? 2 : 1;
     const label = document.createElement('div');
-    label.className = 'text-[11px] font-black text-emerald-400 mb-1 tracking-wider uppercase flex items-center gap-1.5';
-    label.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> ${isComb ? 'Double-Header Aggregate Graphic (HD)' : `Match ${matchNum} Graphic (HD)`}`;
+    label.className = 'text-[11px] font-bold text-slate-300 mb-1 tracking-wide uppercase flex items-center gap-1.5';
+    label.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ${isComb ? 'Double-Header Aggregate Card' : `Match ${matchNum} Summary Card`}`;
 
     const img = document.createElement('img');
     img.id = 'matchCardPreviewImg';

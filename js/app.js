@@ -143,7 +143,7 @@ function updateHistoryCountBadge() {
   const badge = document.getElementById('quickToolsHistoryBadge');
   if (!badge) return;
   const count = storage.loadMatchHistory().length;
-  badge.innerText = count > 0 ? `${count} SAVED` : 'ARCHIVE';
+  badge.innerText = count > 0 ? `${count} Saved` : 'Archive';
 }
 
 export function openMatchHistoryModal() {
@@ -164,8 +164,10 @@ export function renderMatchHistoryModal() {
 
   if (items.length === 0) {
     listEl.innerHTML = `
-      <div class="text-center py-8 px-4 text-slate-500 text-xs space-y-1.5">
-        <div class="text-2xl">🏆</div>
+      <div class="text-center py-8 px-4 text-slate-500 text-xs space-y-2">
+        <div class="w-10 h-10 mx-auto rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+        </div>
         <div class="font-bold text-slate-300">No archived matches yet</div>
         <p class="text-[11px] text-slate-500">Completed matches are automatically saved here at Full Time so you never lose past results or POTM winners.</p>
       </div>
@@ -195,8 +197,8 @@ export function renderMatchHistoryModal() {
         <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-900 flex-wrap gap-1">
           <span>1H: <strong class="text-slate-300">${score.escapeHtml(item.half1 || '0-0')}</strong> • 2H: <strong class="text-slate-300">${score.escapeHtml(item.half2 || '0-0')}</strong></span>
           <div class="flex items-center gap-1.5">
-            ${potmLabel ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">⭐ ${potmLabel}</span>` : ''}
-            ${item.momentsCount > 0 ? `<span class="text-slate-400">📋 ${item.momentsCount}</span>` : ''}
+            ${potmLabel ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">POTM ${potmLabel}</span>` : ''}
+            ${item.momentsCount > 0 ? `<span class="text-slate-400">${item.momentsCount} moment${item.momentsCount === 1 ? '' : 's'}</span>` : ''}
           </div>
         </div>
       </div>
@@ -215,7 +217,7 @@ export function copyHistoryEntrySummary(archiveId) {
     navigator.clipboard.writeText(txt).catch(() => {});
   }
   hardware.hapticFeedback('success');
-  score.showMatchToast('Archived match summary copied!', '📋', 2200);
+  score.showMatchToast('Archived match summary copied!', 'check', 2200);
 }
 window.copyHistoryEntrySummary = copyHistoryEntrySummary;
 
@@ -363,14 +365,14 @@ export function applyImportedMatchSync(decoded) {
   persistState();
   hardware.hapticFeedback('success');
   window.closeModal('matchSyncModal');
-  score.showMatchToast(`✓ Synced Match ${targetMatchId}: ${decoded.homeName} ${decoded.homeScore}-${decoded.awayScore} ${decoded.awayName}`, '✅', 3500);
+  score.showMatchToast(`Synced Match ${targetMatchId}: ${decoded.homeName} ${decoded.homeScore}-${decoded.awayScore} ${decoded.awayName}`, 'check', 3500);
   return true;
 }
 
 export function importMatchSyncFromInput() {
   const input = document.getElementById('matchSyncImportInput');
   if (!input || !input.value.trim()) {
-    score.showMatchToast('Paste a sync link or WTSR1 code first', 'ℹ️', 2200);
+    score.showMatchToast('Paste a sync link or WTSR1 code first', 'info', 2200);
     return;
   }
   const decoded = storage.decodeMatchSyncCode(input.value.trim());
@@ -1056,47 +1058,49 @@ export function updateRoleSelectModalUI() {
   const coachBadge = document.getElementById('roleModalCoachBadge');
   const specBadge = document.getElementById('roleModalSpecBadge');
 
-  // Reset all 3
-  refBtn?.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-950/40', 'border-emerald-400');
-  refBtn?.classList.add('border-emerald-500/50');
+  const neutralBadgeCls = 'text-[9px] font-bold font-mono-sport uppercase px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800';
+
+  // Reset all 3 to quiet slate borders
+  refBtn?.classList.remove('ring-1', 'ring-emerald-400', 'bg-emerald-950/30', 'border-emerald-400');
+  refBtn?.classList.add('border-slate-800');
   if (refBadge) {
-    refBadge.textContent = 'OFFICIAL';
-    refBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+    refBadge.textContent = 'Official';
+    refBadge.className = neutralBadgeCls;
   }
 
-  coachBtn?.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-950/40', 'border-amber-400');
-  coachBtn?.classList.add('border-amber-500/50');
+  coachBtn?.classList.remove('ring-1', 'ring-amber-400', 'bg-amber-950/30', 'border-amber-400');
+  coachBtn?.classList.add('border-slate-800');
   if (coachBadge) {
-    coachBadge.textContent = 'TOUCHLINE';
-    coachBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40';
+    coachBadge.textContent = 'Touchline';
+    coachBadge.className = neutralBadgeCls;
   }
 
-  specBtn?.classList.remove('ring-2', 'ring-sky-400', 'bg-sky-950/40', 'border-sky-400');
-  specBtn?.classList.add('border-sky-500/50');
+  specBtn?.classList.remove('ring-1', 'ring-sky-400', 'bg-sky-950/30', 'border-sky-400');
+  specBtn?.classList.add('border-slate-800');
   if (specBadge) {
-    specBadge.textContent = 'SIDELINE';
-    specBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40';
+    specBadge.textContent = 'Sideline';
+    specBadge.className = neutralBadgeCls;
   }
 
   if (currentMode === 'coach') {
-    coachBtn?.classList.add('ring-2', 'ring-amber-400', 'bg-amber-950/40', 'border-amber-400');
-    coachBtn?.classList.remove('border-amber-500/50');
+    coachBtn?.classList.add('ring-1', 'ring-amber-400', 'bg-amber-950/30', 'border-amber-400');
+    coachBtn?.classList.remove('border-slate-800');
     if (coachBadge) {
-      coachBadge.textContent = 'CURRENT';
+      coachBadge.textContent = 'Current';
       coachBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 shadow-sm';
     }
   } else if (currentMode === 'spectator') {
-    specBtn?.classList.add('ring-2', 'ring-sky-400', 'bg-sky-950/40', 'border-sky-400');
-    specBtn?.classList.remove('border-sky-500/50');
+    specBtn?.classList.add('ring-1', 'ring-sky-400', 'bg-sky-950/30', 'border-sky-400');
+    specBtn?.classList.remove('border-slate-800');
     if (specBadge) {
-      specBadge.textContent = 'CURRENT';
+      specBadge.textContent = 'Current';
       specBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-sky-400 text-slate-950 shadow-sm';
     }
   } else {
-    refBtn?.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-950/40', 'border-emerald-400');
-    refBtn?.classList.remove('border-emerald-500/50');
+    refBtn?.classList.add('ring-1', 'ring-emerald-400', 'bg-emerald-950/30', 'border-emerald-400');
+    refBtn?.classList.remove('border-slate-800');
     if (refBadge) {
-      refBadge.textContent = 'CURRENT';
+      refBadge.textContent = 'Current';
       refBadge.className = 'text-[9px] font-black font-mono-sport uppercase px-1.5 py-0.5 rounded bg-emerald-400 text-slate-950 shadow-sm';
     }
   }
@@ -1537,8 +1541,8 @@ function updateInstallButton() {
   if (isStandalone) {
     btn.disabled = true;
     btn.classList.add('opacity-50', 'pointer-events-none');
-    badge.textContent = 'INSTALLED';
-    badge.classList.remove('bg-cyan-500/20', 'text-cyan-300', 'border-cyan-500/40');
+    badge.textContent = 'Installed';
+    badge.classList.remove('bg-slate-900', 'text-slate-300', 'border-slate-700');
     badge.classList.add('bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/40');
   }
 }

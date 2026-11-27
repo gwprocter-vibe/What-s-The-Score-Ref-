@@ -148,7 +148,7 @@ export function updateHalfDurationButtonsUI(activeMin) {
     const btn = document.getElementById(`durBtn${m}`);
     if (btn) {
       if (m === activeMin) {
-        btn.className = 'half-dur-btn py-1.5 px-1 rounded-lg text-xs font-black transition border border-indigo-400 text-white bg-indigo-600 shadow-sm cursor-pointer text-center';
+        btn.className = 'half-dur-btn py-1.5 px-1 rounded-lg text-xs font-black transition border border-emerald-400 text-slate-950 bg-emerald-500 shadow-sm cursor-pointer text-center';
       } else {
         btn.className = 'half-dur-btn py-1.5 px-1 rounded-lg text-xs font-bold transition border border-slate-800 text-slate-400 hover:text-white bg-slate-900 cursor-pointer text-center';
       }
@@ -258,7 +258,7 @@ export function startCoolDownTimer(durationSeconds = 120, playerLabel = '') {
       playWhistleTone('chime_ready');
       hapticFeedback('success');
       if (typeof window !== 'undefined' && typeof window.showMatchToast === 'function') {
-        window.showMatchToast(`🧊 Cool-Down complete${coolDownPlayerTag ? ' (' + coolDownPlayerTag + ')' : ''} — may return at stoppage`, '✅', 4500);
+        window.showMatchToast(`Cool-Down complete${coolDownPlayerTag ? ' (' + coolDownPlayerTag + ')' : ''} — may return at stoppage`, 'check', 4500);
       }
       coolDownPlayerTag = '';
       updateCoolDownUI();
@@ -267,7 +267,7 @@ export function startCoolDownTimer(durationSeconds = 120, playerLabel = '') {
 
   updateCoolDownUI();
   if (typeof window !== 'undefined' && typeof window.showMatchToast === 'function') {
-    window.showMatchToast(`🧊 2:00 Cool-Down started${coolDownPlayerTag ? ' (' + coolDownPlayerTag + ')' : ''}`, '🧊', 2500);
+    window.showMatchToast(`2:00 Cool-Down started${coolDownPlayerTag ? ' (' + coolDownPlayerTag + ')' : ''}`, 'clock', 2500);
   }
 }
 
@@ -298,10 +298,10 @@ function updateCoolDownUI() {
   if (quickBadge) {
     if (active) {
       quickBadge.innerText = formatTime(coolDownRemainingSec);
-      quickBadge.className = 'px-2.5 py-1 bg-cyan-400 text-slate-950 rounded-lg font-black text-[10px] shrink-0 font-mono-sport animate-pulse';
+      quickBadge.className = 'px-2.5 py-1 bg-amber-400 text-slate-950 rounded-lg font-black text-[10px] shrink-0 font-mono-sport animate-pulse';
     } else {
-      quickBadge.innerText = 'START 2:00';
-      quickBadge.className = 'px-2.5 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded-lg font-black text-[10px] shrink-0 font-mono-sport';
+      quickBadge.innerText = '2:00';
+      quickBadge.className = 'px-2.5 py-1 bg-slate-900 text-slate-300 border border-slate-700 rounded-lg font-bold text-[10px] shrink-0 font-mono-sport';
     }
   }
   if (quickBtnLabel) {
@@ -914,15 +914,19 @@ function updateTimerUI() {
 
   if (periodBadge) {
     const textEl = document.getElementById('periodBadgeText') || periodBadge;
+    const dotEl = periodBadge.querySelector('span:first-child');
     if (currentPeriod === 'Full Time') {
       textEl.innerText = 'FULL TIME';
-      periodBadge.className = 'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black tracking-wider uppercase font-mono-sport bg-amber-950/90 text-amber-300 border border-amber-400/50 shadow-sm flex items-center justify-center gap-1';
+      if (dotEl && dotEl !== textEl) dotEl.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
+      periodBadge.className = 'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black tracking-wider uppercase font-mono-sport bg-amber-950/90 text-amber-300 border border-amber-400/50 shadow-sm flex items-center justify-center gap-1.5';
     } else if (!isTimerRunning && hasHalfStarted) {
       textEl.innerText = `${currentPeriod.toUpperCase()} • PAUSED`;
-      periodBadge.className = 'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black tracking-wider uppercase font-mono-sport bg-amber-950/80 text-amber-300 border border-amber-500/50 shadow-sm flex items-center justify-center gap-1';
+      if (dotEl && dotEl !== textEl) dotEl.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse';
+      periodBadge.className = 'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black tracking-wider uppercase font-mono-sport bg-amber-950/80 text-amber-300 border border-amber-500/50 shadow-sm flex items-center justify-center gap-1.5';
     } else {
       textEl.innerText = currentPeriod.toUpperCase();
-      periodBadge.className = 'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black tracking-wider uppercase font-mono-sport bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-sm flex items-center justify-center gap-1';
+      if (dotEl && dotEl !== textEl) dotEl.className = isTimerRunning ? 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse' : 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+      periodBadge.className = 'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black tracking-wider uppercase font-mono-sport bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-sm flex items-center justify-center gap-1.5';
     }
   }
 
@@ -1012,7 +1016,7 @@ export function triggerSubReminder() {
   }
   if (typeof window !== 'undefined' && typeof window.getAppMode === 'function' && window.getAppMode() === 'coach') {
     if (typeof window.showMatchToast === 'function') {
-      window.showMatchToast(`🔄 Halfway Sub Window (${formatTime(subReminderSeconds)}) — Tap Subs to rotate!`, '🔄', 4000);
+      window.showMatchToast(`Halfway Sub Window (${formatTime(subReminderSeconds)}) — Tap Subs to rotate!`, 'clock', 4000);
     }
   }
 

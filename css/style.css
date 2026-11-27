@@ -187,9 +187,13 @@ html.is-ios-standalone #matchCardFullscreenModal {
   position: absolute;
   inset: 0 auto 0 0;
   width: 0%;
-  background: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.18);
   pointer-events: none;
   z-index: 0;
+}
+
+#resetMatchBtn .hold-progress-fill {
+  background: rgba(225, 29, 72, 0.36);
 }
 
 #resetHalfBtn > *:not(.hold-progress-fill),
